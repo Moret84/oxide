@@ -1,0 +1,5838 @@
+{
+  "auth.client_id.not_found": {
+    "fr": "Impossible de trouver l’ID d’application de Teams. Définissez OXIDE_CLIENT_ID, ou client_id dans ~/Library/Application Support/Oxide/config.json.",
+    "en": "Couldn't find the Teams application ID. Set OXIDE_CLIENT_ID, or client_id in ~/Library/Application Support/Oxide/config.json."
+  },
+  "auth.lib.authentication_failed": {
+    "fr": "Échec de l’authentification : {detail}",
+    "en": "Authentication failed: {detail}"
+  },
+  "auth.lib.no_url_known_for_service": {
+    "fr": "Aucune URL connue pour le service {detail}",
+    "en": "No URL known for service {detail}"
+  },
+  "auth.lib.not_signed_in": {
+    "fr": "Non connecté.",
+    "en": "Not signed in."
+  },
+  "auth.lib.unsupported_resource": {
+    "fr": "Ressource non prise en charge.",
+    "en": "Unsupported resource."
+  },
+  "auth.lib.your_microsoft_session_has_expired_please": {
+    "fr": "Session Microsoft expirée. Reconnectez-vous.",
+    "en": "Your Microsoft session has expired. Please sign in again."
+  },
+  "auth.login.authz_didn_t_renew_the_skypetoken": {
+    "fr": "authz n’a pas renouvelé le skypetoken. Reconnectez-vous.",
+    "en": "authz didn't renew the skypetoken. Please sign in again."
+  },
+  "auth.login.couldn_t_reach_microsoft_for_the": {
+    "fr": "Impossible de joindre Microsoft pour le token AAD.",
+    "en": "Couldn't reach Microsoft for the AAD token."
+  },
+  "auth.login.couldn_t_reach_teams_authz": {
+    "fr": "Impossible de joindre Teams authz.",
+    "en": "Couldn't reach Teams authz."
+  },
+  "auth.login.duplicate_redirect_parameter": {
+    "fr": "Paramètre de retour dupliqué.",
+    "en": "Duplicate redirect parameter."
+  },
+  "auth.login.empty_aad_token": {
+    "fr": "Token AAD vide.",
+    "en": "Empty AAD token."
+  },
+  "auth.login.invalid_aad_response": {
+    "fr": "Réponse AAD invalide.",
+    "en": "Invalid AAD response."
+  },
+  "auth.login.invalid_authentication_header": {
+    "fr": "Header d’authentification invalide.",
+    "en": "Invalid authentication header."
+  },
+  "auth.login.invalid_authz_response": {
+    "fr": "Réponse authz invalide.",
+    "en": "Invalid authz response."
+  },
+  "auth.login.invalid_redirect_url": {
+    "fr": "URL de retour invalide.",
+    "en": "Invalid redirect URL."
+  },
+  "auth.login.invalid_regional_url_for": {
+    "fr": "URL régionale invalide pour {key}.",
+    "en": "Invalid regional URL for {key}."
+  },
+  "auth.login.invalid_registrationtoken": {
+    "fr": "RegistrationToken invalide.",
+    "en": "Invalid RegistrationToken."
+  },
+  "auth.login.invalid_sharepoint_resource": {
+    "fr": "Ressource SharePoint invalide.",
+    "en": "Invalid SharePoint resource."
+  },
+  "auth.login.invalid_skypetoken_jwt": {
+    "fr": "Skypetoken JWT invalide.",
+    "en": "Invalid skypetoken JWT."
+  },
+  "auth.login.invalid_token_expiration": {
+    "fr": "Expiration de jeton invalide.",
+    "en": "Invalid token expiration."
+  },
+  "auth.login.microsoft_declined_or_canceled_the_sign": {
+    "fr": "Microsoft a refusé ou annulé la connexion. Recommencez.",
+    "en": "Microsoft declined or canceled the sign-in. Please try again."
+  },
+  "auth.login.microsoft_didn_t_provide_a_refresh": {
+    "fr": "Microsoft n’a pas fourni de jeton de renouvellement.",
+    "en": "Microsoft didn't provide a refresh token."
+  },
+  "auth.login.microsoft_token_http_please_sign_in": {
+    "fr": "Microsoft /token : HTTP {status}. Reconnectez-vous (consentement ou stratégie du tenant à vérifier).",
+    "en": "Microsoft /token: HTTP {status}. Please sign in again (check consent or tenant policy)."
+  },
+  "auth.login.regional_url_for_isn_t_https": {
+    "fr": "URL régionale non HTTPS pour {key}.",
+    "en": "Regional URL for {key} isn't HTTPS."
+  },
+  "auth.login.sign_in_expired_please_start_over": {
+    "fr": "Connexion expirée, recommencez.",
+    "en": "Sign-in expired, please start over."
+  },
+  "auth.login.signing_in_again_opened_a_different": {
+    "fr": "La reconnexion a ouvert un autre compte Microsoft. Reconnectez-vous.",
+    "en": "Signing in again opened a different Microsoft account. Please sign in again."
+  },
+  "auth.login.teams_authz_http_please_sign_in": {
+    "fr": "Teams authz : HTTP {status}. Reconnectez-vous ; un accès Teams peut être requis.",
+    "en": "Teams authz: HTTP {status}. Please sign in again; Teams access may be required."
+  },
+  "auth.login.the_redirect_doesn_t_match_this": {
+    "fr": "Le retour ne correspond pas à cette connexion (state).",
+    "en": "The redirect doesn't match this sign-in (state)."
+  },
+  "auth.login.the_url_has_no_code_please": {
+    "fr": "L’URL ne contient pas de code. Recommencez la connexion.",
+    "en": "The URL has no code. Please sign in again."
+  },
+  "auth.login.the_url_must_be_the_microsoft": {
+    "fr": "L’URL doit être le retour Microsoft vers https://teams.microsoft.com/v2.",
+    "en": "The URL must be the Microsoft redirect to https://teams.microsoft.com/v2."
+  },
+  "auth.login.token_already_expired": {
+    "fr": "Jeton déjà expiré.",
+    "en": "Token already expired."
+  },
+  "auth.login.userid_missing_from_the_skypetoken": {
+    "fr": "userId absent du skypetoken.",
+    "en": "userId missing from the skypetoken."
+  },
+  "auth.login.your_microsoft_session_has_expired_please": {
+    "fr": "Session Microsoft expirée. Reconnectez-vous.",
+    "en": "Your Microsoft session has expired. Please sign in again."
+  },
+  "auth.login.your_teams_identity_has_changed_please": {
+    "fr": "L’identité Teams a changé. Reconnectez-vous.",
+    "en": "Your Teams identity has changed. Please sign in again."
+  },
+  "auth.net.network_error": {
+    "fr": "Erreur réseau : {detail}",
+    "en": "Network error: {detail}"
+  },
+  "auth.net.too_many_requests_retry_in_s": {
+    "fr": "Trop de requêtes, nouvel essai dans {seconds} s",
+    "en": "Too many requests, retry in {seconds} s"
+  },
+  "auth.net.unknown_outcome": {
+    "fr": "Résultat inconnu",
+    "en": "Unknown outcome"
+  },
+  "auth.net.unreadable_response": {
+    "fr": "Réponse illisible",
+    "en": "Unreadable response"
+  },
+  "auth.web_config.unreadable": {
+    "fr": "Impossible de lire la configuration du client web de Teams.",
+    "en": "Couldn't read the configuration of the Teams web client."
+  },
+  "calendar.lib.calendar_unavailable_http_the_mailbox_must": {
+    "fr": "Calendrier inaccessible (HTTP {status}). La boîte doit être Exchange Online et accessible à ce compte.",
+    "en": "Calendar unavailable (HTTP {status}). The mailbox must be on Exchange Online and accessible to this account."
+  },
+  "calendar.lib.couldn_t_connect_to_the_calendar": {
+    "fr": "Connexion au calendrier impossible : {detail}",
+    "en": "Couldn't connect to the calendar: {detail}"
+  },
+  "calendar.lib.enter_a_title_and_an_end": {
+    "fr": "Indiquez un titre et une fin postérieure au début.",
+    "en": "Enter a title and an end time after the start time."
+  },
+  "calendar.lib.invalid_attendee_address": {
+    "fr": "Adresse de participant invalide.",
+    "en": "Invalid attendee address."
+  },
+  "calendar.lib.invalid_calendar_response": {
+    "fr": "Réponse calendrier invalide.",
+    "en": "Invalid calendar response."
+  },
+  "calendar.lib.invalid_calendar_url": {
+    "fr": "URL calendrier invalide.",
+    "en": "Invalid calendar URL."
+  },
+  "calendar.lib.invalid_end_date": {
+    "fr": "Date de fin invalide.",
+    "en": "Invalid end date."
+  },
+  "calendar.lib.invalid_start_date": {
+    "fr": "Date de début invalide.",
+    "en": "Invalid start date."
+  },
+  "calendar.lib.missing_event_id": {
+    "fr": "Identifiant d’événement absent.",
+    "en": "Missing event ID."
+  },
+  "calendar.lib.the_calendar_is_temporarily_throttled_try": {
+    "fr": "Le calendrier est temporairement limité. Réessayez dans {seconds} secondes.",
+    "en": "The calendar is temporarily throttled. Try again in {seconds} seconds."
+  },
+  "calendar.lib.the_online_meeting_was_created_but": {
+    "fr": "La réunion en ligne a été créée, mais la liaison au calendrier n’a pas été confirmée. Ne recréez pas la réunion sans vérifier Teams Web.",
+    "en": "The online meeting was created, but linking it to the calendar wasn't confirmed. Don't create the meeting again without checking Teams on the web."
+  },
+  "calendar.lib.the_outcome_of_the_operation_is": {
+    "fr": "Le résultat de l’opération est incertain. Actualisez le calendrier avant toute nouvelle tentative.",
+    "en": "The outcome of the operation is uncertain. Refresh the calendar before trying again."
+  },
+  "calendar.lib.this_event_can_only_be_managed": {
+    "fr": "Cet événement se gère dans Teams Web.",
+    "en": "This event can only be managed in Teams on the web."
+  },
+  "calling.lib.couldn_t_reach_the_calling_service": {
+    "fr": "Service d’appel injoignable : {detail}",
+    "en": "Couldn't reach the calling service: {detail}"
+  },
+  "calling.lib.the_calling_service_responded_with_http": {
+    "fr": "Le service d’appel a répondu HTTP {status}.",
+    "en": "The calling service responded with HTTP {status}."
+  },
+  "calling.lib.the_service_didn_t_confirm_the": {
+    "fr": "Le service n’a pas confirmé l’opération. Vérifiez avant de recommencer.",
+    "en": "The service didn't confirm the operation. Check before trying again."
+  },
+  "calling.lib.too_many_requests_http_429_you": {
+    "fr": "Trop de requêtes (HTTP 429). Nouvel essai possible dans {detail} s.",
+    "en": "Too many requests (HTTP 429). You can try again in {detail} s."
+  },
+  "calling.lib.unreadable_response_from_the_calling_service": {
+    "fr": "Réponse du service d’appel illisible.",
+    "en": "Unreadable response from the calling service."
+  },
+  "calling.session.access_to_the_call_was_denied": {
+    "fr": "Accès à l’appel refusé.",
+    "en": "Access to the call was denied."
+  },
+  "calling.session.audio_video_connection_failed": {
+    "fr": "Échec de la connexion audio/vidéo.",
+    "en": "Audio/video connection failed."
+  },
+  "calling.session.call_canceled": {
+    "fr": "Appel annulé.",
+    "en": "Call canceled."
+  },
+  "calling.session.call_declined": {
+    "fr": "Appel refusé.",
+    "en": "Call declined."
+  },
+  "calling.session.call_ended_code": {
+    "fr": "Appel terminé (code {code}).",
+    "en": "Call ended (code {code})."
+  },
+  "calling.session.call_or_meeting_not_found": {
+    "fr": "Appel ou réunion introuvable.",
+    "en": "Call or meeting not found."
+  },
+  "calling.session.conflict_the_call_was_picked_up": {
+    "fr": "Conflit : l’appel a été repris ailleurs.",
+    "en": "Conflict: the call was picked up elsewhere."
+  },
+  "calling.session.echo_bot_couldn_t_join_the": {
+    "fr": "L’Echo Bot n’a pas pu rejoindre l’appel de test.",
+    "en": "Echo Bot couldn't join the test call."
+  },
+  "calling.session.missed_call": {
+    "fr": "Appel manqué.",
+    "en": "Missed call."
+  },
+  "calling.session.network_problem_during_the_call": {
+    "fr": "Problème réseau pendant l’appel.",
+    "en": "Network problem during the call."
+  },
+  "calling.session.no_one_answered_in_time": {
+    "fr": "Personne n’a répondu à temps.",
+    "en": "No one answered in time."
+  },
+  "calling.session.the_call_has_ended": {
+    "fr": "L’appel est terminé.",
+    "en": "The call has ended."
+  },
+  "calling.session.the_meeting_has_reached_its_maximum": {
+    "fr": "La réunion a atteint son nombre maximal de participants.",
+    "en": "The meeting has reached its maximum number of participants."
+  },
+  "calling.session.the_person_you_called_is_busy": {
+    "fr": "Votre correspondant est occupé.",
+    "en": "The person you called is busy."
+  },
+  "calling.session.the_person_you_called_isn_t": {
+    "fr": "Votre correspondant n’est pas joignable.",
+    "en": "The person you called isn't reachable."
+  },
+  "calling.session.you_left_the_call": {
+    "fr": "Vous avez quitté l’appel.",
+    "en": "You left the call."
+  },
+  "calling.session.your_teams_session_has_expired": {
+    "fr": "Votre session Teams a expiré.",
+    "en": "Your Teams session has expired."
+  },
+  "calling.voicemail.invalid_outlook_url": {
+    "fr": "URL Outlook invalide.",
+    "en": "Invalid Outlook URL."
+  },
+  "calling.voicemail.this_voicemail_has_no_audio": {
+    "fr": "Ce message vocal n’a pas d’audio.",
+    "en": "This voicemail has no audio."
+  },
+  "calling.voicemail.voicemail_not_found": {
+    "fr": "Message vocal introuvable.",
+    "en": "Voicemail not found."
+  },
+  "chat.client.invalid_member_paging_link": {
+    "fr": "Lien de pagination des membres invalide.",
+    "en": "Invalid member paging link."
+  },
+  "chat.client.member_paging_repeated": {
+    "fr": "Pagination de membres répétée.",
+    "en": "Member paging repeated."
+  },
+  "chat.csa.choose_at_least_one_recipient": {
+    "fr": "Choisissez au moins un destinataire.",
+    "en": "Choose at least one recipient."
+  },
+  "chat.csa.invalid_paging_cursor": {
+    "fr": "Curseur de pagination invalide.",
+    "en": "Invalid paging cursor."
+  },
+  "chat.csa.profile_picture_is_too_large": {
+    "fr": "Photo de profil trop volumineuse.",
+    "en": "Profile picture is too large."
+  },
+  "chat.csa.the_server_didn_t_return_the": {
+    "fr": "Le serveur n’a pas renvoyé l’identifiant de la discussion.",
+    "en": "The server didn't return the chat ID."
+  },
+  "chat.error.cannot_decode_field": {
+    "fr": "Impossible de décoder le champ {path} de {endpoint} : {source}",
+    "en": "Cannot decode {path} field {endpoint}: {source}"
+  },
+  "chat.error.cannot_decode_response": {
+    "fr": "Impossible de décoder la réponse de {endpoint} : {source}",
+    "en": "Cannot decode {endpoint} response: {source}"
+  },
+  "chat.error.from": {
+    "fr": "{status} de {endpoint} : {body}",
+    "en": "{status} from {endpoint}: {body}"
+  },
+  "chat.error.invalid_long_poll_url": {
+    "fr": "URL de long-polling invalide : {detail}",
+    "en": "Invalid long-poll URL: {detail}"
+  },
+  "chat.error.invalid_url": {
+    "fr": "URL invalide : {detail}",
+    "en": "Invalid URL: {detail}"
+  },
+  "chat.error.request_failed": {
+    "fr": "Échec de la requête : {detail}",
+    "en": "Request failed: {detail}"
+  },
+  "chat.error.too_many_requests_to_teams_http": {
+    "fr": "Trop de requêtes vers Teams (HTTP 429). Nouvel essai possible dans {retry_after_secs} s.",
+    "en": "Too many requests to Teams (HTTP 429). You can try again in {retry_after_secs} s."
+  },
+  "chat.media.couldn_t_download_the_image": {
+    "fr": "Téléchargement de l’image impossible.",
+    "en": "Couldn't download the image."
+  },
+  "chat.media.image_address_isn_t_https_or": {
+    "fr": "Adresse d’image non HTTPS ou invalide.",
+    "en": "Image address isn't HTTPS or is invalid."
+  },
+  "chat.media.image_is_too_large_to_preview": {
+    "fr": "Image trop volumineuse pour l’aperçu (8 Mo maximum).",
+    "en": "Image is too large to preview (8 MB maximum)."
+  },
+  "chat.media.image_read_interrupted": {
+    "fr": "Lecture de l’image interrompue.",
+    "en": "Image read interrupted."
+  },
+  "chat.media.invalid_image_address": {
+    "fr": "Adresse d’image invalide.",
+    "en": "Invalid image address."
+  },
+  "chat.media.invalid_image_redirect": {
+    "fr": "Redirection d’image invalide.",
+    "en": "Invalid image redirect."
+  },
+  "chat.media.non_https_image_redirect_refused": {
+    "fr": "Redirection d’image non HTTPS refusée.",
+    "en": "Non-HTTPS image redirect refused."
+  },
+  "chat.media.the_session_s_media_service_is": {
+    "fr": "Service média de la session indisponible.",
+    "en": "The session's media service is unavailable."
+  },
+  "chat.media.too_many_redirects_for_this_image": {
+    "fr": "Trop de redirections pour cette image.",
+    "en": "Too many redirects for this image."
+  },
+  "core.activity.accepted": {
+    "fr": "a accepté",
+    "en": "accepted"
+  },
+  "core.activity.added_you_to_a_team": {
+    "fr": "{actor} vous a ajouté à une équipe",
+    "en": "{actor} added you to a team"
+  },
+  "core.activity.calendar_update": {
+    "fr": "mise à jour du calendrier",
+    "en": "calendar update"
+  },
+  "core.activity.canceled": {
+    "fr": "a annulé",
+    "en": "canceled"
+  },
+  "core.activity.cannot_load_the_notifications_try_again": {
+    "fr": "Impossible de charger les notifications. Réessayez.",
+    "en": "Cannot load the notifications. Try again."
+  },
+  "core.activity.declined": {
+    "fr": "a refusé",
+    "en": "declined"
+  },
+  "core.activity.forwarded_a_meeting": {
+    "fr": "a transféré une réunion",
+    "en": "forwarded a meeting"
+  },
+  "core.activity.in_a_chat_with_you": {
+    "fr": "En conversation avec vous",
+    "en": "In a chat with you"
+  },
+  "core.activity.invited_you": {
+    "fr": "vous a invité",
+    "en": "invited you"
+  },
+  "core.activity.invited_you_to_join_a_meeting": {
+    "fr": "{actor} vous a invité(e) à participer à une réunion",
+    "en": "{actor} invited you to join a meeting"
+  },
+  "core.activity.m_d": {
+    "fr": "%d/%m",
+    "en": "%m/%d"
+  },
+  "core.activity.m_d_h_m": {
+    "fr": "%d/%m · %H:%M",
+    "en": "%m/%d · %H:%M"
+  },
+  "core.activity.made_you_an_owner": {
+    "fr": "{actor} vous a nommé propriétaire",
+    "en": "{actor} made you an owner"
+  },
+  "core.activity.meeting_with": {
+    "fr": "Réunion avec {actor}",
+    "en": "Meeting with {actor}"
+  },
+  "core.activity.mentioned": {
+    "fr": "{actor} a mentionné {target}",
+    "en": "{actor} mentioned {target}"
+  },
+  "core.activity.mentioned_everyone": {
+    "fr": "{actor} a mentionné tout le monde",
+    "en": "{actor} mentioned everyone"
+  },
+  "core.activity.mentioned_you": {
+    "fr": "{actor} vous a mentionné",
+    "en": "{actor} mentioned you"
+  },
+  "core.activity.mentioned_you_2": {
+    "fr": "vous a mentionné",
+    "en": "mentioned you"
+  },
+  "core.activity.missed_call": {
+    "fr": "appel manqué",
+    "en": "missed call"
+  },
+  "core.activity.missed_call_from": {
+    "fr": "Appel manqué de {actor}",
+    "en": "Missed call from {actor}"
+  },
+  "core.activity.reacted_to_a_message": {
+    "fr": "a réagi à un message",
+    "en": "reacted to a message"
+  },
+  "core.activity.reacted_to_your_message": {
+    "fr": "{actor} a réagi à votre message",
+    "en": "{actor} reacted to your message"
+  },
+  "core.activity.replied": {
+    "fr": "{actor} a répondu",
+    "en": "{actor} replied"
+  },
+  "core.activity.replied_2": {
+    "fr": "a répondu",
+    "en": "replied"
+  },
+  "core.activity.replied_in_a_followed_thread": {
+    "fr": "{actor} a répondu dans un fil suivi",
+    "en": "{actor} replied in a followed thread"
+  },
+  "core.activity.sent_a_message": {
+    "fr": "{actor} a envoyé un message",
+    "en": "{actor} sent a message"
+  },
+  "core.activity.sent_a_message_2": {
+    "fr": "a envoyé un message",
+    "en": "sent a message"
+  },
+  "core.activity.sent_you_an_urgent_message": {
+    "fr": "{actor} vous a envoyé un message urgent",
+    "en": "{actor} sent you an urgent message"
+  },
+  "core.activity.team_update": {
+    "fr": "mise à jour d’équipe",
+    "en": "team update"
+  },
+  "core.activity.teams_call": {
+    "fr": "Appel Teams",
+    "en": "Teams call"
+  },
+  "core.activity.tentatively_accepted": {
+    "fr": "a répondu provisoirement",
+    "en": "tentatively accepted"
+  },
+  "core.activity.the_notification_could_not_be_marked": {
+    "fr": "La notification n’a pas pu être marquée comme lue. Réessayez.",
+    "en": "The notification could not be marked as read. Try again."
+  },
+  "core.activity.updated": {
+    "fr": "a mis à jour",
+    "en": "updated"
+  },
+  "core.activity.voicemail": {
+    "fr": "Messagerie vocale",
+    "en": "Voicemail"
+  },
+  "core.activity.voicemail_from": {
+    "fr": "Messagerie vocale de {actor}",
+    "en": "Voicemail from {actor}"
+  },
+  "core.app.account_profile_unavailable": {
+    "fr": "Profil du compte indisponible",
+    "en": "Account profile unavailable"
+  },
+  "core.app.an_internal_error_occurred_the_app": {
+    "fr": "Une erreur interne est survenue : l’application a été rechargée.",
+    "en": "An internal error occurred: the app was reloaded."
+  },
+  "core.app.and_others.one": {
+    "fr": " et {n} autre",
+    "en": " and {n} other"
+  },
+  "core.app.and_others.other": {
+    "fr": " et {n} autres",
+    "en": " and {n} others"
+  },
+  "core.app.channel": {
+    "fr": "Canal",
+    "en": "Channel"
+  },
+  "core.app.chat": {
+    "fr": "Discussion",
+    "en": "Chat"
+  },
+  "core.app.chats_unavailable": {
+    "fr": "{names} · Discussions indisponibles : {error}",
+    "en": "{names} · Chats unavailable: {error}"
+  },
+  "core.app.chats_unavailable_2": {
+    "fr": "Discussions indisponibles : {error}",
+    "en": "Chats unavailable: {error}"
+  },
+  "core.app.could_not_create_the_chat": {
+    "fr": "Création de la discussion impossible : {error}",
+    "en": "Could not create the chat: {error}"
+  },
+  "core.app.could_not_send_your_draft_was": {
+    "fr": "Envoi impossible : {error}. Votre brouillon est conservé.",
+    "en": "Could not send: {error}. Your draft was kept."
+  },
+  "core.app.csa_startup_unavailable": {
+    "fr": "Démarrage CSA indisponible : {error}",
+    "en": "CSA startup unavailable: {error}"
+  },
+  "core.app.general": {
+    "fr": "Général",
+    "en": "General"
+  },
+  "core.app.group_chat": {
+    "fr": "Discussion de groupe",
+    "en": "Group chat"
+  },
+  "core.app.group_chat_2": {
+    "fr": "Discussion de groupe · {title}",
+    "en": "Group chat · {title}"
+  },
+  "core.app.operation_interrupted": {
+    "fr": "Opération interrompue.",
+    "en": "Operation interrupted."
+  },
+  "core.app.read_receipt": {
+    "fr": "Accusé de lecture : {error}",
+    "en": "Read receipt: {error}"
+  },
+  "core.app.session_removal_unavailable": {
+    "fr": "Effacement de session indisponible.",
+    "en": "Session removal unavailable."
+  },
+  "core.app.session_saving_unavailable": {
+    "fr": "Sauvegarde de session indisponible.",
+    "en": "Session saving unavailable."
+  },
+  "core.app.sign_in_cancelled": {
+    "fr": "Connexion annulée.",
+    "en": "Sign-in cancelled."
+  },
+  "core.app.some_channels_unreadable": {
+    "fr": "Des canaux de « {team} » n’ont pas pu être lus : {error}",
+    "en": "Some channels of “{team}” couldn't be read: {error}"
+  },
+  "core.app.team_list_unavailable": {
+    "fr": "Liste des équipes indisponible : {error}",
+    "en": "Team list unavailable: {error}"
+  },
+  "core.app.teams_refuses_one_of_the_recipients": {
+    "fr": "Teams refuse un des destinataires de cette discussion. Retirez-le et réessayez.",
+    "en": "Teams refuses one of the recipients of this chat. Remove them and try again."
+  },
+  "core.app.this_link_is_not_a_valid": {
+    "fr": "Ce lien n’est pas une adresse web ou courriel valide.",
+    "en": "This link is not a valid web or email address."
+  },
+  "core.app.welcome": {
+    "fr": "Bienvenue",
+    "en": "Welcome"
+  },
+  "core.app.you_personal_notes": {
+    "fr": "Vous (notes personnelles)",
+    "en": "You (personal notes)"
+  },
+  "core.app.your_microsoft_session_has_expired_please": {
+    "fr": "La session Microsoft a expiré. Reconnectez-vous.",
+    "en": "Your Microsoft session has expired. Please sign in again."
+  },
+  "core.attachments.a_participant_left_the_conversation": {
+    "fr": "Un participant a quitté la conversation.",
+    "en": "A participant left the conversation."
+  },
+  "core.attachments.call_ended": {
+    "fr": "Appel terminé.",
+    "en": "Call ended."
+  },
+  "core.attachments.call_started": {
+    "fr": "Appel démarré.",
+    "en": "Call started."
+  },
+  "core.attachments.conversation_activity": {
+    "fr": "Activité de la conversation.",
+    "en": "Conversation activity."
+  },
+  "core.attachments.conversation_picture_changed": {
+    "fr": "Image de la conversation modifiée.",
+    "en": "Conversation picture changed."
+  },
+  "core.attachments.conversation_renamed": {
+    "fr": "Nom de la conversation modifié : {topic}",
+    "en": "Conversation renamed: {topic}"
+  },
+  "core.attachments.conversation_renamed_2": {
+    "fr": "Nom de la conversation modifié.",
+    "en": "Conversation renamed."
+  },
+  "core.attachments.history_visibility_changed": {
+    "fr": "Visibilité de l’historique modifiée.",
+    "en": "History visibility changed."
+  },
+  "core.attachments.participants_were_added": {
+    "fr": "Des participants ont été ajoutés.",
+    "en": "Participants were added."
+  },
+  "core.attachments.shared_file": {
+    "fr": "Fichier partagé",
+    "en": "Shared file"
+  },
+  "core.calendar.day_month": {
+    "fr": "{day} {month}",
+    "en": "{month} {day}"
+  },
+  "core.calendar.every_day": {
+    "fr": "Tous les jours",
+    "en": "Every day"
+  },
+  "core.calendar.every_month": {
+    "fr": "Tous les mois",
+    "en": "Every month"
+  },
+  "core.calendar.every_n_days": {
+    "fr": "Tous les {count} jours",
+    "en": "Every {count} days"
+  },
+  "core.calendar.every_n_months": {
+    "fr": "Tous les {count} mois",
+    "en": "Every {count} months"
+  },
+  "core.calendar.every_n_weeks": {
+    "fr": "Toutes les {count} semaines",
+    "en": "Every {count} weeks"
+  },
+  "core.calendar.every_week": {
+    "fr": "Toutes les semaines",
+    "en": "Every week"
+  },
+  "core.calendar.invalid_calendar_period": {
+    "fr": "Période calendrier invalide.",
+    "en": "Invalid calendar period."
+  },
+  "core.calendar.invalid_end_of_series": {
+    "fr": "Date de fin de la série invalide.",
+    "en": "Invalid end date for the series."
+  },
+  "core.calendar.meeting_not_found_in_your_calendar": {
+    "fr": "Réunion introuvable dans votre calendrier.",
+    "en": "Meeting not found in your calendar."
+  },
+  "core.calendar.month.1": {
+    "fr": "janv.",
+    "en": "Jan"
+  },
+  "core.calendar.month.10": {
+    "fr": "oct.",
+    "en": "Oct"
+  },
+  "core.calendar.month.11": {
+    "fr": "nov.",
+    "en": "Nov"
+  },
+  "core.calendar.month.12": {
+    "fr": "déc.",
+    "en": "Dec"
+  },
+  "core.calendar.month.2": {
+    "fr": "févr.",
+    "en": "Feb"
+  },
+  "core.calendar.month.3": {
+    "fr": "mars",
+    "en": "Mar"
+  },
+  "core.calendar.month.4": {
+    "fr": "avr.",
+    "en": "Apr"
+  },
+  "core.calendar.month.5": {
+    "fr": "mai",
+    "en": "May"
+  },
+  "core.calendar.month.6": {
+    "fr": "juin",
+    "en": "Jun"
+  },
+  "core.calendar.month.7": {
+    "fr": "juil.",
+    "en": "Jul"
+  },
+  "core.calendar.month.8": {
+    "fr": "août",
+    "en": "Aug"
+  },
+  "core.calendar.month.9": {
+    "fr": "sept.",
+    "en": "Sep"
+  },
+  "core.calendar.monthly_on_day": {
+    "fr": "{every} le {day}",
+    "en": "{every} on day {day}"
+  },
+  "core.calendar.monthly_on_weekday": {
+    "fr": "{every} le {index} {weekday}",
+    "en": "{every} on the {index} {weekday}"
+  },
+  "core.calendar.only_the_organizer_edits_the_series": {
+    "fr": "Seul l’organisateur peut modifier la série.",
+    "en": "Only the organizer can edit the series."
+  },
+  "core.calendar.series_ends_before_it_starts": {
+    "fr": "La série se termine avant de commencer.",
+    "en": "The series ends before it starts."
+  },
+  "core.calendar.until": {
+    "fr": "{text}, jusqu’au {date}",
+    "en": "{text}, until {date}"
+  },
+  "core.calendar.week_index.0": {
+    "fr": "premier",
+    "en": "first"
+  },
+  "core.calendar.week_index.1": {
+    "fr": "deuxième",
+    "en": "second"
+  },
+  "core.calendar.week_index.2": {
+    "fr": "troisième",
+    "en": "third"
+  },
+  "core.calendar.week_index.3": {
+    "fr": "quatrième",
+    "en": "fourth"
+  },
+  "core.calendar.week_index.4": {
+    "fr": "dernier",
+    "en": "last"
+  },
+  "core.calendar.weekday.0": {
+    "fr": "dimanche",
+    "en": "Sunday"
+  },
+  "core.calendar.weekday.1": {
+    "fr": "lundi",
+    "en": "Monday"
+  },
+  "core.calendar.weekday.2": {
+    "fr": "mardi",
+    "en": "Tuesday"
+  },
+  "core.calendar.weekday.3": {
+    "fr": "mercredi",
+    "en": "Wednesday"
+  },
+  "core.calendar.weekday.4": {
+    "fr": "jeudi",
+    "en": "Thursday"
+  },
+  "core.calendar.weekday.5": {
+    "fr": "vendredi",
+    "en": "Friday"
+  },
+  "core.calendar.weekday.6": {
+    "fr": "samedi",
+    "en": "Saturday"
+  },
+  "core.calendar.weekly_on": {
+    "fr": "{every} le {days}",
+    "en": "{every} on {days}"
+  },
+  "core.calendar.yearly_on": {
+    "fr": "Tous les ans le {day} {month}",
+    "en": "Every year on {month} {day}"
+  },
+  "core.calendar.yearly_on_weekday": {
+    "fr": "Tous les ans le {index} {weekday} de {month}",
+    "en": "Every year on the {index} {weekday} of {month}"
+  },
+  "core.call.a_call_is_already_in_progress": {
+    "fr": "Un appel est déjà en cours.",
+    "en": "A call is already in progress."
+  },
+  "core.call.chat": {
+    "fr": "Discussion",
+    "en": "Chat"
+  },
+  "core.call.chat_not_found": {
+    "fr": "Discussion introuvable.",
+    "en": "Chat not found."
+  },
+  "core.call.connecting": {
+    "fr": "Connexion…",
+    "en": "Connecting…"
+  },
+  "core.call.connecting_audio": {
+    "fr": "Connexion audio…",
+    "en": "Connecting audio…"
+  },
+  "core.call.could_not_prepare_the_echo_bot": {
+    "fr": "Impossible de préparer la discussion Echo Bot : {error}",
+    "en": "Could not prepare the Echo Bot chat: {error}"
+  },
+  "core.call.ending_call": {
+    "fr": "Fin de l’appel…",
+    "en": "Ending call…"
+  },
+  "core.call.in_call": {
+    "fr": "En communication",
+    "en": "In call"
+  },
+  "core.call.in_the_lobby_an_organizer_must": {
+    "fr": "Dans la salle d’attente : un organisateur doit vous admettre.",
+    "en": "In the lobby: an organizer must admit you."
+  },
+  "core.call.incoming_call": {
+    "fr": "Appel entrant…",
+    "en": "Incoming call…"
+  },
+  "core.call.invalid_id_to_call_8_orgid": {
+    "fr": "Identifiant à appeler invalide (8:orgid:…).",
+    "en": "Invalid ID to call (8:orgid:…)."
+  },
+  "core.call.meet_meeting_links_are_not_supported": {
+    "fr": "Les liens de réunion /meet/ ne sont pas encore pris en charge.",
+    "en": "/meet/ meeting links are not supported yet."
+  },
+  "core.call.meeting": {
+    "fr": "Réunion",
+    "en": "Meeting"
+  },
+  "core.call.no_one_to_call_in_this": {
+    "fr": "Personne à appeler dans cette discussion.",
+    "en": "No one to call in this chat."
+  },
+  "core.call.preparing_audio": {
+    "fr": "Préparation de l’audio…",
+    "en": "Preparing audio…"
+  },
+  "core.call.ringing": {
+    "fr": "Ça sonne…",
+    "en": "Ringing…"
+  },
+  "core.call.test_call": {
+    "fr": "Appel de test",
+    "en": "Test call"
+  },
+  "core.call.the_calls_channel_is_not_ready": {
+    "fr": "Le canal d’appels n’est pas encore prêt : réessayez dans un instant.",
+    "en": "The calls channel is not ready yet: try again in a moment."
+  },
+  "core.call.this_chat_is_not_linked_to": {
+    "fr": "Cette discussion n’est pas liée à une réunion.",
+    "en": "This chat is not linked to a meeting."
+  },
+  "core.call.this_is_a_meeting_chat_use": {
+    "fr": "C’est une discussion de réunion : utilisez « Rejoindre ».",
+    "en": "This is a meeting chat: use “Join”."
+  },
+  "core.call.this_meeting_may_be_recorded_or": {
+    "fr": "Cette réunion peut être enregistrée ou transcrite : en restant, vous l’acceptez.",
+    "en": "This meeting may be recorded or transcribed: by staying, you consent."
+  },
+  "core.call.too_many_participants_for_a_group": {
+    "fr": "Trop de participants pour un appel de groupe ({MAX_GROUP_CALL} au maximum) : créez une réunion.",
+    "en": "Too many participants for a group call ({MAX_GROUP_CALL} at most): create a meeting."
+  },
+  "core.call.unknown_caller": {
+    "fr": "Correspondant inconnu",
+    "en": "Unknown caller"
+  },
+  "core.call.unrecognized_teams_meeting_link": {
+    "fr": "Lien de réunion Teams non reconnu.",
+    "en": "Unrecognized Teams meeting link."
+  },
+  "core.calls.calls_channel_stopped": {
+    "fr": "Canal d’appels arrêté : {reason}",
+    "en": "Calls channel stopped: {reason}"
+  },
+  "core.calls.connected_registering": {
+    "fr": "Connecté, enregistrement…",
+    "en": "Connected, registering…"
+  },
+  "core.calls.connecting_to_the_calls_channel": {
+    "fr": "Connexion au canal d’appels…",
+    "en": "Connecting to the calls channel…"
+  },
+  "core.calls.group_call": {
+    "fr": "Appel de groupe",
+    "en": "Group call"
+  },
+  "core.calls.ready_to_receive_calls": {
+    "fr": "Prêt à recevoir les appels",
+    "en": "Ready to receive calls"
+  },
+  "core.calls.registration_refused": {
+    "fr": "Enregistrement refusé : {reason}",
+    "en": "Registration refused: {reason}"
+  },
+  "core.calls.retrying_in_s": {
+    "fr": "{reason} Nouvel essai dans {seconds} s.",
+    "en": "{reason} Retrying in {seconds} s."
+  },
+  "core.card_actions.bot_error": {
+    "fr": "Le bot a répondu : {error}",
+    "en": "The bot answered: {error}"
+  },
+  "core.card_actions.bot_refused": {
+    "fr": "Le bot n’a pas pu traiter cette action.",
+    "en": "The bot couldn't handle this action."
+  },
+  "core.card_actions.failed": {
+    "fr": "Action non envoyée : {error}",
+    "en": "Action not sent: {error}"
+  },
+  "core.card_actions.fill_required": {
+    "fr": "Remplissez les champs obligatoires.",
+    "en": "Fill in the required fields."
+  },
+  "core.card_actions.sent": {
+    "fr": "Envoyé.",
+    "en": "Sent."
+  },
+  "core.cards.card": {
+    "fr": "Carte",
+    "en": "Card"
+  },
+  "core.cards.card_image": {
+    "fr": "Image de la carte",
+    "en": "Card image"
+  },
+  "core.cards.card_not_supported_by_the_app": {
+    "fr": "Carte non prise en charge par l’application.",
+    "en": "Card not supported by the app."
+  },
+  "core.cards.text": {
+    "fr": "{title} : {value}",
+    "en": "{title}: {value}"
+  },
+  "core.chat_admin.add_failed": {
+    "fr": "Impossible d’ajouter ces personnes : {error}",
+    "en": "Couldn't add these people: {error}"
+  },
+  "core.chat_admin.hide_failed": {
+    "fr": "Impossible de masquer ou d’afficher la discussion : {error}",
+    "en": "Couldn't hide or show the chat: {error}"
+  },
+  "core.chat_admin.leave_failed": {
+    "fr": "Impossible de quitter la discussion : {error}",
+    "en": "Couldn't leave the chat: {error}"
+  },
+  "core.chat_admin.left": {
+    "fr": "Vous avez quitté la discussion.",
+    "en": "You left the chat."
+  },
+  "core.chat_admin.name_removed": {
+    "fr": "Le nom de la discussion a été supprimé.",
+    "en": "The chat name was removed."
+  },
+  "core.chat_admin.pin_failed": {
+    "fr": "Impossible d’épingler ou de désépingler : {error}",
+    "en": "Couldn't pin or unpin: {error}"
+  },
+  "core.chat_admin.pin_limit": {
+    "fr": "Vous pouvez épingler {count} discussions au plus.",
+    "en": "You can pin up to {count} chats."
+  },
+  "core.chat_admin.remove_failed": {
+    "fr": "Impossible de retirer cette personne : {error}",
+    "en": "Couldn't remove this person: {error}"
+  },
+  "core.chat_admin.rename_failed": {
+    "fr": "Impossible de renommer la discussion : {error}",
+    "en": "Couldn't rename the chat: {error}"
+  },
+  "core.chat_admin.renamed": {
+    "fr": "Discussion renommée « {title} ».",
+    "en": "Chat renamed “{title}”."
+  },
+  "core.chat_admin.unread_failed": {
+    "fr": "Impossible de changer l’état de lecture : {error}",
+    "en": "Couldn't change the read state: {error}"
+  },
+  "core.conversation.preview_memory_full_open_another_chat": {
+    "fr": "Mémoire d’aperçu pleine. Ouvrez une autre discussion pour la libérer.",
+    "en": "Preview memory full. Open another chat to free it."
+  },
+  "core.conversation.the_reaction_could_not_be_saved": {
+    "fr": "La réaction n’a pas pu être enregistrée : {error}",
+    "en": "The reaction could not be saved: {error}"
+  },
+  "core.conversations.cannot_reach_the_participants_service": {
+    "fr": "Connexion au service des participants impossible",
+    "en": "Cannot reach the participants service"
+  },
+  "core.conversations.http": {
+    "fr": "{endpoint} : HTTP {status}",
+    "en": "{endpoint}: HTTP {status}"
+  },
+  "core.conversations.incompatible_format_at_field": {
+    "fr": "{endpoint} : format incompatible au champ {path}",
+    "en": "{endpoint}: incompatible format at field {path}"
+  },
+  "core.conversations.incompatible_json_format": {
+    "fr": "{endpoint} : format JSON incompatible",
+    "en": "{endpoint}: incompatible JSON format"
+  },
+  "core.conversations.incomplete_participants_for_1_chat_names": {
+    "fr": "Participants incomplets pour 1 discussion. {reasons}. Les noms déjà disponibles sont conservés. Actualisez pour réessayer.",
+    "en": "Incomplete participants for 1 chat. {reasons}. Names already known are kept. Refresh to try again."
+  },
+  "core.conversations.incomplete_participants_for_chats_names_already": {
+    "fr": "Participants incomplets pour {failures} discussions. {reasons}. Les noms déjà disponibles sont conservés. Actualisez pour réessayer.",
+    "en": "Incomplete participants for {failures} chats. {reasons}. Names already known are kept. Refresh to try again."
+  },
+  "core.conversations.loading_the_participants_timed_out": {
+    "fr": "Délai de chargement des participants dépassé",
+    "en": "Loading the participants timed out"
+  },
+  "core.conversations.participants_authentication_or_paging_refused": {
+    "fr": "Authentification ou pagination des participants refusée",
+    "en": "Participants authentication or paging refused"
+  },
+  "core.conversations.some_names_are_not_available_in": {
+    "fr": "Certains noms ne sont pas disponibles dans l’annuaire : {error}.",
+    "en": "Some names are not available in the directory: {error}."
+  },
+  "core.conversations.teams_is_limiting_requests_http_429": {
+    "fr": "Teams limite les requêtes (HTTP 429), reprise dans {retry_after_secs} s",
+    "en": "Teams is limiting requests (HTTP 429), retrying in {retry_after_secs} s"
+  },
+  "core.conversations.text": {
+    "fr": " ; ",
+    "en": "; "
+  },
+  "core.conversations.the_service_returned_no_participants": {
+    "fr": "Le service n’a renvoyé aucun participant",
+    "en": "The service returned no participants"
+  },
+  "core.files.b": {
+    "fr": "{bytes} o",
+    "en": "{bytes} B"
+  },
+  "core.files.channel": {
+    "fr": "Canal",
+    "en": "Channel"
+  },
+  "core.files.could_not_share": {
+    "fr": "partage de « {name} » impossible : {error}",
+    "en": "could not share “{name}”: {error}"
+  },
+  "core.files.download_failed": {
+    "fr": "Téléchargement impossible : {error}",
+    "en": "Download failed: {error}"
+  },
+  "core.files.downloaded": {
+    "fr": "« {path} » est téléchargé.",
+    "en": "“{path}” downloaded."
+  },
+  "core.files.file": {
+    "fr": "FIC",
+    "en": "FILE"
+  },
+  "core.files.file_2": {
+    "fr": "Fichier",
+    "en": "File"
+  },
+  "core.files.folder": {
+    "fr": "DOSSIER",
+    "en": "FOLDER"
+  },
+  "core.files.gb": {
+    "fr": "{size} Go",
+    "en": "{size} GB"
+  },
+  "core.files.is_not_a_file_folders_cannot": {
+    "fr": "« {path} » n’est pas un fichier : les dossiers ne peuvent pas être joints.",
+    "en": "“{path}” is not a file: folders cannot be attached."
+  },
+  "core.files.item_count.one": {
+    "fr": "{n} élément",
+    "en": "{n} item"
+  },
+  "core.files.item_count.other": {
+    "fr": "{n} éléments",
+    "en": "{n} items"
+  },
+  "core.files.kb": {
+    "fr": "{size} Ko",
+    "en": "{size} KB"
+  },
+  "core.files.mb": {
+    "fr": "{size} Mo",
+    "en": "{size} MB"
+  },
+  "core.files.my_files": {
+    "fr": "Mes fichiers",
+    "en": "My files"
+  },
+  "core.files.no_download_link": {
+    "fr": "Aucun lien de téléchargement.",
+    "en": "No download link."
+  },
+  "core.files.onedrive_not_found": {
+    "fr": "OneDrive introuvable : {error}",
+    "en": "OneDrive not found: {error}"
+  },
+  "core.files.please_wait_files_are_still_uploading": {
+    "fr": "Patientez : les fichiers sont encore en cours d’envoi.",
+    "en": "Please wait: files are still uploading."
+  },
+  "core.files.recent": {
+    "fr": "Récents",
+    "en": "Recent"
+  },
+  "core.files.remove_the_failed_files_before_sending": {
+    "fr": "Retirez les fichiers en échec avant d’envoyer.",
+    "en": "Remove the failed files before sending."
+  },
+  "core.files.results_for": {
+    "fr": "Résultats pour « {query} »",
+    "en": "Results for “{query}”"
+  },
+  "core.files.shared_by": {
+    "fr": "Partagé par {sender_name}",
+    "en": "Shared by {sender_name}"
+  },
+  "core.files.shared_by_2": {
+    "fr": "Partagé par {name}",
+    "en": "Shared by {name}"
+  },
+  "core.files.shared_file": {
+    "fr": "Fichier partagé",
+    "en": "Shared file"
+  },
+  "core.files.shared_with_me": {
+    "fr": "Partagés avec moi",
+    "en": "Shared with me"
+  },
+  "core.files.this_channel_s_sharepoint_folder_is": {
+    "fr": "Le dossier SharePoint de ce canal n’est pas encore connu. Ouvrez le canal dans Teams Web pour le provisionner.",
+    "en": "This channel’s SharePoint folder is not known yet. Open the channel in Teams on the web to provision it."
+  },
+  "core.files.this_file_cannot_be_downloaded": {
+    "fr": "Ce fichier ne peut pas être téléchargé.",
+    "en": "This file cannot be downloaded."
+  },
+  "core.files.this_file_has_no_link_to": {
+    "fr": "Ce fichier n’a pas de lien à ouvrir.",
+    "en": "This file has no link to open."
+  },
+  "core.gifs.gif": {
+    "fr": "GIF",
+    "en": "GIF"
+  },
+  "core.gifs.gif_image": {
+    "fr": "{title} (image GIF)",
+    "en": "{title} (GIF Image)"
+  },
+  "core.gifs.search_failed": {
+    "fr": "Recherche de GIF impossible : {error}",
+    "en": "GIF search failed: {error}"
+  },
+  "core.gifs.send_failed": {
+    "fr": "Impossible d’envoyer : {error}",
+    "en": "Couldn't send: {error}"
+  },
+  "core.html.m_d_h_m": {
+    "fr": "%d/%m %H:%M",
+    "en": "%m/%d %H:%M"
+  },
+  "core.html.shared_image": {
+    "fr": "Image partagée",
+    "en": "Shared image"
+  },
+  "core.me.date_format": {
+    "fr": "%d/%m/%Y",
+    "en": "%m/%d/%Y"
+  },
+  "core.me.friday": {
+    "fr": "ven.",
+    "en": "Fri"
+  },
+  "core.me.monday": {
+    "fr": "lun.",
+    "en": "Mon"
+  },
+  "core.me.replies_end_before_start": {
+    "fr": "La fin doit venir après le début.",
+    "en": "The end must come after the start."
+  },
+  "core.me.replies_need_a_message": {
+    "fr": "Écrivez le message envoyé à vos collègues.",
+    "en": "Write the message your colleagues will get."
+  },
+  "core.me.replies_not_loaded": {
+    "fr": "Réponses automatiques illisibles : {error}",
+    "en": "Couldn't read automatic replies: {error}"
+  },
+  "core.me.replies_not_saved": {
+    "fr": "Réponses automatiques non enregistrées : {error}",
+    "en": "Automatic replies not saved: {error}"
+  },
+  "core.me.saturday": {
+    "fr": "sam.",
+    "en": "Sat"
+  },
+  "core.me.status_not_saved": {
+    "fr": "Statut non enregistré : {error}",
+    "en": "Status not saved: {error}"
+  },
+  "core.me.sunday": {
+    "fr": "dim.",
+    "en": "Sun"
+  },
+  "core.me.thursday": {
+    "fr": "jeu.",
+    "en": "Thu"
+  },
+  "core.me.tuesday": {
+    "fr": "mar.",
+    "en": "Tue"
+  },
+  "core.me.until": {
+    "fr": "Jusqu’à {when}",
+    "en": "Until {when}"
+  },
+  "core.me.wednesday": {
+    "fr": "mer.",
+    "en": "Wed"
+  },
+  "core.media.image_decoding_interrupted": {
+    "fr": "Décodage d’image interrompu.",
+    "en": "Image decoding interrupted."
+  },
+  "core.media.image_too_large_to_preview": {
+    "fr": "Dimensions de l’image trop grandes pour l’aperçu.",
+    "en": "Image too large to preview."
+  },
+  "core.media.invalid_image_data": {
+    "fr": "Données d’image invalides.",
+    "en": "Invalid image data."
+  },
+  "core.media.invalid_image_or_unsupported_format": {
+    "fr": "Image invalide ou format non pris en charge.",
+    "en": "Invalid image or unsupported format."
+  },
+  "core.media.the_image_cannot_be_decoded": {
+    "fr": "L’image ne peut pas être décodée.",
+    "en": "The image cannot be decoded."
+  },
+  "core.media.unknown_image_format": {
+    "fr": "Format d’image inconnu.",
+    "en": "Unknown image format."
+  },
+  "core.media.unsupported_embedded_image_format": {
+    "fr": "Format d’image intégré non pris en charge.",
+    "en": "Unsupported embedded image format."
+  },
+  "core.notifications.activity": {
+    "fr": "Activité",
+    "en": "Activity"
+  },
+  "core.notifications.channel": {
+    "fr": "Canal",
+    "en": "Channel"
+  },
+  "core.notifications.channel_setting_not_saved": {
+    "fr": "Réglage du canal non enregistré : {error}",
+    "en": "Channel setting not saved: {error}"
+  },
+  "core.notifications.channel_settings_unavailable": {
+    "fr": "Réglages du canal indisponibles : {error}",
+    "en": "Channel settings unavailable: {error}"
+  },
+  "core.notifications.chat": {
+    "fr": "Discussion",
+    "en": "Chat"
+  },
+  "core.notifications.choose_an_end_date_in_the": {
+    "fr": "Choisissez une date de fin dans le futur.",
+    "en": "Choose an end date in the future."
+  },
+  "core.notifications.connected_registering": {
+    "fr": "Connecté, enregistrement…",
+    "en": "Connected, registering…"
+  },
+  "core.notifications.connecting_to_the_notifications_channel": {
+    "fr": "Connexion au canal de notifications…",
+    "en": "Connecting to the notifications channel…"
+  },
+  "core.notifications.could_not_change_following_the_post": {
+    "fr": "Suivi de la publication non modifié : {error}",
+    "en": "Could not change following the post: {error}"
+  },
+  "core.notifications.could_not_mark_the_activity_feed": {
+    "fr": "Le flux d’activité n’a pas pu être marqué comme lu : {error}",
+    "en": "Could not mark the activity feed as read: {error}"
+  },
+  "core.notifications.mentioned_you": {
+    "fr": "Vous a mentionné",
+    "en": "Mentioned you"
+  },
+  "core.notifications.new_message": {
+    "fr": "Nouveau message",
+    "en": "New message"
+  },
+  "core.notifications.notification_setting_not_saved": {
+    "fr": "Réglage de notification non enregistré : {error}",
+    "en": "Notification setting not saved: {error}"
+  },
+  "core.notifications.notifications_are_working": {
+    "fr": "Les notifications fonctionnent.",
+    "en": "Notifications are working."
+  },
+  "core.notifications.real_time_notifications_active": {
+    "fr": "Notifications en temps réel actives",
+    "en": "Real-time notifications active"
+  },
+  "core.notifications.real_time_stopped_refreshing_periodically": {
+    "fr": "Temps réel arrêté : {reason}. Actualisation périodique.",
+    "en": "Real time stopped: {reason}. Refreshing periodically."
+  },
+  "core.notifications.registration_refused": {
+    "fr": "Enregistrement refusé : {reason}",
+    "en": "Registration refused: {reason}"
+  },
+  "core.notifications.reply_not_sent": {
+    "fr": "Réponse non envoyée : {error}",
+    "en": "Reply not sent: {error}"
+  },
+  "core.notifications.retrying_in_s": {
+    "fr": "{reason} Nouvel essai dans {seconds} s.",
+    "en": "{reason} Retrying in {seconds} s."
+  },
+  "core.notifications.setting_not_saved": {
+    "fr": "Réglage non enregistré : {error}",
+    "en": "Setting not saved: {error}"
+  },
+  "core.notifications.someone": {
+    "fr": "Quelqu’un",
+    "en": "Someone"
+  },
+  "core.notifications.text": {
+    "fr": "{label} : {preview}",
+    "en": "{label}: {preview}"
+  },
+  "core.notifications.the_meeting_has_started": {
+    "fr": "La réunion a commencé.",
+    "en": "The meeting has started."
+  },
+  "core.notify_rules.chat_messages": {
+    "fr": "Messages de discussion",
+    "en": "Chat messages"
+  },
+  "core.notify_rules.everyone_mentions": {
+    "fr": "Mentions de tout le monde",
+    "en": "Everyone mentions"
+  },
+  "core.notify_rules.likes_and_reactions": {
+    "fr": "J’aime et réactions",
+    "en": "Likes and reactions"
+  },
+  "core.notify_rules.meeting_started": {
+    "fr": "Début d’une réunion",
+    "en": "Meeting started"
+  },
+  "core.notify_rules.personal_mentions": {
+    "fr": "@mentions personnelles",
+    "en": "Personal @mentions"
+  },
+  "core.notify_rules.posts_in_shown_channels": {
+    "fr": "Publications des canaux affichés",
+    "en": "Posts in shown channels"
+  },
+  "core.notify_rules.replies_in_followed_threads": {
+    "fr": "Réponses dans les fils suivis",
+    "en": "Replies in followed threads"
+  },
+  "core.notify_rules.replies_to_my_messages_and_threads": {
+    "fr": "Réponses à mes messages et fils",
+    "en": "Replies to my messages and threads"
+  },
+  "core.notify_rules.tag_mentions": {
+    "fr": "Mentions de balise",
+    "en": "Tag mentions"
+  },
+  "core.notify_rules.team_and_channel_mentions": {
+    "fr": "Mentions d’équipe et de canal",
+    "en": "Team and channel mentions"
+  },
+  "core.receipts.and_are_typing": {
+    "fr": "{first} et {second} sont en train d’écrire…",
+    "en": "{first} and {second} are typing…"
+  },
+  "core.receipts.and_are_typing_2": {
+    "fr": "{first}, {second} et {third} sont en train d’écrire…",
+    "en": "{first}, {second} and {third} are typing…"
+  },
+  "core.receipts.and_others_are_typing": {
+    "fr": "{first}, {second} et {rest} autres sont en train d’écrire…",
+    "en": "{first}, {second} and {rest} others are typing…"
+  },
+  "core.receipts.is_typing": {
+    "fr": "{name} est en train d’écrire…",
+    "en": "{name} is typing…"
+  },
+  "core.receipts.read_receipts_not_changed": {
+    "fr": "Confirmations de lecture non modifiées : {error}",
+    "en": "Read receipts not changed: {error}"
+  },
+  "core.receipts.someone": {
+    "fr": "Quelqu’un",
+    "en": "Someone"
+  },
+  "core.search.channel_not_in_your_teams": {
+    "fr": "Ce canal ne fait pas partie de vos équipes.",
+    "en": "This channel isn't in your teams."
+  },
+  "core.search.failed": {
+    "fr": "Recherche impossible : {error}",
+    "en": "Search failed: {error}"
+  },
+  "core.session.could_not_open_the_browser_copy": {
+    "fr": "Impossible d’ouvrir le navigateur. Copiez le lien de connexion et ouvrez-le manuellement.",
+    "en": "Could not open the browser. Copy the sign-in link and open it manually."
+  },
+  "core.session.could_not_read_the_session_from": {
+    "fr": "Impossible de lire la session dans le Trousseau macOS.",
+    "en": "Could not read the session from the macOS Keychain."
+  },
+  "core.session.could_not_remove_the_session_from": {
+    "fr": "Impossible d’effacer la session du Trousseau macOS.",
+    "en": "Could not remove the session from the macOS Keychain."
+  },
+  "core.session.could_not_restore_the_session": {
+    "fr": "Restauration de session impossible : {error}",
+    "en": "Could not restore the session: {error}"
+  },
+  "core.session.could_not_save_the_session_to": {
+    "fr": "Impossible de sauvegarder la session dans le Trousseau macOS.",
+    "en": "Could not save the session to the macOS Keychain."
+  },
+  "core.session.saving_the_session_is_currently_only": {
+    "fr": "La sauvegarde de session est actuellement disponible sur macOS.",
+    "en": "Saving the session is currently only available on macOS."
+  },
+  "core.session.the_macos_keychain_is_unavailable": {
+    "fr": "Le Trousseau macOS est indisponible.",
+    "en": "The macOS Keychain is unavailable."
+  },
+  "core.session.your_microsoft_session_has_expired_please": {
+    "fr": "La session Microsoft a expiré. Reconnectez-vous.",
+    "en": "Your Microsoft session has expired. Please sign in again."
+  },
+  "core.team_list.team_order_not_saved": {
+    "fr": "Ordre des équipes non enregistré : {error}",
+    "en": "Team order not saved: {error}"
+  },
+  "core.team_list.visibility_not_saved": {
+    "fr": "Visibilité non enregistrée : {error}",
+    "en": "Visibility not saved: {error}"
+  },
+  "core.teams_admin.channel_created": {
+    "fr": "Canal créé.",
+    "en": "Channel created."
+  },
+  "core.teams_admin.channel_name_characters": {
+    "fr": "Le nom d’un canal ne peut pas contenir ~ # % & * { } + / \\ : < > ? | ' \", deux points de suite, commencer par _ ou . ni finir par un point.",
+    "en": "A channel name can't contain ~ # % & * { } + / \\ : < > ? | ' \" or two dots in a row, start with _ or . or end with a dot."
+  },
+  "core.teams_admin.channel_name_reserved": {
+    "fr": "Ce nom est réservé.",
+    "en": "This name is reserved."
+  },
+  "core.teams_admin.channel_name_taken": {
+    "fr": "Un canal de cette équipe porte déjà ce nom.",
+    "en": "A channel of this team already has this name."
+  },
+  "core.teams_admin.code_failed": {
+    "fr": "Ce code ne permet pas de rejoindre une équipe : {error}",
+    "en": "This code didn't let you join a team: {error}"
+  },
+  "core.teams_admin.create_channel_failed": {
+    "fr": "Impossible de créer le canal : {error}",
+    "en": "Couldn't create the channel: {error}"
+  },
+  "core.teams_admin.create_team_failed": {
+    "fr": "Impossible de créer l’équipe : {error}",
+    "en": "Couldn't create the team: {error}"
+  },
+  "core.teams_admin.description_too_long": {
+    "fr": "La description ne peut pas dépasser {max} octets.",
+    "en": "The description can't be longer than {max} bytes."
+  },
+  "core.teams_admin.gallery_failed": {
+    "fr": "Impossible de charger les équipes : {error}",
+    "en": "Couldn't load teams: {error}"
+  },
+  "core.teams_admin.join_code_failed": {
+    "fr": "Code de l’équipe indisponible : {error}",
+    "en": "Team code unavailable: {error}"
+  },
+  "core.teams_admin.join_failed": {
+    "fr": "Impossible de rejoindre l’équipe : {error}",
+    "en": "Couldn't join the team: {error}"
+  },
+  "core.teams_admin.joined": {
+    "fr": "Vous avez rejoint l’équipe.",
+    "en": "You joined the team."
+  },
+  "core.teams_admin.last_owner": {
+    "fr": "Vous êtes le dernier propriétaire de cette équipe : nommez un autre propriétaire avant de la quitter.",
+    "en": "You're the last owner of this team: make someone else an owner before you leave."
+  },
+  "core.teams_admin.last_private_channel_owner": {
+    "fr": "Vous êtes le dernier propriétaire d’un canal privé de cette équipe : nommez un autre propriétaire avant de la quitter.",
+    "en": "You're the last owner of a private channel in this team: make someone else an owner before you leave."
+  },
+  "core.teams_admin.leave_failed": {
+    "fr": "Impossible de quitter l’équipe : {error}",
+    "en": "Couldn't leave the team: {error}"
+  },
+  "core.teams_admin.left": {
+    "fr": "Vous avez quitté l’équipe.",
+    "en": "You left the team."
+  },
+  "core.teams_admin.name_required": {
+    "fr": "Indiquez un nom.",
+    "en": "Enter a name."
+  },
+  "core.teams_admin.name_too_long": {
+    "fr": "Le nom ne peut pas dépasser {max} caractères.",
+    "en": "The name can't be longer than {max} characters."
+  },
+  "core.teams_admin.no_group": {
+    "fr": "Teams n’a pas indiqué le groupe de cette équipe. Actualisez puis réessayez.",
+    "en": "Teams didn't give this team's group. Refresh and try again."
+  },
+  "core.teams_admin.no_url_in_name": {
+    "fr": "Le nom ne peut pas être une adresse web.",
+    "en": "The name can't be a web address."
+  },
+  "core.teams_admin.team_created": {
+    "fr": "Équipe créée.",
+    "en": "Team created."
+  },
+  "core.view.1_other": {
+    "fr": "1 autre",
+    "en": "1 other"
+  },
+  "core.view.app": {
+    "fr": "Application",
+    "en": "App"
+  },
+  "core.view.click_to_remove": {
+    "fr": " · Cliquer pour retirer",
+    "en": " · Click to remove"
+  },
+  "core.view.file": {
+    "fr": "FIC",
+    "en": "FILE"
+  },
+  "core.view.file_deleted": {
+    "fr": "Fichier supprimé",
+    "en": "File deleted"
+  },
+  "core.view.file_link_unavailable": {
+    "fr": "Lien du fichier indisponible",
+    "en": "File link unavailable"
+  },
+  "core.view.guest": {
+    "fr": "Invité",
+    "en": "Guest"
+  },
+  "core.view.loading_messages": {
+    "fr": "Chargement des messages…",
+    "en": "Loading messages…"
+  },
+  "core.view.loading_posts": {
+    "fr": "Chargement des publications…",
+    "en": "Loading posts…"
+  },
+  "core.view.m_d_y": {
+    "fr": "%d/%m/%Y",
+    "en": "%m/%d/%Y"
+  },
+  "core.view.member": {
+    "fr": "Membre",
+    "en": "Member"
+  },
+  "core.view.no_loaded_message_matches_the_search": {
+    "fr": "Aucun message chargé ne correspond à la recherche.",
+    "en": "No loaded message matches the search."
+  },
+  "core.view.no_loaded_post_matches_the_search": {
+    "fr": "Aucune publication chargée ne correspond à la recherche.",
+    "en": "No loaded post matches the search."
+  },
+  "core.view.no_messages_start_the_conversation": {
+    "fr": "Aucun message. Commencez la conversation.",
+    "en": "No messages. Start the conversation."
+  },
+  "core.view.no_posts_write_the_first_message": {
+    "fr": "Aucune publication. Écrivez le premier message de ce canal.",
+    "en": "No posts. Write the first message of this channel."
+  },
+  "core.view.no_replies_start_the_discussion": {
+    "fr": "Aucune réponse. Lancez la discussion.",
+    "en": "No replies. Start the discussion."
+  },
+  "core.view.others": {
+    "fr": "{missing} autres",
+    "en": "{missing} others"
+  },
+  "core.view.owner": {
+    "fr": "Propriétaire",
+    "en": "Owner"
+  },
+  "core.view.shared_file": {
+    "fr": "Fichier partagé",
+    "en": "Shared file"
+  },
+  "core.view.start_the_conversation": {
+    "fr": "Commencer la conversation",
+    "en": "Start the conversation"
+  },
+  "core.view.the_posts_could_not_be_loaded": {
+    "fr": "Les publications n’ont pas pu être chargées.",
+    "en": "The posts could not be loaded."
+  },
+  "core.view.today": {
+    "fr": "Aujourd’hui",
+    "en": "Today"
+  },
+  "core.view.unknown_sender": {
+    "fr": "Expéditeur inconnu",
+    "en": "Unknown sender"
+  },
+  "core.view.you": {
+    "fr": "Vous : ",
+    "en": "You: "
+  },
+  "core.view.you_2": {
+    "fr": "Vous",
+    "en": "You"
+  },
+  "core.view.your_account": {
+    "fr": "Votre compte",
+    "en": "Your account"
+  },
+  "files.download.invalid_download_link": {
+    "fr": "Lien de téléchargement invalide.",
+    "en": "Invalid download link."
+  },
+  "files.download.invalid_file_link": {
+    "fr": "Lien de fichier invalide.",
+    "en": "Invalid file link."
+  },
+  "files.drive.rename_refused": {
+    "fr": "Renommage refusé.",
+    "en": "Rename refused."
+  },
+  "files.lib.access_denied": {
+    "fr": "Accès au fichier refusé.",
+    "en": "Access to the file was denied."
+  },
+  "files.lib.couldn_t_connect_to_the_file": {
+    "fr": "Connexion au service de fichiers impossible : {detail}",
+    "en": "Couldn't connect to the file service: {detail}"
+  },
+  "files.lib.couldn_t_read_the_local_file": {
+    "fr": "Fichier local illisible : {detail}",
+    "en": "Couldn't read the local file: {detail}"
+  },
+  "files.lib.file_locked": {
+    "fr": "Le fichier est verrouillé par un autre utilisateur.",
+    "en": "The file is locked by another user."
+  },
+  "files.lib.file_service_unavailable_http": {
+    "fr": "Service de fichiers indisponible (HTTP {status}).",
+    "en": "File service unavailable (HTTP {status})."
+  },
+  "files.lib.invalid_header": {
+    "fr": "En-tête invalide.",
+    "en": "Invalid header."
+  },
+  "files.lib.invalid_response_from_the_file_service": {
+    "fr": "Réponse du service de fichiers invalide.",
+    "en": "Invalid response from the file service."
+  },
+  "files.lib.invalid_sharepoint_url": {
+    "fr": "URL SharePoint invalide.",
+    "en": "Invalid SharePoint URL."
+  },
+  "files.lib.invalid_site": {
+    "fr": "Site invalide.",
+    "en": "Invalid site."
+  },
+  "files.lib.name_already_exists": {
+    "fr": "Un fichier porte déjà ce nom.",
+    "en": "A file with this name already exists."
+  },
+  "files.lib.not_found": {
+    "fr": "Fichier ou dossier introuvable.",
+    "en": "File or folder not found."
+  },
+  "files.lib.site_moved": {
+    "fr": "Le site SharePoint a changé d’adresse. Actualisez puis réessayez.",
+    "en": "The SharePoint site has moved. Refresh and try again."
+  },
+  "files.lib.storage_full": {
+    "fr": "Espace de stockage SharePoint plein.",
+    "en": "SharePoint storage is full."
+  },
+  "files.lib.the_file_service_is_throttled_try": {
+    "fr": "Service de fichiers limité. Réessayez dans {seconds} secondes.",
+    "en": "The file service is throttled. Try again in {seconds} seconds."
+  },
+  "files.lib.transfer_canceled": {
+    "fr": "Transfert annulé.",
+    "en": "Transfer canceled."
+  },
+  "files.lib.upload_in_progress": {
+    "fr": "Un envoi de ce fichier est déjà en cours.",
+    "en": "An upload of this file is already in progress."
+  },
+  "files.site.invalid_middle_tier_url": {
+    "fr": "URL du middle tier invalide.",
+    "en": "Invalid middle tier URL."
+  },
+  "files.substrate.invalid_conversation": {
+    "fr": "Conversation invalide.",
+    "en": "Invalid conversation."
+  },
+  "files.substrate.invalid_substrate_url": {
+    "fr": "URL Substrate invalide.",
+    "en": "Invalid Substrate URL."
+  },
+  "files.upload.file_name_is_too_long": {
+    "fr": "Nom de fichier trop long.",
+    "en": "File name is too long."
+  },
+  "files.upload.invalid_file_id": {
+    "fr": "Identifiant de fichier invalide.",
+    "en": "Invalid file ID."
+  },
+  "files.upload.unsupported_file_name": {
+    "fr": "Nom de fichier non pris en charge : {name}",
+    "en": "Unsupported file name: {name}"
+  },
+  "realtime.trouter.couldn_t_reach": {
+    "fr": "{service} injoignable : {without_url}",
+    "en": "Couldn't reach {service}: {without_url}"
+  },
+  "realtime.trouter.http": {
+    "fr": "{service} : HTTP {status}",
+    "en": "{service}: HTTP {status}"
+  },
+  "realtime.trouter.http_401": {
+    "fr": "{service} : HTTP 401",
+    "en": "{service}: HTTP 401"
+  },
+  "realtime.trouter.invalid_registrar_url": {
+    "fr": "URL registrar invalide.",
+    "en": "Invalid registrar URL."
+  },
+  "realtime.trouter.invalid_socket_io_url": {
+    "fr": "URL socket.io invalide.",
+    "en": "Invalid socket.io URL."
+  },
+  "realtime.trouter.invalid_websocket_url": {
+    "fr": "URL websocket invalide.",
+    "en": "Invalid websocket URL."
+  },
+  "realtime.trouter.offered_transports": {
+    "fr": "transports proposés : {transports}",
+    "en": "offered transports: {transports}"
+  },
+  "realtime.trouter.sending_ping": {
+    "fr": "Envoi du ping : {error}",
+    "en": "Sending ping: {error}"
+  },
+  "realtime.trouter.socket_io_handshake_refused": {
+    "fr": "Handshake socket.io refusé : {reason}.",
+    "en": "socket.io handshake refused: {reason}."
+  },
+  "realtime.trouter.token_refused_by_trouter_skypetoken_deprecated": {
+    "fr": "Jeton refusé par Trouter (skypetoken-deprecated).",
+    "en": "Token refused by Trouter (skypetoken-deprecated)."
+  },
+  "realtime.trouter.trouter_allocation_has_no_socket_io": {
+    "fr": "Allocation Trouter sans URL socket.io.",
+    "en": "Trouter allocation has no socket.io URL."
+  },
+  "realtime.trouter.trouter_allocation_has_no_surl": {
+    "fr": "Allocation Trouter sans surl.",
+    "en": "Trouter allocation has no surl."
+  },
+  "realtime.trouter.trouter_closed_the_connection": {
+    "fr": "Trouter a fermé la connexion.",
+    "en": "Trouter closed the connection."
+  },
+  "realtime.trouter.trouter_connection": {
+    "fr": "Connexion Trouter : {error}",
+    "en": "Trouter connection: {error}"
+  },
+  "realtime.trouter.trouter_didn_t_confirm_the_connection": {
+    "fr": "Trouter n’a pas confirmé la connexion.",
+    "en": "Trouter didn't confirm the connection."
+  },
+  "realtime.trouter.trouter_dropped_the_connection": {
+    "fr": "Trouter a coupé la connexion.",
+    "en": "Trouter dropped the connection."
+  },
+  "realtime.trouter.trouter_dropped_the_connection_2": {
+    "fr": "Trouter a coupé la connexion ({reason}).",
+    "en": "Trouter dropped the connection ({reason})."
+  },
+  "realtime.trouter.trouter_ping_got_no_response": {
+    "fr": "Ping Trouter sans réponse.",
+    "en": "Trouter ping got no response."
+  },
+  "realtime.trouter.trouter_requested_a_reconnection": {
+    "fr": "Reconnexion demandée par Trouter.",
+    "en": "Trouter requested a reconnection."
+  },
+  "realtime.trouter.trouter_send": {
+    "fr": "Envoi Trouter : {error}",
+    "en": "Trouter send: {error}"
+  },
+  "realtime.trouter.trouter_websocket": {
+    "fr": "Websocket Trouter : {error}",
+    "en": "Trouter websocket: {error}"
+  },
+  "realtime.trouter.unexpected_response_bytes_fields_starts_with": {
+    "fr": "réponse inattendue ({body} octets, {fields} champs, commence par {start})",
+    "en": "unexpected response ({body} bytes, {fields} fields, starts with {start})"
+  },
+  "realtime.trouter.unreadable_socket_io_handshake": {
+    "fr": "Handshake socket.io illisible.",
+    "en": "Unreadable socket.io handshake."
+  },
+  "realtime.trouter.unreadable_trouter_allocation": {
+    "fr": "Allocation Trouter illisible.",
+    "en": "Unreadable Trouter allocation."
+  },
+  "realtime.trouter.websocket_connection_timed_out": {
+    "fr": "Délai de connexion websocket dépassé.",
+    "en": "Websocket connection timed out."
+  },
+  "ui.activity_view.accept": {
+    "fr": "Accepter",
+    "en": "Accept"
+  },
+  "ui.activity_view.accepted": {
+    "fr": "Acceptée",
+    "en": "Accepted"
+  },
+  "ui.activity_view.activity": {
+    "fr": "Activité",
+    "en": "Activity"
+  },
+  "ui.activity_view.call": {
+    "fr": "Appeler",
+    "en": "Call"
+  },
+  "ui.activity_view.chat": {
+    "fr": "Conversation",
+    "en": "Chat"
+  },
+  "ui.activity_view.decline": {
+    "fr": "Refuser",
+    "en": "Decline"
+  },
+  "ui.activity_view.declined": {
+    "fr": "Refusée",
+    "en": "Declined"
+  },
+  "ui.activity_view.earlier_notifications": {
+    "fr": "Notifications précédentes",
+    "en": "Earlier notifications"
+  },
+  "ui.activity_view.join": {
+    "fr": "Rejoindre",
+    "en": "Join"
+  },
+  "ui.activity_view.loading": {
+    "fr": "Chargement…",
+    "en": "Loading…"
+  },
+  "ui.activity_view.loading_notifications": {
+    "fr": "Chargement des notifications…",
+    "en": "Loading notifications…"
+  },
+  "ui.activity_view.meeting_details_aren_t_available": {
+    "fr": "Les détails de la réunion ne sont pas disponibles.",
+    "en": "Meeting details aren’t available."
+  },
+  "ui.activity_view.no_notifications_to_show": {
+    "fr": "Aucune notification à afficher",
+    "en": "No notifications to show"
+  },
+  "ui.activity_view.no_response": {
+    "fr": "Aucune réponse",
+    "en": "No response"
+  },
+  "ui.activity_view.no_unread_notifications": {
+    "fr": "Aucune notification non lue",
+    "en": "No unread notifications"
+  },
+  "ui.activity_view.open_in_calendar": {
+    "fr": "Ouvrir dans le calendrier",
+    "en": "Open in calendar"
+  },
+  "ui.activity_view.optional": {
+    "fr": " · Facultatif",
+    "en": " · Optional"
+  },
+  "ui.activity_view.organizer": {
+    "fr": "Organisateur",
+    "en": "Organizer"
+  },
+  "ui.activity_view.recurring_meeting": {
+    "fr": "Réunion périodique",
+    "en": "Recurring meeting"
+  },
+  "ui.activity_view.response.accepted": {
+    "fr": "Acceptée",
+    "en": "Accepted"
+  },
+  "ui.activity_view.response.declined": {
+    "fr": "Refusée",
+    "en": "Declined"
+  },
+  "ui.activity_view.response.none": {
+    "fr": "Aucune réponse",
+    "en": "No response"
+  },
+  "ui.activity_view.response.organizer": {
+    "fr": "Organisateur",
+    "en": "Organizer"
+  },
+  "ui.activity_view.response.tentative": {
+    "fr": "Provisoire",
+    "en": "Tentative"
+  },
+  "ui.activity_view.rsvp": {
+    "fr": "Répondre",
+    "en": "RSVP"
+  },
+  "ui.activity_view.select_a_notification_to_open_it": {
+    "fr": "Sélectionnez une notification pour l’ouvrir. Les notifications lues restent dans l’historique.",
+    "en": "Select a notification to open it. Read notifications stay in your history."
+  },
+  "ui.activity_view.tentative": {
+    "fr": "Provisoire",
+    "en": "Tentative"
+  },
+  "ui.activity_view.this_meeting_has_been_canceled": {
+    "fr": "Cette réunion a été annulée.",
+    "en": "This meeting has been canceled."
+  },
+  "ui.activity_view.tracking": {
+    "fr": "Suivi",
+    "en": "Tracking"
+  },
+  "ui.activity_view.try_again": {
+    "fr": "Réessayer",
+    "en": "Try again"
+  },
+  "ui.activity_view.unread": {
+    "fr": "Non lue",
+    "en": "Unread"
+  },
+  "ui.activity_view.your_response": {
+    "fr": "Votre réponse : ",
+    "en": "Your response: "
+  },
+  "ui.app.activity": {
+    "fr": "Activité",
+    "en": "Activity"
+  },
+  "ui.app.appearance": {
+    "fr": "Apparence",
+    "en": "Appearance"
+  },
+  "ui.app.calendar": {
+    "fr": "Calendrier",
+    "en": "Calendar"
+  },
+  "ui.app.calls": {
+    "fr": "Appels",
+    "en": "Calls"
+  },
+  "ui.app.chat": {
+    "fr": "Discussion",
+    "en": "Chat"
+  },
+  "ui.app.files": {
+    "fr": "Fichiers",
+    "en": "Files"
+  },
+  "ui.app.go_to": {
+    "fr": "Aller à",
+    "en": "Go to"
+  },
+  "ui.app.new_chat": {
+    "fr": "Nouvelle discussion",
+    "en": "New chat"
+  },
+  "ui.app.next_chat": {
+    "fr": "Discussion suivante",
+    "en": "Next chat"
+  },
+  "ui.app.previous_chat": {
+    "fr": "Discussion précédente",
+    "en": "Previous chat"
+  },
+  "ui.app.refresh": {
+    "fr": "Actualiser",
+    "en": "Refresh"
+  },
+  "ui.app.teams": {
+    "fr": "Équipes",
+    "en": "Teams"
+  },
+  "ui.calendar_parts.accepted": {
+    "fr": "Accepté",
+    "en": "Accepted"
+  },
+  "ui.calendar_parts.add": {
+    "fr": "Ajouter",
+    "en": "Add"
+  },
+  "ui.calendar_parts.all_day": {
+    "fr": "Journée",
+    "en": "All day"
+  },
+  "ui.calendar_parts.at": {
+    "fr": " à {time}",
+    "en": " at {time}"
+  },
+  "ui.calendar_parts.attendees": {
+    "fr": "{attendeesCount} participants",
+    "en": "{attendeesCount} attendees"
+  },
+  "ui.calendar_parts.canceled": {
+    "fr": "Annulé",
+    "en": "Canceled"
+  },
+  "ui.calendar_parts.declined": {
+    "fr": "Refusé",
+    "en": "Declined"
+  },
+  "ui.calendar_parts.duration_hours": {
+    "fr": "{h} h",
+    "en": "{h}h"
+  },
+  "ui.calendar_parts.duration_hours_minutes": {
+    "fr": "{h} h {m}",
+    "en": "{h}h {m}m"
+  },
+  "ui.calendar_parts.in_min": {
+    "fr": "Dans {minutes} min",
+    "en": "In {minutes} min"
+  },
+  "ui.calendar_parts.join": {
+    "fr": "Rejoindre",
+    "en": "Join"
+  },
+  "ui.calendar_parts.meetings_total.one": {
+    "fr": "{n} réunion · {total}",
+    "en": "{n} meeting · {total}"
+  },
+  "ui.calendar_parts.meetings_total.other": {
+    "fr": "{n} réunions · {total}",
+    "en": "{n} meetings · {total}"
+  },
+  "ui.calendar_parts.next_meeting": {
+    "fr": "Prochaine réunion",
+    "en": "Next meeting"
+  },
+  "ui.calendar_parts.next_month": {
+    "fr": "Mois suivant",
+    "en": "Next month"
+  },
+  "ui.calendar_parts.no_title": {
+    "fr": "(Sans titre)",
+    "en": "(No title)"
+  },
+  "ui.calendar_parts.not_responded": {
+    "fr": "À répondre",
+    "en": "Not responded"
+  },
+  "ui.calendar_parts.nothing_else_in_this_period": {
+    "fr": "Rien d’autre sur cette période",
+    "en": "Nothing else in this period"
+  },
+  "ui.calendar_parts.nothing_planned": {
+    "fr": "Rien de prévu",
+    "en": "Nothing planned"
+  },
+  "ui.calendar_parts.now": {
+    "fr": "En cours",
+    "en": "Now"
+  },
+  "ui.calendar_parts.people": {
+    "fr": " · {attendeesCount} pers.",
+    "en": " · {attendeesCount} people"
+  },
+  "ui.calendar_parts.previous_month": {
+    "fr": "Mois précédent",
+    "en": "Previous month"
+  },
+  "ui.calendar_parts.starting_now": {
+    "fr": "Maintenant",
+    "en": "Starting now"
+  },
+  "ui.calendar_parts.teams_meeting": {
+    "fr": "Réunion Teams",
+    "en": "Teams meeting"
+  },
+  "ui.calendar_parts.tentative": {
+    "fr": "Provisoire",
+    "en": "Tentative"
+  },
+  "ui.calendar_parts.today": {
+    "fr": "Aujourd’hui · {date}",
+    "en": "Today · {date}"
+  },
+  "ui.calendar_parts.today_at": {
+    "fr": "Aujourd’hui à {time}",
+    "en": "Today at {time}"
+  },
+  "ui.calendar_parts.tomorrow": {
+    "fr": "Demain · {date}",
+    "en": "Tomorrow · {date}"
+  },
+  "ui.calendar_parts.tomorrow_at": {
+    "fr": "Demain à {time}",
+    "en": "Tomorrow at {time}"
+  },
+  "ui.calendar_screen.accept": {
+    "fr": "Accepter",
+    "en": "Accept"
+  },
+  "ui.calendar_screen.accepted": {
+    "fr": "Accepté",
+    "en": "Accepted"
+  },
+  "ui.calendar_screen.accepted_2": {
+    "fr": "Acceptée",
+    "en": "Accepted"
+  },
+  "ui.calendar_screen.add": {
+    "fr": "Ajouter",
+    "en": "Add"
+  },
+  "ui.calendar_screen.agenda": {
+    "fr": "Agenda",
+    "en": "Agenda"
+  },
+  "ui.calendar_screen.all_day": {
+    "fr": " · Journée entière",
+    "en": " · All day"
+  },
+  "ui.calendar_screen.all_day_2": {
+    "fr": "Journée entière",
+    "en": "All day"
+  },
+  "ui.calendar_screen.attendees": {
+    "fr": "Participants",
+    "en": "Attendees"
+  },
+  "ui.calendar_screen.calendar": {
+    "fr": "Calendrier",
+    "en": "Calendar"
+  },
+  "ui.calendar_screen.cancel_meeting": {
+    "fr": "Annuler la réunion",
+    "en": "Cancel meeting"
+  },
+  "ui.calendar_screen.cancel_the_meeting_and_notify_attendees": {
+    "fr": "Annuler la réunion et prévenir les participants ?",
+    "en": "Cancel the meeting and notify attendees?"
+  },
+  "ui.calendar_screen.canceled": {
+    "fr": "Annulé · ",
+    "en": "Canceled · "
+  },
+  "ui.calendar_screen.close": {
+    "fr": "Fermer",
+    "en": "Close"
+  },
+  "ui.calendar_screen.create": {
+    "fr": "Créer",
+    "en": "Create"
+  },
+  "ui.calendar_screen.custom": {
+    "fr": "Personnalisé",
+    "en": "Custom"
+  },
+  "ui.calendar_screen.daily": {
+    "fr": "Tous les jours",
+    "en": "Daily"
+  },
+  "ui.calendar_screen.day": {
+    "fr": "Jour",
+    "en": "Day"
+  },
+  "ui.calendar_screen.days": {
+    "fr": "jour(s)",
+    "en": "day(s)"
+  },
+  "ui.calendar_screen.decline": {
+    "fr": "Refuser",
+    "en": "Decline"
+  },
+  "ui.calendar_screen.declined": {
+    "fr": "Refusé",
+    "en": "Declined"
+  },
+  "ui.calendar_screen.declined_2": {
+    "fr": "Refusée",
+    "en": "Declined"
+  },
+  "ui.calendar_screen.delete": {
+    "fr": "Supprimer",
+    "en": "Delete"
+  },
+  "ui.calendar_screen.delete_from_my_calendar": {
+    "fr": "Supprimer de mon calendrier",
+    "en": "Delete from my calendar"
+  },
+  "ui.calendar_screen.delete_this_event_from_your_calendar": {
+    "fr": "Supprimer cet événement de votre calendrier ?",
+    "en": "Delete this event from your calendar?"
+  },
+  "ui.calendar_screen.description": {
+    "fr": "Description",
+    "en": "Description"
+  },
+  "ui.calendar_screen.details": {
+    "fr": "Détails",
+    "en": "Details"
+  },
+  "ui.calendar_screen.does_not_repeat": {
+    "fr": "Ne se répète pas",
+    "en": "Does not repeat"
+  },
+  "ui.calendar_screen.edit": {
+    "fr": "Modifier",
+    "en": "Edit"
+  },
+  "ui.calendar_screen.edit_event": {
+    "fr": "Modifier l’événement",
+    "en": "Edit event"
+  },
+  "ui.calendar_screen.end": {
+    "fr": "Fin",
+    "en": "End"
+  },
+  "ui.calendar_screen.end_of_series": {
+    "fr": "Fin de la série",
+    "en": "End of series"
+  },
+  "ui.calendar_screen.ends_on_a_date": {
+    "fr": "Se termine à une date",
+    "en": "Ends on a date"
+  },
+  "ui.calendar_screen.every_n": {
+    "fr": "Tou(te)s les {count}",
+    "en": "Every {count}"
+  },
+  "ui.calendar_screen.every_weekday": {
+    "fr": "Tous les jours ouvrés (lun. - ven.)",
+    "en": "Every weekday (Mon - Fri)"
+  },
+  "ui.calendar_screen.hour_format": {
+    "fr": "HH:00",
+    "en": "h a"
+  },
+  "ui.calendar_screen.join_meeting": {
+    "fr": "Rejoindre la réunion",
+    "en": "Join meeting"
+  },
+  "ui.calendar_screen.loading_event": {
+    "fr": "Chargement de l’événement…",
+    "en": "Loading event…"
+  },
+  "ui.calendar_screen.location": {
+    "fr": "Lieu",
+    "en": "Location"
+  },
+  "ui.calendar_screen.meeting_canceled": {
+    "fr": "Réunion annulée",
+    "en": "Meeting canceled"
+  },
+  "ui.calendar_screen.month": {
+    "fr": "Mois",
+    "en": "Month"
+  },
+  "ui.calendar_screen.monthly": {
+    "fr": "Tous les mois (même jour de la semaine)",
+    "en": "Monthly (same weekday)"
+  },
+  "ui.calendar_screen.months": {
+    "fr": "mois",
+    "en": "month(s)"
+  },
+  "ui.calendar_screen.name_or_email_address": {
+    "fr": "Nom ou adresse e-mail",
+    "en": "Name or email address"
+  },
+  "ui.calendar_screen.new_event": {
+    "fr": "Nouvel événement",
+    "en": "New event"
+  },
+  "ui.calendar_screen.new_event_at_this_time": {
+    "fr": "Créer un événement à cette heure",
+    "en": "New event at this time"
+  },
+  "ui.calendar_screen.new_event_on_this_day": {
+    "fr": "Créer un événement ce jour",
+    "en": "New event on this day"
+  },
+  "ui.calendar_screen.next_period": {
+    "fr": "Période suivante",
+    "en": "Next period"
+  },
+  "ui.calendar_screen.next_period_2": {
+    "fr": "Période suivante · →",
+    "en": "Next period · →"
+  },
+  "ui.calendar_screen.no_events_in_this_period": {
+    "fr": "Aucun événement sur cette période",
+    "en": "No events in this period"
+  },
+  "ui.calendar_screen.none": {
+    "fr": "Aucune",
+    "en": "None"
+  },
+  "ui.calendar_screen.not_responded": {
+    "fr": "En attente",
+    "en": "Not responded"
+  },
+  "ui.calendar_screen.on_day": {
+    "fr": "Le {day}",
+    "en": "On day {day}"
+  },
+  "ui.calendar_screen.on_the_same_weekday": {
+    "fr": "Le même jour de la semaine",
+    "en": "On the same weekday"
+  },
+  "ui.calendar_screen.open_in_teams_on_the_web": {
+    "fr": "Ouvrir dans Teams Web",
+    "en": "Open in Teams on the web"
+  },
+  "ui.calendar_screen.optional": {
+    "fr": "Facultatif",
+    "en": "Optional"
+  },
+  "ui.calendar_screen.optional_attendee": {
+    "fr": "Participant facultatif",
+    "en": "Optional attendee"
+  },
+  "ui.calendar_screen.organizer": {
+    "fr": "Organisateur",
+    "en": "Organizer"
+  },
+  "ui.calendar_screen.previous_period": {
+    "fr": "Période précédente",
+    "en": "Previous period"
+  },
+  "ui.calendar_screen.previous_period_2": {
+    "fr": "Période précédente · ←",
+    "en": "Previous period · ←"
+  },
+  "ui.calendar_screen.refresh": {
+    "fr": "Actualiser",
+    "en": "Refresh"
+  },
+  "ui.calendar_screen.refresh_calendar": {
+    "fr": "Actualiser le calendrier",
+    "en": "Refresh calendar"
+  },
+  "ui.calendar_screen.remove": {
+    "fr": "Retirer {address}",
+    "en": "Remove {address}"
+  },
+  "ui.calendar_screen.repeat": {
+    "fr": "Répéter",
+    "en": "Repeat"
+  },
+  "ui.calendar_screen.required": {
+    "fr": "Obligatoire",
+    "en": "Required"
+  },
+  "ui.calendar_screen.save": {
+    "fr": "Enregistrer",
+    "en": "Save"
+  },
+  "ui.calendar_screen.select_an_event_to_see_its": {
+    "fr": "Sélectionnez un événement pour voir ses détails",
+    "en": "Select an event to see its details"
+  },
+  "ui.calendar_screen.show_this_day": {
+    "fr": "Afficher ce jour",
+    "en": "Show this day"
+  },
+  "ui.calendar_screen.start": {
+    "fr": "Début",
+    "en": "Start"
+  },
+  "ui.calendar_screen.teams_meeting": {
+    "fr": "Réunion Teams",
+    "en": "Teams meeting"
+  },
+  "ui.calendar_screen.tentative": {
+    "fr": "Provisoire",
+    "en": "Tentative"
+  },
+  "ui.calendar_screen.the_whole_series": {
+    "fr": "Toute la série",
+    "en": "The whole series"
+  },
+  "ui.calendar_screen.this_event": {
+    "fr": "Cet événement",
+    "en": "This event"
+  },
+  "ui.calendar_screen.time_zone": {
+    "fr": "Fuseau : {identifier}",
+    "en": "Time zone: {identifier}"
+  },
+  "ui.calendar_screen.title": {
+    "fr": "Titre",
+    "en": "Title"
+  },
+  "ui.calendar_screen.to_respond_to.one": {
+    "fr": "{n} invitation à traiter",
+    "en": "{n} invitation to respond to"
+  },
+  "ui.calendar_screen.to_respond_to.other": {
+    "fr": "{n} invitations à traiter",
+    "en": "{n} invitations to respond to"
+  },
+  "ui.calendar_screen.today": {
+    "fr": "Aujourd’hui",
+    "en": "Today"
+  },
+  "ui.calendar_screen.today_t": {
+    "fr": "Aujourd’hui · T",
+    "en": "Today · T"
+  },
+  "ui.calendar_screen.view": {
+    "fr": "Vue",
+    "en": "View"
+  },
+  "ui.calendar_screen.week": {
+    "fr": "Semaine",
+    "en": "Week"
+  },
+  "ui.calendar_screen.weekly_on": {
+    "fr": "Toutes les semaines le {day}",
+    "en": "Weekly on {day}"
+  },
+  "ui.calendar_screen.weeks": {
+    "fr": "semaine(s)",
+    "en": "week(s)"
+  },
+  "ui.calendar_screen.yearly_on": {
+    "fr": "Tous les ans le {date}",
+    "en": "Yearly on {date}"
+  },
+  "ui.calendar_screen.years": {
+    "fr": "an(s)",
+    "en": "year(s)"
+  },
+  "ui.calendar_screen.your_response": {
+    "fr": "Votre réponse : {response}",
+    "en": "Your response: {response}"
+  },
+  "ui.call_panel.8_orgid_or_teams_meeting_link": {
+    "fr": "8:orgid:… ou lien de réunion Teams",
+    "en": "8:orgid:… or Teams meeting link"
+  },
+  "ui.call_panel.audio_call": {
+    "fr": "Appel audio",
+    "en": "Audio call"
+  },
+  "ui.call_panel.close": {
+    "fr": "Fermer",
+    "en": "Close"
+  },
+  "ui.call_panel.hang_up": {
+    "fr": "Raccrocher",
+    "en": "Hang up"
+  },
+  "ui.call_panel.join": {
+    "fr": "Rejoindre",
+    "en": "Join"
+  },
+  "ui.call_panel.mute": {
+    "fr": "Couper le micro",
+    "en": "Mute"
+  },
+  "ui.call_panel.native_call_experimental": {
+    "fr": "Appel natif (expérimental)",
+    "en": "Native call (experimental)"
+  },
+  "ui.call_panel.participant_s": {
+    "fr": "{participantsCount} participant(s) : ",
+    "en": "{participantsCount} participant(s): "
+  },
+  "ui.call_panel.simulate_incoming_call": {
+    "fr": "Simuler un appel entrant",
+    "en": "Simulate incoming call"
+  },
+  "ui.call_panel.unmute": {
+    "fr": "Réactiver le micro",
+    "en": "Unmute"
+  },
+  "ui.call_panel.video": {
+    "fr": "Vidéo",
+    "en": "Video"
+  },
+  "ui.call_panel.video_2": {
+    "fr": "… vidéo",
+    "en": "… video"
+  },
+  "ui.call_panel.with_video": {
+    "fr": "Avec vidéo",
+    "en": "With video"
+  },
+  "ui.call_panel.you": {
+    "fr": "Vous",
+    "en": "You"
+  },
+  "ui.call_stage.a_participant": {
+    "fr": "Un participant",
+    "en": "A participant"
+  },
+  "ui.call_stage.content_and_column": {
+    "fr": "Partage et colonne",
+    "en": "Content and column"
+  },
+  "ui.call_stage.enlarge": {
+    "fr": "Agrandir",
+    "en": "Enlarge"
+  },
+  "ui.call_stage.full_frame": {
+    "fr": "Plein cadre",
+    "en": "Full frame"
+  },
+  "ui.call_stage.gallery": {
+    "fr": "Galerie",
+    "en": "Gallery"
+  },
+  "ui.call_stage.is_sharing_their_screen": {
+    "fr": "{name} partage son écran",
+    "en": "{name} is sharing their screen"
+  },
+  "ui.call_stage.muted": {
+    "fr": ", micro coupé",
+    "en": ", muted"
+  },
+  "ui.call_stage.no_one_else_is_here_yet": {
+    "fr": "Personne d’autre n’est là pour l’instant",
+    "en": "No one else is here yet"
+  },
+  "ui.call_stage.pin": {
+    "fr": "Épingler",
+    "en": "Pin"
+  },
+  "ui.call_stage.pinned": {
+    "fr": ", épinglé",
+    "en": ", pinned"
+  },
+  "ui.call_stage.screen_sharing": {
+    "fr": "Partage d’écran",
+    "en": "Screen sharing"
+  },
+  "ui.call_stage.show_participants": {
+    "fr": "Afficher les participants",
+    "en": "Show participants"
+  },
+  "ui.call_stage.speaker": {
+    "fr": "Orateur",
+    "en": "Speaker"
+  },
+  "ui.call_stage.speaking": {
+    "fr": ", parle",
+    "en": ", speaking"
+  },
+  "ui.call_stage.unpin": {
+    "fr": "Désépingler",
+    "en": "Unpin"
+  },
+  "ui.call_stage.you": {
+    "fr": "Vous",
+    "en": "You"
+  },
+  "ui.call_window.accept": {
+    "fr": "Accepter",
+    "en": "Accept"
+  },
+  "ui.call_window.add_this_device": {
+    "fr": "Ajouter cet appareil",
+    "en": "Add this device"
+  },
+  "ui.call_window.attendee": {
+    "fr": "Participant",
+    "en": "Attendee"
+  },
+  "ui.call_window.audio_and_video_settings": {
+    "fr": "Réglages audio et vidéo",
+    "en": "Audio and video settings"
+  },
+  "ui.call_window.call": {
+    "fr": "Appel",
+    "en": "Call"
+  },
+  "ui.call_window.calling": {
+    "fr": "Appel en cours…",
+    "en": "Calling…"
+  },
+  "ui.call_window.camera": {
+    "fr": "Caméra",
+    "en": "Camera"
+  },
+  "ui.call_window.camera_access_denied": {
+    "fr": "Accès à la caméra refusé",
+    "en": "Camera access denied"
+  },
+  "ui.call_window.camera_is_off": {
+    "fr": "Caméra désactivée",
+    "en": "Camera is off"
+  },
+  "ui.call_window.camera_is_on": {
+    "fr": "Caméra activée",
+    "en": "Camera is on"
+  },
+  "ui.call_window.cancel": {
+    "fr": "Annuler",
+    "en": "Cancel"
+  },
+  "ui.call_window.cancel_call": {
+    "fr": "Annuler l’appel",
+    "en": "Cancel call"
+  },
+  "ui.call_window.choose_your_audio_and_video_settings": {
+    "fr": "Choisissez vos options audio et vidéo avant d’entrer.",
+    "en": "Choose your audio and video settings before joining."
+  },
+  "ui.call_window.close": {
+    "fr": "Fermer",
+    "en": "Close"
+  },
+  "ui.call_window.decline": {
+    "fr": "Refuser",
+    "en": "Decline"
+  },
+  "ui.call_window.device_not_connected": {
+    "fr": "Périphérique non connecté",
+    "en": "Device not connected"
+  },
+  "ui.call_window.hide_notifications_during_this_call": {
+    "fr": "Masquer les notifications pendant cet appel",
+    "en": "Hide notifications during this call"
+  },
+  "ui.call_window.in_the_meeting": {
+    "fr": "Dans la réunion ({value})",
+    "en": "In the meeting ({value})"
+  },
+  "ui.call_window.incoming_audio_call": {
+    "fr": "Appel audio entrant…",
+    "en": "Incoming audio call…"
+  },
+  "ui.call_window.incoming_video_call": {
+    "fr": "Appel vidéo entrant…",
+    "en": "Incoming video call…"
+  },
+  "ui.call_window.join_now": {
+    "fr": "Rejoindre maintenant",
+    "en": "Join now"
+  },
+  "ui.call_window.join_without_mic_camera_or_audio": {
+    "fr": "Rejoindre sans micro, caméra ni son ici, et rester connecté sur l’autre appareil.",
+    "en": "Join without mic, camera or audio here, and stay connected on the other device."
+  },
+  "ui.call_window.layout": {
+    "fr": "Disposition",
+    "en": "Layout"
+  },
+  "ui.call_window.layout_2": {
+    "fr": "Disposition : ",
+    "en": "Layout: "
+  },
+  "ui.call_window.leave": {
+    "fr": "Quitter",
+    "en": "Leave"
+  },
+  "ui.call_window.lobby": {
+    "fr": "Salle d’attente ({waitingCount})",
+    "en": "Lobby ({waitingCount})"
+  },
+  "ui.call_window.mic_is_off": {
+    "fr": "Micro coupé",
+    "en": "Mic is off"
+  },
+  "ui.call_window.mic_is_on": {
+    "fr": "Micro activé",
+    "en": "Mic is on"
+  },
+  "ui.call_window.mic_level": {
+    "fr": "Niveau du micro",
+    "en": "Mic level"
+  },
+  "ui.call_window.microphone": {
+    "fr": "Micro",
+    "en": "Microphone"
+  },
+  "ui.call_window.mute": {
+    "fr": "Couper le micro",
+    "en": "Mute"
+  },
+  "ui.call_window.mute_speaker": {
+    "fr": "Couper le son",
+    "en": "Mute speaker"
+  },
+  "ui.call_window.network": {
+    "fr": "Réseau",
+    "en": "Network"
+  },
+  "ui.call_window.no_one_else_is_here_yet": {
+    "fr": "Personne d’autre n’est là pour l’instant",
+    "en": "No one else is here yet"
+  },
+  "ui.call_window.no_problems_detected_did_you_hear": {
+    "fr": "Aucun problème détecté. Avez-vous bien entendu votre message ?",
+    "en": "No problems detected. Did you hear your message clearly?"
+  },
+  "ui.call_window.organizer": {
+    "fr": "Organisateur",
+    "en": "Organizer"
+  },
+  "ui.call_window.other_participants.one": {
+    "fr": "{n} autre participant",
+    "en": "{n} other participant"
+  },
+  "ui.call_window.other_participants.other": {
+    "fr": "{n} autres participants",
+    "en": "{n} other participants"
+  },
+  "ui.call_window.participants": {
+    "fr": "Participants",
+    "en": "Participants"
+  },
+  "ui.call_window.presenter": {
+    "fr": "Présentateur",
+    "en": "Presenter"
+  },
+  "ui.call_window.ringing_waiting_for_an_answer": {
+    "fr": "Ça sonne… en attente de réponse",
+    "en": "Ringing… waiting for an answer"
+  },
+  "ui.call_window.share_screen": {
+    "fr": "Partager l’écran",
+    "en": "Share screen"
+  },
+  "ui.call_window.show_notifications_again": {
+    "fr": "Réafficher les notifications",
+    "en": "Show notifications again"
+  },
+  "ui.call_window.speak_after_the_beep_the_echo": {
+    "fr": "Parlez après le bip : l’Echo Bot enregistre un court message puis vous le fait réécouter.",
+    "en": "Speak after the beep: the Echo Bot records a short message and plays it back to you."
+  },
+  "ui.call_window.speaker": {
+    "fr": "Haut-parleur",
+    "en": "Speaker"
+  },
+  "ui.call_window.stop_sharing": {
+    "fr": "Arrêter le partage d’écran",
+    "en": "Stop sharing"
+  },
+  "ui.call_window.system_default": {
+    "fr": "Par défaut du système",
+    "en": "System default"
+  },
+  "ui.call_window.test_again": {
+    "fr": "Refaire le test",
+    "en": "Test again"
+  },
+  "ui.call_window.test_call_results": {
+    "fr": "Résultat de l’appel de test",
+    "en": "Test call results"
+  },
+  "ui.call_window.the_other_device_leaves_the_meeting": {
+    "fr": "L’autre appareil quitte la réunion.",
+    "en": "The other device leaves the meeting."
+  },
+  "ui.call_window.this_report_lists_the_problems_detected": {
+    "fr": "Ce rapport liste les problèmes détectés ; il ne garantit pas la qualité de l’audio ou de la vidéo.",
+    "en": "This report lists the problems detected; it doesn’t guarantee audio or video quality."
+  },
+  "ui.call_window.transfer_to_this_device": {
+    "fr": "Transférer vers cet appareil",
+    "en": "Transfer to this device"
+  },
+  "ui.call_window.turn_camera_off": {
+    "fr": "Couper la caméra",
+    "en": "Turn camera off"
+  },
+  "ui.call_window.turn_camera_on": {
+    "fr": "Activer la caméra",
+    "en": "Turn camera on"
+  },
+  "ui.call_window.unmute": {
+    "fr": "Réactiver le micro",
+    "en": "Unmute"
+  },
+  "ui.call_window.unmute_speaker": {
+    "fr": "Réactiver le son",
+    "en": "Unmute speaker"
+  },
+  "ui.call_window.unpin": {
+    "fr": "Désépingler ",
+    "en": "Unpin "
+  },
+  "ui.call_window.with_video": {
+    "fr": "Avec vidéo",
+    "en": "With video"
+  },
+  "ui.call_window.you": {
+    "fr": "Vous",
+    "en": "You"
+  },
+  "ui.call_window.you_re_already_in_this_meeting": {
+    "fr": "Vous êtes déjà dans cette réunion sur un autre appareil.",
+    "en": "You’re already in this meeting on another device."
+  },
+  "ui.call_window.you_re_sharing_your_screen": {
+    "fr": "Vous partagez votre écran.",
+    "en": "You’re sharing your screen."
+  },
+  "ui.calls_screen.call_back": {
+    "fr": "Rappeler",
+    "en": "Call back"
+  },
+  "ui.calls_screen.calls": {
+    "fr": "Appels",
+    "en": "Calls"
+  },
+  "ui.calls_screen.delete": {
+    "fr": "Supprimer",
+    "en": "Delete"
+  },
+  "ui.calls_screen.delete_from_history": {
+    "fr": "Supprimer de l’historique",
+    "en": "Delete from history"
+  },
+  "ui.calls_screen.duration.hours": {
+    "fr": "{h} h {m} min",
+    "en": "{h}h {m}m"
+  },
+  "ui.calls_screen.duration.minutes": {
+    "fr": "{m} min",
+    "en": "{m}m"
+  },
+  "ui.calls_screen.duration.minutes_seconds": {
+    "fr": "{m} min {s} s",
+    "en": "{m}m {s}s"
+  },
+  "ui.calls_screen.duration.seconds": {
+    "fr": "{s} s",
+    "en": "{s}s"
+  },
+  "ui.calls_screen.history": {
+    "fr": "Historique",
+    "en": "History"
+  },
+  "ui.calls_screen.loading_history": {
+    "fr": "Chargement de l’historique…",
+    "en": "Loading history…"
+  },
+  "ui.calls_screen.loading_voicemail": {
+    "fr": "Chargement des messages vocaux…",
+    "en": "Loading voicemail…"
+  },
+  "ui.calls_screen.mark_as_read": {
+    "fr": "Marquer comme lu",
+    "en": "Mark as read"
+  },
+  "ui.calls_screen.mark_as_unread": {
+    "fr": "Marquer comme non lu",
+    "en": "Mark as unread"
+  },
+  "ui.calls_screen.no_recent_calls": {
+    "fr": "Aucun appel récent",
+    "en": "No recent calls"
+  },
+  "ui.calls_screen.no_voicemail": {
+    "fr": "Aucun message vocal",
+    "en": "No voicemail"
+  },
+  "ui.calls_screen.play": {
+    "fr": "Écouter",
+    "en": "Play"
+  },
+  "ui.calls_screen.refresh": {
+    "fr": "Actualiser",
+    "en": "Refresh"
+  },
+  "ui.calls_screen.show_older_calls": {
+    "fr": "Afficher les appels plus anciens",
+    "en": "Show older calls"
+  },
+  "ui.calls_screen.stop": {
+    "fr": "Arrêter",
+    "en": "Stop"
+  },
+  "ui.calls_screen.summary.declined": {
+    "fr": "Appel refusé",
+    "en": "Declined call"
+  },
+  "ui.calls_screen.summary.declined_group": {
+    "fr": "Appel de groupe refusé",
+    "en": "Declined group call"
+  },
+  "ui.calls_screen.summary.incoming": {
+    "fr": "Appel entrant",
+    "en": "Incoming call"
+  },
+  "ui.calls_screen.summary.incoming_group": {
+    "fr": "Appel de groupe entrant",
+    "en": "Incoming group call"
+  },
+  "ui.calls_screen.summary.missed": {
+    "fr": "Appel manqué",
+    "en": "Missed call"
+  },
+  "ui.calls_screen.summary.missed_group": {
+    "fr": "Appel de groupe manqué",
+    "en": "Missed group call"
+  },
+  "ui.calls_screen.summary.other": {
+    "fr": "Appel",
+    "en": "Call"
+  },
+  "ui.calls_screen.summary.other_group": {
+    "fr": "Appel de groupe",
+    "en": "Group call"
+  },
+  "ui.calls_screen.summary.outgoing": {
+    "fr": "Appel sortant",
+    "en": "Outgoing call"
+  },
+  "ui.calls_screen.summary.outgoing_group": {
+    "fr": "Appel de groupe sortant",
+    "en": "Outgoing group call"
+  },
+  "ui.calls_screen.summary.with_duration": {
+    "fr": "{label} · {duration}",
+    "en": "{label} · {duration}"
+  },
+  "ui.calls_screen.today": {
+    "fr": "Aujourd’hui",
+    "en": "Today"
+  },
+  "ui.calls_screen.try_again": {
+    "fr": "Réessayer",
+    "en": "Try again"
+  },
+  "ui.calls_screen.unknown_date": {
+    "fr": "Date inconnue",
+    "en": "Unknown date"
+  },
+  "ui.calls_screen.video_call_back": {
+    "fr": "Rappeler en vidéo",
+    "en": "Video call back"
+  },
+  "ui.calls_screen.voicemail": {
+    "fr": "Messagerie vocale",
+    "en": "Voicemail"
+  },
+  "ui.calls_screen.yesterday": {
+    "fr": "Hier",
+    "en": "Yesterday"
+  },
+  "ui.chat_admin.add": {
+    "fr": "Ajouter",
+    "en": "Add"
+  },
+  "ui.chat_admin.add_people": {
+    "fr": "Ajouter des personnes",
+    "en": "Add people"
+  },
+  "ui.chat_admin.adding": {
+    "fr": "Ajout…",
+    "en": "Adding…"
+  },
+  "ui.chat_admin.all_history": {
+    "fr": "Inclure tout l’historique",
+    "en": "Include all chat history"
+  },
+  "ui.chat_admin.cancel": {
+    "fr": "Annuler",
+    "en": "Cancel"
+  },
+  "ui.chat_admin.days_count": {
+    "fr": "{count} jour(s)",
+    "en": "{count} day(s)"
+  },
+  "ui.chat_admin.enter_a_name_or_email": {
+    "fr": "Entrez un nom ou une adresse e-mail",
+    "en": "Enter a name or email"
+  },
+  "ui.chat_admin.group_name": {
+    "fr": "Nom du groupe",
+    "en": "Group name"
+  },
+  "ui.chat_admin.hidden": {
+    "fr": "Masquée",
+    "en": "Hidden"
+  },
+  "ui.chat_admin.hide": {
+    "fr": "Masquer",
+    "en": "Hide"
+  },
+  "ui.chat_admin.history": {
+    "fr": "Historique de la discussion",
+    "en": "Chat history"
+  },
+  "ui.chat_admin.history_days": {
+    "fr": "Inclure l’historique des derniers jours",
+    "en": "Include history from the past days"
+  },
+  "ui.chat_admin.leave": {
+    "fr": "Quitter",
+    "en": "Leave"
+  },
+  "ui.chat_admin.leave_explanation": {
+    "fr": "Vous ne recevrez plus les messages de cette discussion. Un participant devra vous ajouter à nouveau.",
+    "en": "You won't get this chat's messages anymore. Someone in it will have to add you again."
+  },
+  "ui.chat_admin.leave_question": {
+    "fr": "Quitter « {title} » ?",
+    "en": "Leave “{title}”?"
+  },
+  "ui.chat_admin.mark_as_read": {
+    "fr": "Marquer comme lu",
+    "en": "Mark as read"
+  },
+  "ui.chat_admin.mark_as_unread": {
+    "fr": "Marquer comme non lu",
+    "en": "Mark as unread"
+  },
+  "ui.chat_admin.name_the_chat": {
+    "fr": "Nommer la discussion",
+    "en": "Name the chat"
+  },
+  "ui.chat_admin.no_history": {
+    "fr": "Ne pas inclure l’historique",
+    "en": "Don't include chat history"
+  },
+  "ui.chat_admin.nobody_found": {
+    "fr": "Personne trouvé.",
+    "en": "Nobody found."
+  },
+  "ui.chat_admin.pin": {
+    "fr": "Épingler",
+    "en": "Pin"
+  },
+  "ui.chat_admin.remove": {
+    "fr": "Retirer",
+    "en": "Remove"
+  },
+  "ui.chat_admin.remove_from_chat": {
+    "fr": "Retirer {name} de la discussion",
+    "en": "Remove {name} from the chat"
+  },
+  "ui.chat_admin.remove_person": {
+    "fr": "Retirer {name}",
+    "en": "Remove {name}"
+  },
+  "ui.chat_admin.remove_question": {
+    "fr": "Retirer {name} de la discussion ?",
+    "en": "Remove {name} from the chat?"
+  },
+  "ui.chat_admin.save": {
+    "fr": "Enregistrer",
+    "en": "Save"
+  },
+  "ui.chat_admin.search": {
+    "fr": "Rechercher",
+    "en": "Search"
+  },
+  "ui.chat_admin.searching": {
+    "fr": "Recherche…",
+    "en": "Searching…"
+  },
+  "ui.chat_admin.show": {
+    "fr": "Afficher",
+    "en": "Show"
+  },
+  "ui.chat_admin.this_chat": {
+    "fr": "cette discussion",
+    "en": "this chat"
+  },
+  "ui.chat_admin.unpin": {
+    "fr": "Désépingler",
+    "en": "Unpin"
+  },
+  "ui.composer.add_an_emoji": {
+    "fr": "Ajouter un emoji",
+    "en": "Add an emoji"
+  },
+  "ui.composer.attach": {
+    "fr": "Joindre",
+    "en": "Attach"
+  },
+  "ui.composer.attach_files": {
+    "fr": "Joindre des fichiers",
+    "en": "Attach files"
+  },
+  "ui.composer.couldn_t_load_all_participants": {
+    "fr": "Impossible de charger tous les participants",
+    "en": "Couldn’t load all participants"
+  },
+  "ui.composer.delivery_options": {
+    "fr": "Définir les options de remise",
+    "en": "Set delivery options"
+  },
+  "ui.composer.enter_to_send": {
+    "fr": "⌘ Entrée pour envoyer",
+    "en": "⌘ Enter to send"
+  },
+  "ui.composer.enter_to_send_2": {
+    "fr": "Entrée pour envoyer",
+    "en": "Enter to send"
+  },
+  "ui.composer.format": {
+    "fr": "Mise en forme",
+    "en": "Format"
+  },
+  "ui.composer.hide_formatting_options": {
+    "fr": "Masquer les options de mise en forme",
+    "en": "Hide formatting options"
+  },
+  "ui.composer.important": {
+    "fr": "Important",
+    "en": "Important"
+  },
+  "ui.composer.important_tag": {
+    "fr": "IMPORTANT !",
+    "en": "IMPORTANT!"
+  },
+  "ui.composer.loading_participants": {
+    "fr": "Chargement des participants…",
+    "en": "Loading participants…"
+  },
+  "ui.composer.mention": {
+    "fr": "Mentionner {name}",
+    "en": "Mention {name}"
+  },
+  "ui.composer.mention_someone": {
+    "fr": "Mentionner une personne",
+    "en": "Mention someone"
+  },
+  "ui.composer.mention_someone_2": {
+    "fr": "Mentionner quelqu’un",
+    "en": "Mention someone"
+  },
+  "ui.composer.no_matching_participants": {
+    "fr": "Aucun participant correspondant",
+    "en": "No matching participants"
+  },
+  "ui.composer.offline_can_t_send": {
+    "fr": "Hors ligne : envoi impossible",
+    "en": "Offline: can’t send"
+  },
+  "ui.composer.reply_in_thread": {
+    "fr": "Répondre dans le fil…",
+    "en": "Reply in thread…"
+  },
+  "ui.composer.send": {
+    "fr": "Envoyer",
+    "en": "Send"
+  },
+  "ui.composer.send_enter": {
+    "fr": "Envoyer · ⌘ Entrée",
+    "en": "Send · ⌘ Enter"
+  },
+  "ui.composer.send_shift_enter_for_a_new": {
+    "fr": "Envoyer · Maj + Entrée pour une nouvelle ligne",
+    "en": "Send · Shift + Enter for a new line"
+  },
+  "ui.composer.sending": {
+    "fr": "Envoi en cours…",
+    "en": "Sending…"
+  },
+  "ui.composer.show_formatting_options": {
+    "fr": "Afficher les options de mise en forme",
+    "en": "Show formatting options"
+  },
+  "ui.composer.standard": {
+    "fr": "Standard",
+    "en": "Standard"
+  },
+  "ui.composer.start_a_post": {
+    "fr": "Écrire une publication…",
+    "en": "Start a post…"
+  },
+  "ui.composer.subject_optional": {
+    "fr": "Objet (facultatif)",
+    "en": "Subject (optional)"
+  },
+  "ui.composer.this_conversation_is_read_only": {
+    "fr": "Cette conversation est en lecture seule.",
+    "en": "This conversation is read-only."
+  },
+  "ui.composer.try_again": {
+    "fr": "Réessayer",
+    "en": "Try again"
+  },
+  "ui.composer.type_a_message": {
+    "fr": "Écrire un message…",
+    "en": "Type a message…"
+  },
+  "ui.composer.urgent": {
+    "fr": "Urgent",
+    "en": "Urgent"
+  },
+  "ui.composer.urgent_tag": {
+    "fr": "URGENT !",
+    "en": "URGENT!"
+  },
+  "ui.composer.you_can_send_once_the_files": {
+    "fr": "Envoi possible une fois les fichiers chargés",
+    "en": "You can send once the files are uploaded"
+  },
+  "ui.conversation_screen.audio_call": {
+    "fr": "Appel audio",
+    "en": "Audio call"
+  },
+  "ui.conversation_screen.audio_call_in_teams_on_the": {
+    "fr": "Appel audio dans Teams Web",
+    "en": "Audio call in Teams on the web"
+  },
+  "ui.conversation_screen.chat": {
+    "fr": "Discussion",
+    "en": "Chat"
+  },
+  "ui.conversation_screen.close_thread": {
+    "fr": "Fermer le fil",
+    "en": "Close thread"
+  },
+  "ui.conversation_screen.files": {
+    "fr": "Fichiers",
+    "en": "Files"
+  },
+  "ui.conversation_screen.follow_this_thread": {
+    "fr": "Suivre ce fil",
+    "en": "Follow this thread"
+  },
+  "ui.conversation_screen.group_video_call": {
+    "fr": "Appel vidéo de groupe",
+    "en": "Group video call"
+  },
+  "ui.conversation_screen.join": {
+    "fr": "Rejoindre",
+    "en": "Join"
+  },
+  "ui.conversation_screen.join_the_meeting_in_oxide": {
+    "fr": "Rejoindre la réunion dans Oxide",
+    "en": "Join the meeting in Oxide"
+  },
+  "ui.conversation_screen.meet": {
+    "fr": "Réunion",
+    "en": "Meet"
+  },
+  "ui.conversation_screen.meet_in_teams_on_the_web": {
+    "fr": "Réunion dans Teams Web",
+    "en": "Meet in Teams on the web"
+  },
+  "ui.conversation_screen.new_post": {
+    "fr": "Nouvelle publication",
+    "en": "New post"
+  },
+  "ui.conversation_screen.posts": {
+    "fr": "Publications",
+    "en": "Posts"
+  },
+  "ui.conversation_screen.shared": {
+    "fr": "Partagé",
+    "en": "Shared"
+  },
+  "ui.conversation_screen.thread": {
+    "fr": "Fil de discussion",
+    "en": "Thread"
+  },
+  "ui.conversation_screen.unfollow_this_thread": {
+    "fr": "Ne plus suivre ce fil",
+    "en": "Unfollow this thread"
+  },
+  "ui.conversation_screen.video_call": {
+    "fr": "Appel vidéo",
+    "en": "Video call"
+  },
+  "ui.debug.avatars": {
+    "fr": "dont photos de profil",
+    "en": "incl. profile photos"
+  },
+  "ui.debug.breakdown": {
+    "fr": "Répartition",
+    "en": "Breakdown"
+  },
+  "ui.debug.breakdown_detail": {
+    "fr": "Pages modifiées et compressées de chaque zone mémoire, classées d’après l’étiquette que leur donne le système. Approximatif.",
+    "en": "Dirty and compressed pages of each memory region, sorted by the tag the system gives them. Approximate."
+  },
+  "ui.debug.copy_report": {
+    "fr": "Copier le rapport",
+    "en": "Copy report"
+  },
+  "ui.debug.footprint": {
+    "fr": "Mémoire utilisée",
+    "en": "Memory in use"
+  },
+  "ui.debug.footprint_detail": {
+    "fr": "Comme dans le Moniteur d’activité. Pic : {peak} · résidente : {resident}",
+    "en": "As in Activity Monitor. Peak: {peak} · resident: {resident}"
+  },
+  "ui.debug.heap": {
+    "fr": "Dans le tas",
+    "en": "Inside the heap"
+  },
+  "ui.debug.heap_detail": {
+    "fr": "{used} utilisés sur {reserved} réservés.",
+    "en": "{used} used of {reserved} reserved."
+  },
+  "ui.debug.image_count": {
+    "fr": "{n} images",
+    "en": "{n} images"
+  },
+  "ui.debug.kind_code": {
+    "fr": "Code et bibliothèques",
+    "en": "Code and libraries"
+  },
+  "ui.debug.kind_graphics": {
+    "fr": "Graphismes : fenêtres, calques, GPU",
+    "en": "Graphics: windows, layers, GPU"
+  },
+  "ui.debug.kind_heap": {
+    "fr": "Allocations (tas)",
+    "en": "Allocations (heap)"
+  },
+  "ui.debug.kind_images": {
+    "fr": "Images et icônes du système",
+    "en": "System images and icons"
+  },
+  "ui.debug.kind_media": {
+    "fr": "Audio et vidéo",
+    "en": "Audio and video"
+  },
+  "ui.debug.kind_other": {
+    "fr": "Autre",
+    "en": "Other"
+  },
+  "ui.debug.kind_stacks": {
+    "fr": "Piles des threads",
+    "en": "Thread stacks"
+  },
+  "ui.debug.kind_webkit": {
+    "fr": "WebKit (fenêtre de connexion)",
+    "en": "WebKit (sign-in window)"
+  },
+  "ui.debug.peak": {
+    "fr": "pic",
+    "en": "peak"
+  },
+  "ui.debug.previews": {
+    "fr": "dont aperçus d’images",
+    "en": "incl. image previews"
+  },
+  "ui.debug.resident": {
+    "fr": "résidente",
+    "en": "resident"
+  },
+  "ui.debug.rust_core": {
+    "fr": "Cœur Rust",
+    "en": "Rust core"
+  },
+  "ui.debug.rust_detail": {
+    "fr": "pic {peak} · {n} allocations",
+    "en": "peak {peak} · {n} allocations"
+  },
+  "ui.debug.summary": {
+    "fr": "Mémoire utilisée : {size}",
+    "en": "Memory in use: {size}"
+  },
+  "ui.debug.swift_side": {
+    "fr": "Swift, AppKit et WebRTC",
+    "en": "Swift, AppKit and WebRTC"
+  },
+  "ui.debug.title": {
+    "fr": "Debug",
+    "en": "Debug"
+  },
+  "ui.device_settings_section.a_call_is_already_in_progress": {
+    "fr": "Un appel est déjà en cours.",
+    "en": "A call is already in progress."
+  },
+  "ui.device_settings_section.calls_the_teams_echo_bot_it": {
+    "fr": "Appelle l’Echo Bot de Teams : il enregistre un court message et vous le fait réécouter, puis un rapport indique les problèmes détectés (micro, haut-parleur, caméra, réseau).",
+    "en": "Calls the Teams Echo Bot: it records a short message and plays it back to you, then a report lists any problems detected (mic, speaker, camera, network)."
+  },
+  "ui.device_settings_section.camera": {
+    "fr": "Caméra",
+    "en": "Camera"
+  },
+  "ui.device_settings_section.camera_access_is_denied_allow_oxide": {
+    "fr": "L’accès à la caméra est refusé. Autorisez Oxide dans Réglages Système › Confidentialité.",
+    "en": "Camera access is denied. Allow Oxide in System Settings › Privacy & Security."
+  },
+  "ui.device_settings_section.connecting_to_the_calling_service": {
+    "fr": "Connexion au canal d’appels…",
+    "en": "Connecting to the calling service…"
+  },
+  "ui.device_settings_section.default_devices_detail": {
+    "fr": "Ces périphériques sont utilisés par défaut pour les appels et réunions. Un périphérique débranché est remplacé par celui du système.",
+    "en": "These devices are used by default for calls and meetings. A disconnected device is replaced by the system default."
+  },
+  "ui.device_settings_section.device_not_connected": {
+    "fr": "Périphérique non connecté",
+    "en": "Device not connected"
+  },
+  "ui.device_settings_section.hear_yourself_5_s": {
+    "fr": "S’écouter (5 s)",
+    "en": "Hear yourself (5 s)"
+  },
+  "ui.device_settings_section.make_a_test_call": {
+    "fr": "Passer un appel de test",
+    "en": "Make a test call"
+  },
+  "ui.device_settings_section.mic_level": {
+    "fr": "Niveau du micro",
+    "en": "Mic level"
+  },
+  "ui.device_settings_section.microphone": {
+    "fr": "Micro",
+    "en": "Microphone"
+  },
+  "ui.device_settings_section.open_settings": {
+    "fr": "Ouvrir les réglages",
+    "en": "Open Settings"
+  },
+  "ui.device_settings_section.playing": {
+    "fr": "Lecture…",
+    "en": "Playing…"
+  },
+  "ui.device_settings_section.preview": {
+    "fr": "Aperçu",
+    "en": "Preview"
+  },
+  "ui.device_settings_section.recording": {
+    "fr": "Enregistrement…",
+    "en": "Recording…"
+  },
+  "ui.device_settings_section.records_5_seconds_then_plays_them": {
+    "fr": "Enregistre 5 secondes puis les rejoue sur le haut-parleur choisi",
+    "en": "Records 5 seconds, then plays them back on the selected speaker"
+  },
+  "ui.device_settings_section.speaker": {
+    "fr": "Haut-parleur",
+    "en": "Speaker"
+  },
+  "ui.device_settings_section.stop": {
+    "fr": "Arrêter",
+    "en": "Stop"
+  },
+  "ui.device_settings_section.stop_preview": {
+    "fr": "Arrêter l’aperçu",
+    "en": "Stop preview"
+  },
+  "ui.device_settings_section.system_default": {
+    "fr": "Par défaut du système ({device})",
+    "en": "System default ({device})"
+  },
+  "ui.device_settings_section.system_default_2": {
+    "fr": "Par défaut du système",
+    "en": "System default"
+  },
+  "ui.device_settings_section.test_call": {
+    "fr": "Appel de test",
+    "en": "Test call"
+  },
+  "ui.device_settings_section.test_mic": {
+    "fr": "Tester le micro",
+    "en": "Test mic"
+  },
+  "ui.device_settings_section.test_speaker": {
+    "fr": "Tester le son",
+    "en": "Test speaker"
+  },
+  "ui.device_settings_section.text": {
+    "fr": "{percent} %",
+    "en": "{percent}%"
+  },
+  "ui.device_tester.couldn_t_open_the_microphone": {
+    "fr": "Impossible d’ouvrir le micro.",
+    "en": "Couldn’t open the microphone."
+  },
+  "ui.device_tester.couldn_t_play_back_the_recording": {
+    "fr": "Impossible de relire l’enregistrement.",
+    "en": "Couldn’t play back the recording."
+  },
+  "ui.device_tester.couldn_t_use_this_audio_output": {
+    "fr": "Impossible d’utiliser cette sortie audio.",
+    "en": "Couldn’t use this audio output."
+  },
+  "ui.device_tester.microphone_access_is_denied_allow_oxide": {
+    "fr": "L’accès au micro est refusé. Autorisez Oxide dans Réglages Système › Confidentialité.",
+    "en": "Microphone access is denied. Allow Oxide in System Settings › Privacy & Security."
+  },
+  "ui.device_tester.this_microphone_isn_t_sending_any": {
+    "fr": "Ce micro ne fournit aucun signal.",
+    "en": "This microphone isn’t sending any signal."
+  },
+  "ui.draft_formatting.formatting": {
+    "fr": "Mise en forme",
+    "en": "Formatting"
+  },
+  "ui.emoji_picker.downloading": {
+    "fr": "Téléchargement des emojis Teams…",
+    "en": "Downloading Teams emoji…"
+  },
+  "ui.emoji_picker.emoji": {
+    "fr": "Emojis",
+    "en": "Emoji"
+  },
+  "ui.emoji_picker.no_emoji_found": {
+    "fr": "Aucun emoji trouvé",
+    "en": "No emoji found"
+  },
+  "ui.emoji_picker.recent": {
+    "fr": "Récents",
+    "en": "Recent"
+  },
+  "ui.emoji_picker.results": {
+    "fr": "Résultats ({resultsCount})",
+    "en": "Results ({resultsCount})"
+  },
+  "ui.emoji_picker.search_emoji": {
+    "fr": "Rechercher un emoji",
+    "en": "Search emoji"
+  },
+  "ui.feed_table.1_new_message": {
+    "fr": "1 nouveau message",
+    "en": "1 new message"
+  },
+  "ui.feed_table.follow": {
+    "fr": "Suivre",
+    "en": "Follow"
+  },
+  "ui.feed_table.following": {
+    "fr": "Suivi",
+    "en": "Following"
+  },
+  "ui.feed_table.get_notified_of_replies": {
+    "fr": "Être notifié des réponses",
+    "en": "Get notified of replies"
+  },
+  "ui.feed_table.jump_to_latest_messages": {
+    "fr": "Aller aux derniers messages",
+    "en": "Jump to latest messages"
+  },
+  "ui.feed_table.latest_messages": {
+    "fr": "Derniers messages",
+    "en": "Latest messages"
+  },
+  "ui.feed_table.new_messages": {
+    "fr": "{unseen} nouveaux messages",
+    "en": "{unseen} new messages"
+  },
+  "ui.feed_table.new_messages_2": {
+    "fr": "Nouveaux messages",
+    "en": "New messages"
+  },
+  "ui.feed_table.replies_open_thread": {
+    "fr": "{replies} réponses · Ouvrir le fil",
+    "en": "{replies} replies · Open thread"
+  },
+  "ui.feed_table.reply": {
+    "fr": "Répondre",
+    "en": "Reply"
+  },
+  "ui.feed_table.retry_posts": {
+    "fr": "Réessayer les publications",
+    "en": "Retry posts"
+  },
+  "ui.feed_table.stop_getting_notified_of_replies": {
+    "fr": "Ne plus être notifié des réponses",
+    "en": "Stop getting notified of replies"
+  },
+  "ui.files_screens.actions_for": {
+    "fr": "Actions sur {name}",
+    "en": "Actions for {name}"
+  },
+  "ui.files_screens.all": {
+    "fr": "Tout",
+    "en": "All"
+  },
+  "ui.files_screens.arrows_to_select_return_to_open": {
+    "fr": "Flèches pour choisir, Retour pour ouvrir, Espace pour l’aperçu",
+    "en": "Arrows to select, Return to open, Space to preview"
+  },
+  "ui.files_screens.cancel": {
+    "fr": "Annuler",
+    "en": "Cancel"
+  },
+  "ui.files_screens.cancel_download": {
+    "fr": "Annuler le téléchargement",
+    "en": "Cancel download"
+  },
+  "ui.files_screens.clear_search": {
+    "fr": "Effacer la recherche",
+    "en": "Clear search"
+  },
+  "ui.files_screens.copy_link": {
+    "fr": "Copier le lien",
+    "en": "Copy link"
+  },
+  "ui.files_screens.delete": {
+    "fr": "Supprimer « {name} » ?",
+    "en": "Delete “{name}”?"
+  },
+  "ui.files_screens.delete_2": {
+    "fr": "Supprimer…",
+    "en": "Delete…"
+  },
+  "ui.files_screens.download": {
+    "fr": "Télécharger…",
+    "en": "Download…"
+  },
+  "ui.files_screens.downloading": {
+    "fr": "Téléchargement : {progress} %",
+    "en": "Downloading: {progress}%"
+  },
+  "ui.files_screens.files": {
+    "fr": "Fichiers",
+    "en": "Files"
+  },
+  "ui.files_screens.full_list_unavailable_files_from_loaded": {
+    "fr": "Liste complète indisponible ({error}). Fichiers des messages chargés :",
+    "en": "Full list unavailable ({error}). Files from loaded messages:"
+  },
+  "ui.files_screens.links": {
+    "fr": "Liens",
+    "en": "Links"
+  },
+  "ui.files_screens.modified": {
+    "fr": "Modifié",
+    "en": "Modified"
+  },
+  "ui.files_screens.modified_by": {
+    "fr": "Par",
+    "en": "Modified by"
+  },
+  "ui.files_screens.more_actions": {
+    "fr": "Autres actions",
+    "en": "More actions"
+  },
+  "ui.files_screens.more_actions_for": {
+    "fr": "Autres actions sur {name}",
+    "en": "More actions for {name}"
+  },
+  "ui.files_screens.move_to_recycle_bin": {
+    "fr": "Placer dans la corbeille",
+    "en": "Move to recycle bin"
+  },
+  "ui.files_screens.my_files": {
+    "fr": "Mes fichiers",
+    "en": "My files"
+  },
+  "ui.files_screens.name": {
+    "fr": "Nom",
+    "en": "Name"
+  },
+  "ui.files_screens.new_folder": {
+    "fr": "Nouveau dossier",
+    "en": "New folder"
+  },
+  "ui.files_screens.no_results": {
+    "fr": "Aucun résultat.",
+    "en": "No results."
+  },
+  "ui.files_screens.nothing_has_been_shared_in_this": {
+    "fr": "Rien n’a encore été partagé dans cette conversation.",
+    "en": "Nothing has been shared in this conversation yet."
+  },
+  "ui.files_screens.ok": {
+    "fr": "Valider",
+    "en": "OK"
+  },
+  "ui.files_screens.open": {
+    "fr": "Ouvrir",
+    "en": "Open"
+  },
+  "ui.files_screens.open_folder": {
+    "fr": "Ouvrir le dossier",
+    "en": "Open folder"
+  },
+  "ui.files_screens.open_in_browser": {
+    "fr": "Ouvrir dans le navigateur",
+    "en": "Open in browser"
+  },
+  "ui.files_screens.preview": {
+    "fr": "Aperçu",
+    "en": "Preview"
+  },
+  "ui.files_screens.ready": {
+    "fr": "Prêt",
+    "en": "Ready"
+  },
+  "ui.files_screens.recent": {
+    "fr": "Récents",
+    "en": "Recent"
+  },
+  "ui.files_screens.refresh": {
+    "fr": "Actualiser",
+    "en": "Refresh"
+  },
+  "ui.files_screens.remove": {
+    "fr": "Retirer {name}",
+    "en": "Remove {name}"
+  },
+  "ui.files_screens.rename": {
+    "fr": "Renommer",
+    "en": "Rename"
+  },
+  "ui.files_screens.rename_2": {
+    "fr": "Renommer…",
+    "en": "Rename…"
+  },
+  "ui.files_screens.search_channel_files": {
+    "fr": "Rechercher dans les fichiers du canal",
+    "en": "Search channel files"
+  },
+  "ui.files_screens.search_for_a_file_link_or": {
+    "fr": "Rechercher un fichier, un lien ou une personne",
+    "en": "Search for a file, link or person"
+  },
+  "ui.files_screens.search_my_files": {
+    "fr": "Rechercher dans mes fichiers",
+    "en": "Search my files"
+  },
+  "ui.files_screens.shared": {
+    "fr": "Partagé",
+    "en": "Shared"
+  },
+  "ui.files_screens.shared_with_me": {
+    "fr": "Partagés avec moi",
+    "en": "Shared with me"
+  },
+  "ui.files_screens.size": {
+    "fr": "Taille",
+    "en": "Size"
+  },
+  "ui.files_screens.the_item_goes_to_the_sharepoint": {
+    "fr": "L’élément ira dans la corbeille du site SharePoint, d’où il peut être restauré.",
+    "en": "The item goes to the SharePoint site’s recycle bin, where it can be restored."
+  },
+  "ui.files_screens.this_folder_is_empty": {
+    "fr": "Ce dossier est vide.",
+    "en": "This folder is empty."
+  },
+  "ui.files_screens.upload": {
+    "fr": "Charger",
+    "en": "Upload"
+  },
+  "ui.formatting_toolbar.align_left": {
+    "fr": "Aligner à gauche",
+    "en": "Align left"
+  },
+  "ui.formatting_toolbar.align_right": {
+    "fr": "Aligner à droite",
+    "en": "Align right"
+  },
+  "ui.formatting_toolbar.automatic": {
+    "fr": "Automatique",
+    "en": "Automatic"
+  },
+  "ui.formatting_toolbar.black": {
+    "fr": "Noir",
+    "en": "Black"
+  },
+  "ui.formatting_toolbar.blue": {
+    "fr": "Bleu",
+    "en": "Blue"
+  },
+  "ui.formatting_toolbar.bold_b": {
+    "fr": "Gras · ⌘B",
+    "en": "Bold · ⌘B"
+  },
+  "ui.formatting_toolbar.bulleted_list": {
+    "fr": "Liste à puces",
+    "en": "Bulleted list"
+  },
+  "ui.formatting_toolbar.cancel": {
+    "fr": "Annuler",
+    "en": "Cancel"
+  },
+  "ui.formatting_toolbar.center": {
+    "fr": "Centrer",
+    "en": "Center"
+  },
+  "ui.formatting_toolbar.clear_all_formatting": {
+    "fr": "Effacer toute la mise en forme",
+    "en": "Clear all formatting"
+  },
+  "ui.formatting_toolbar.code_block": {
+    "fr": "Bloc de code",
+    "en": "Code block"
+  },
+  "ui.formatting_toolbar.decrease_indent": {
+    "fr": "Réduire le retrait",
+    "en": "Decrease indent"
+  },
+  "ui.formatting_toolbar.font_color": {
+    "fr": "Couleur du texte",
+    "en": "Font color"
+  },
+  "ui.formatting_toolbar.font_size": {
+    "fr": "Taille de police",
+    "en": "Font size"
+  },
+  "ui.formatting_toolbar.gray": {
+    "fr": "Gris",
+    "en": "Gray"
+  },
+  "ui.formatting_toolbar.green": {
+    "fr": "Vert",
+    "en": "Green"
+  },
+  "ui.formatting_toolbar.heading_1": {
+    "fr": "Titre 1",
+    "en": "Heading 1"
+  },
+  "ui.formatting_toolbar.heading_2": {
+    "fr": "Titre 2",
+    "en": "Heading 2"
+  },
+  "ui.formatting_toolbar.heading_3": {
+    "fr": "Titre 3",
+    "en": "Heading 3"
+  },
+  "ui.formatting_toolbar.highlight_color": {
+    "fr": "Couleur de surlignage",
+    "en": "Highlight color"
+  },
+  "ui.formatting_toolbar.horizontal_line": {
+    "fr": "Ligne horizontale",
+    "en": "Horizontal line"
+  },
+  "ui.formatting_toolbar.increase_indent": {
+    "fr": "Augmenter le retrait",
+    "en": "Increase indent"
+  },
+  "ui.formatting_toolbar.inline_code": {
+    "fr": "Code en ligne",
+    "en": "Inline code"
+  },
+  "ui.formatting_toolbar.insert": {
+    "fr": "Insérer",
+    "en": "Insert"
+  },
+  "ui.formatting_toolbar.insert_link": {
+    "fr": "Insérer un lien",
+    "en": "Insert link"
+  },
+  "ui.formatting_toolbar.insert_link_k": {
+    "fr": "Insérer un lien · ⌘K",
+    "en": "Insert link · ⌘K"
+  },
+  "ui.formatting_toolbar.italic_i": {
+    "fr": "Italique · ⌘I",
+    "en": "Italic · ⌘I"
+  },
+  "ui.formatting_toolbar.lavender": {
+    "fr": "Lavande",
+    "en": "Lavender"
+  },
+  "ui.formatting_toolbar.link_address": {
+    "fr": "Adresse du lien",
+    "en": "Link address"
+  },
+  "ui.formatting_toolbar.more_formatting_options": {
+    "fr": "Autres options de mise en forme",
+    "en": "More formatting options"
+  },
+  "ui.formatting_toolbar.no_highlight": {
+    "fr": "Aucun surlignage",
+    "en": "No highlight"
+  },
+  "ui.formatting_toolbar.numbered_list": {
+    "fr": "Liste numérotée",
+    "en": "Numbered list"
+  },
+  "ui.formatting_toolbar.paragraph": {
+    "fr": "Paragraphe",
+    "en": "Paragraph"
+  },
+  "ui.formatting_toolbar.paragraph_style": {
+    "fr": "Style de paragraphe",
+    "en": "Paragraph style"
+  },
+  "ui.formatting_toolbar.pink": {
+    "fr": "Rose",
+    "en": "Pink"
+  },
+  "ui.formatting_toolbar.purple": {
+    "fr": "Violet",
+    "en": "Purple"
+  },
+  "ui.formatting_toolbar.quote": {
+    "fr": "Citation",
+    "en": "Quote"
+  },
+  "ui.formatting_toolbar.red": {
+    "fr": "Rouge",
+    "en": "Red"
+  },
+  "ui.formatting_toolbar.redo": {
+    "fr": "Rétablir",
+    "en": "Redo"
+  },
+  "ui.formatting_toolbar.remove_link": {
+    "fr": "Supprimer le lien",
+    "en": "Remove link"
+  },
+  "ui.formatting_toolbar.strikethrough_x": {
+    "fr": "Barré · ⌘⇧X",
+    "en": "Strikethrough · ⌘⇧X"
+  },
+  "ui.formatting_toolbar.text_to_display": {
+    "fr": "Texte à afficher",
+    "en": "Text to display"
+  },
+  "ui.formatting_toolbar.underline_u": {
+    "fr": "Souligné · ⌘U",
+    "en": "Underline · ⌘U"
+  },
+  "ui.formatting_toolbar.undo": {
+    "fr": "Annuler",
+    "en": "Undo"
+  },
+  "ui.formatting_toolbar.yellow": {
+    "fr": "Jaune",
+    "en": "Yellow"
+  },
+  "ui.fun_picker.gif": {
+    "fr": "GIF",
+    "en": "GIF"
+  },
+  "ui.fun_picker.gifs_and_stickers": {
+    "fr": "GIF et autocollants",
+    "en": "GIFs and stickers"
+  },
+  "ui.fun_picker.loading_stickers": {
+    "fr": "Chargement des autocollants…",
+    "en": "Loading stickers…"
+  },
+  "ui.fun_picker.no_gifs": {
+    "fr": "Aucun GIF trouvé.",
+    "en": "No GIFs found."
+  },
+  "ui.fun_picker.powered_by_giphy": {
+    "fr": "Fourni par GIPHY",
+    "en": "Powered by GIPHY"
+  },
+  "ui.fun_picker.search_giphy": {
+    "fr": "Rechercher sur Giphy",
+    "en": "Search Giphy"
+  },
+  "ui.fun_picker.search_stickers": {
+    "fr": "Rechercher des autocollants",
+    "en": "Search stickers"
+  },
+  "ui.fun_picker.stickers": {
+    "fr": "Autocollants",
+    "en": "Stickers"
+  },
+  "ui.localization.app_language": {
+    "fr": "Langue de l’application",
+    "en": "App language"
+  },
+  "ui.localization.language": {
+    "fr": "Langue",
+    "en": "Language"
+  },
+  "ui.localization.system": {
+    "fr": "Système",
+    "en": "System"
+  },
+  "ui.localization.system_menus_follow_next_launch": {
+    "fr": "Les menus et fenêtres du système suivent au prochain lancement d’Oxide.",
+    "en": "System menus and panels follow the next time Oxide starts."
+  },
+  "ui.login_window.microsoft_sign_in_oxide": {
+    "fr": "Connexion Microsoft — Oxide",
+    "en": "Microsoft sign-in — Oxide"
+  },
+  "ui.main_view.clear_search": {
+    "fr": "Effacer la recherche",
+    "en": "Clear search"
+  },
+  "ui.main_view.close": {
+    "fr": "Fermer",
+    "en": "Close"
+  },
+  "ui.main_view.refresh": {
+    "fr": "Actualiser",
+    "en": "Refresh"
+  },
+  "ui.main_view.search_chats_channels_and_messages": {
+    "fr": "Rechercher discussions, canaux et messages",
+    "en": "Search chats, channels and messages"
+  },
+  "ui.main_view.settings": {
+    "fr": "Paramètres",
+    "en": "Settings"
+  },
+  "ui.main_view.try_again": {
+    "fr": "Réessayer",
+    "en": "Try again"
+  },
+  "ui.main_view.you_re_offline_messages_can_t": {
+    "fr": "Hors ligne. Les messages ne peuvent pas être envoyés ni reçus ; votre brouillon est conservé.",
+    "en": "You’re offline. Messages can’t be sent or received; your draft is kept."
+  },
+  "ui.main_view.your_account": {
+    "fr": "Votre compte",
+    "en": "Your account"
+  },
+  "ui.media_engine.allow_oxide_in_system_settings_privacy": {
+    "fr": "Autorisez Oxide dans Réglages Système › Confidentialité › Enregistrement de l’écran, puis relancez l’app.",
+    "en": "Allow Oxide in System Settings › Privacy & Security › Screen Recording, then restart the app."
+  },
+  "ui.media_engine.couldn_t_create_the_local_media": {
+    "fr": "Description média locale impossible : ",
+    "en": "Couldn’t create the local media description: "
+  },
+  "ui.media_engine.couldn_t_prepare_the_audio_connection": {
+    "fr": "Impossible de préparer la connexion audio.",
+    "en": "Couldn’t prepare the audio connection."
+  },
+  "ui.media_engine.local_description_rejected": {
+    "fr": "Description locale refusée : ",
+    "en": "Local description rejected: "
+  },
+  "ui.media_engine.media_answer_rejected": {
+    "fr": "Réponse média refusée : ",
+    "en": "Media answer rejected: "
+  },
+  "ui.media_engine.media_negotiation_succeeded_but_the_audio": {
+    "fr": "La négociation média a abouti, mais la connexion audio/vidéo n’a pas été établie après 30 secondes.",
+    "en": "Media negotiation succeeded, but the audio/video connection wasn’t established after 30 seconds."
+  },
+  "ui.media_engine.microphone_access_is_denied_allow_oxide": {
+    "fr": "L’accès au micro est refusé. Autorisez Oxide dans Réglages Système › Confidentialité.",
+    "en": "Microphone access is denied. Allow Oxide in System Settings › Privacy & Security."
+  },
+  "ui.media_engine.remote_offer_rejected": {
+    "fr": "Offre distante refusée : ",
+    "en": "Remote offer rejected: "
+  },
+  "ui.media_engine.renegotiation_rejected": {
+    "fr": "Renégociation refusée : ",
+    "en": "Renegotiation rejected: "
+  },
+  "ui.media_engine.screen_sharing_stopped": {
+    "fr": "Le partage d’écran s’est arrêté.",
+    "en": "Screen sharing stopped."
+  },
+  "ui.media_engine.the_audio_video_connection_failed_network": {
+    "fr": "La connexion audio/vidéo a échoué (réseau ou relais).",
+    "en": "The audio/video connection failed (network or relay)."
+  },
+  "ui.media_engine.the_media_connection_isn_t_ready": {
+    "fr": "La connexion média n’est pas prête : réessayez dans un instant.",
+    "en": "The media connection isn’t ready yet. Try again in a moment."
+  },
+  "ui.message_blocks.copy": {
+    "fr": "Copier",
+    "en": "Copy"
+  },
+  "ui.message_blocks.copy_code": {
+    "fr": "Copier le code",
+    "en": "Copy code"
+  },
+  "ui.message_blocks.only_in_teams": {
+    "fr": "Cette action ne peut s’effectuer que dans Teams.",
+    "en": "This action is only available in Teams."
+  },
+  "ui.message_blocks.quote": {
+    "fr": "Citation",
+    "en": "Quote"
+  },
+  "ui.message_blocks.reply_to": {
+    "fr": "Réponse à {author}",
+    "en": "Reply to {author}"
+  },
+  "ui.message_blocks.reply_to_message": {
+    "fr": "Réponse à un message",
+    "en": "Reply to a message"
+  },
+  "ui.message_blocks.select": {
+    "fr": "Choisir…",
+    "en": "Choose…"
+  },
+  "ui.message_row.1_file": {
+    "fr": "1 fichier",
+    "en": "1 file"
+  },
+  "ui.message_row.1_image": {
+    "fr": "1 image",
+    "en": "1 image"
+  },
+  "ui.message_row.cancel": {
+    "fr": "Annuler",
+    "en": "Cancel"
+  },
+  "ui.message_row.close": {
+    "fr": "Fermer",
+    "en": "Close"
+  },
+  "ui.message_row.copy_text": {
+    "fr": "Copier le texte",
+    "en": "Copy text"
+  },
+  "ui.message_row.delete": {
+    "fr": "Supprimer",
+    "en": "Delete"
+  },
+  "ui.message_row.delete_2": {
+    "fr": "Supprimer…",
+    "en": "Delete…"
+  },
+  "ui.message_row.delete_this_message": {
+    "fr": "Supprimer ce message ?",
+    "en": "Delete this message?"
+  },
+  "ui.message_row.edit": {
+    "fr": "Modifier",
+    "en": "Edit"
+  },
+  "ui.message_row.edit_message": {
+    "fr": "Modifier le message",
+    "en": "Edit message"
+  },
+  "ui.message_row.enlarge_image": {
+    "fr": "Agrandir l’image",
+    "en": "Enlarge image"
+  },
+  "ui.message_row.enter_to_save_enter_for_a": {
+    "fr": "Entrée pour enregistrer · ⌥ Entrée pour une nouvelle ligne",
+    "en": "Enter to save · ⌥ Enter for a new line"
+  },
+  "ui.message_row.files": {
+    "fr": "{filesCount} fichiers",
+    "en": "{filesCount} files"
+  },
+  "ui.message_row.images": {
+    "fr": "{imagesCount} images",
+    "en": "{imagesCount} images"
+  },
+  "ui.message_row.it_will_be_replaced_with_this": {
+    "fr": "Il sera remplacé par « Message supprimé » pour tous les participants.",
+    "en": "It will be replaced with “This message has been deleted.” for everyone."
+  },
+  "ui.message_row.loading_image": {
+    "fr": "Chargement de l’image",
+    "en": "Loading image"
+  },
+  "ui.message_row.more_reactions": {
+    "fr": "Autres réactions…",
+    "en": "More reactions…"
+  },
+  "ui.message_row.open_link": {
+    "fr": "Ouvrir le lien {link}",
+    "en": "Open link {link}"
+  },
+  "ui.message_row.preview_limit_reached_in_this_conversation": {
+    "fr": "Limite d’aperçus atteinte dans cette discussion.",
+    "en": "Preview limit reached in this conversation."
+  },
+  "ui.message_row.react": {
+    "fr": "Réagir",
+    "en": "React"
+  },
+  "ui.message_row.react_2": {
+    "fr": "Réagir : {name}",
+    "en": "React: {name}"
+  },
+  "ui.message_row.reply": {
+    "fr": "Répondre",
+    "en": "Reply"
+  },
+  "ui.message_row.retry_image": {
+    "fr": "Réessayer l’image",
+    "en": "Retry image"
+  },
+  "ui.message_row.save": {
+    "fr": "Enregistrer",
+    "en": "Save"
+  },
+  "ui.message_row.sending_reaction": {
+    "fr": "réaction en cours d’envoi",
+    "en": "sending reaction"
+  },
+  "ui.message_row.sending_reaction_2": {
+    "fr": "Réaction en cours d’envoi…",
+    "en": "Sending reaction…"
+  },
+  "ui.message_row.sending_reaction_3": {
+    "fr": "Réaction en cours d’envoi",
+    "en": "Sending reaction"
+  },
+  "ui.message_row.this_message_has_been_deleted": {
+    "fr": "Message supprimé",
+    "en": "This message has been deleted."
+  },
+  "ui.message_row.you": {
+    "fr": "Vous",
+    "en": "You"
+  },
+  "ui.notification_router.accept": {
+    "fr": "Accepter",
+    "en": "Accept"
+  },
+  "ui.notification_router.alarm": {
+    "fr": "Alarme",
+    "en": "Alarm"
+  },
+  "ui.notification_router.decline": {
+    "fr": "Refuser",
+    "en": "Decline"
+  },
+  "ui.notification_router.default": {
+    "fr": "Par défaut",
+    "en": "Default"
+  },
+  "ui.notification_router.default_urgent": {
+    "fr": "Urgent par défaut",
+    "en": "Default urgent"
+  },
+  "ui.notification_router.escalate": {
+    "fr": "Escalade",
+    "en": "Escalate"
+  },
+  "ui.notification_router.flick": {
+    "fr": "Pichenette",
+    "en": "Flick"
+  },
+  "ui.notification_router.incoming_audio_call": {
+    "fr": "Appel audio entrant",
+    "en": "Incoming audio call"
+  },
+  "ui.notification_router.incoming_video_call": {
+    "fr": "Appel vidéo entrant",
+    "en": "Incoming video call"
+  },
+  "ui.notification_router.mark_as_read": {
+    "fr": "Marquer comme lu",
+    "en": "Mark as read"
+  },
+  "ui.notification_router.nudge": {
+    "fr": "Coup de coude",
+    "en": "Nudge"
+  },
+  "ui.notification_router.pluck": {
+    "fr": "Pincement",
+    "en": "Pluck"
+  },
+  "ui.notification_router.prioritize": {
+    "fr": "Priorité",
+    "en": "Prioritize"
+  },
+  "ui.notification_router.reply": {
+    "fr": "Répondre",
+    "en": "Reply"
+  },
+  "ui.notification_router.send": {
+    "fr": "Envoyer",
+    "en": "Send"
+  },
+  "ui.notification_router.summon": {
+    "fr": "Appel",
+    "en": "Summon"
+  },
+  "ui.notification_router.tap": {
+    "fr": "Toc",
+    "en": "Tap"
+  },
+  "ui.notification_router.your_reply": {
+    "fr": "Votre réponse",
+    "en": "Your reply"
+  },
+  "ui.notification_settings_view.10_minutes": {
+    "fr": "10 minutes",
+    "en": "10 minutes"
+  },
+  "ui.notification_settings_view.1_hour": {
+    "fr": "1 heure",
+    "en": "1 hour"
+  },
+  "ui.notification_settings_view.30_minutes": {
+    "fr": "30 minutes",
+    "en": "30 minutes"
+  },
+  "ui.notification_settings_view.a_muted_chat_no_longer_shows": {
+    "fr": "Une discussion coupée n’affiche plus de bannière, sauf pour les mentions et les messages urgents.",
+    "en": "A muted chat no longer shows banners, except for mentions and urgent messages."
+  },
+  "ui.notification_settings_view.a_preset_rewrites_every_row_below": {
+    "fr": "Un préréglage réécrit toutes les lignes ci-dessous ; modifier une ligne passe en « Personnalisé ».",
+    "en": "A preset rewrites every row below; changing a row switches to “Custom”."
+  },
+  "ui.notification_settings_view.all_activity": {
+    "fr": "Toute l’activité",
+    "en": "All activity"
+  },
+  "ui.notification_settings_view.all_new_posts": {
+    "fr": "Toutes les nouvelles publications",
+    "en": "All new posts"
+  },
+  "ui.notification_settings_view.always_notify": {
+    "fr": "Toujours notifier",
+    "en": "Always notify"
+  },
+  "ui.notification_settings_view.always_show": {
+    "fr": "Toujours afficher",
+    "en": "Always show"
+  },
+  "ui.notification_settings_view.as_soon_as_possible": {
+    "fr": "Dès que possible",
+    "en": "As soon as possible"
+  },
+  "ui.notification_settings_view.banner_and_feed": {
+    "fr": "Bannière et flux",
+    "en": "Banner and feed"
+  },
+  "ui.notification_settings_view.banner_style_and_focus_are_set": {
+    "fr": "Le style des bannières et le mode Concentration se règlent dans les Réglages Système.",
+    "en": "Banner style and Focus are set in System Settings."
+  },
+  "ui.notification_settings_view.banners": {
+    "fr": "Bannières",
+    "en": "Banners"
+  },
+  "ui.notification_settings_view.banners_paused_until": {
+    "fr": "Bannières en pause jusqu’à {until}",
+    "en": "Banners paused until {until}"
+  },
+  "ui.notification_settings_view.banners_sounds_meetings_email": {
+    "fr": "Bannières, sons, réunions, e-mails",
+    "en": "Banners, sounds, meetings, email"
+  },
+  "ui.notification_settings_view.cancel": {
+    "fr": "Annuler",
+    "en": "Cancel"
+  },
+  "ui.notification_settings_view.channel_mentions": {
+    "fr": "Mentions du canal",
+    "en": "Channel mentions"
+  },
+  "ui.notification_settings_view.channel_notifications": {
+    "fr": "Notifications du canal…",
+    "en": "Channel notifications…"
+  },
+  "ui.notification_settings_view.chats": {
+    "fr": "Discussions",
+    "en": "Chats"
+  },
+  "ui.notification_settings_view.close": {
+    "fr": "Fermer",
+    "en": "Close"
+  },
+  "ui.notification_settings_view.custom": {
+    "fr": "Personnalisé",
+    "en": "Custom"
+  },
+  "ui.notification_settings_view.daily": {
+    "fr": "Une fois par jour",
+    "en": "Daily"
+  },
+  "ui.notification_settings_view.date_and_time": {
+    "fr": "Date et heure…",
+    "en": "Date and time…"
+  },
+  "ui.notification_settings_view.denied_by_macos": {
+    "fr": "Refusées par macOS",
+    "en": "Denied by macOS"
+  },
+  "ui.notification_settings_view.each_channel_also_has_its_own": {
+    "fr": "Chaque canal a aussi ses propres réglages : menu « … » du canal › Notifications du canal.",
+    "en": "Each channel also has its own settings: channel “…” menu › Channel notifications."
+  },
+  "ui.notification_settings_view.email": {
+    "fr": "E-mails",
+    "en": "Email"
+  },
+  "ui.notification_settings_view.end": {
+    "fr": "Fin",
+    "en": "End"
+  },
+  "ui.notification_settings_view.every_10_minutes": {
+    "fr": "Toutes les 10 minutes",
+    "en": "Every 10 minutes"
+  },
+  "ui.notification_settings_view.every_8_hours": {
+    "fr": "Toutes les 8 heures",
+    "en": "Every 8 hours"
+  },
+  "ui.notification_settings_view.everyone_mentions_everyone": {
+    "fr": "Mentions de tout le monde (@tout le monde)",
+    "en": "Everyone mentions (@everyone)"
+  },
+  "ui.notification_settings_view.follow_all_new_threads": {
+    "fr": "Suivre tous les nouveaux fils",
+    "en": "Follow all new threads"
+  },
+  "ui.notification_settings_view.follow_general_settings": {
+    "fr": "Suivre les réglages généraux",
+    "en": "Follow general settings"
+  },
+  "ui.notification_settings_view.hourly": {
+    "fr": "Toutes les heures",
+    "en": "Hourly"
+  },
+  "ui.notification_settings_view.include_all_replies": {
+    "fr": "Inclure les réponses",
+    "en": "Include all replies"
+  },
+  "ui.notification_settings_view.macos_notifications_allowed": {
+    "fr": "Notifications macOS autorisées",
+    "en": "macOS notifications allowed"
+  },
+  "ui.notification_settings_view.macos_notifications_denied": {
+    "fr": "Notifications macOS refusées",
+    "en": "macOS notifications denied"
+  },
+  "ui.notification_settings_view.macos_notifications_not_set_up": {
+    "fr": "Notifications macOS non configurées",
+    "en": "macOS notifications not set up"
+  },
+  "ui.notification_settings_view.meeting_chats": {
+    "fr": "Conversations des réunions",
+    "en": "Meeting chats"
+  },
+  "ui.notification_settings_view.meetings": {
+    "fr": "Réunions",
+    "en": "Meetings"
+  },
+  "ui.notification_settings_view.mentions_and_replies": {
+    "fr": "Mentions et réponses",
+    "en": "Mentions and replies"
+  },
+  "ui.notification_settings_view.mentions_and_urgent_messages_still_show": {
+    "fr": "Les mentions et les messages urgents s’affichent quand même.",
+    "en": "Mentions and urgent messages still show."
+  },
+  "ui.notification_settings_view.missed_activity_emails": {
+    "fr": "Activité manquée par e-mail",
+    "en": "Missed activity emails"
+  },
+  "ui.notification_settings_view.mute": {
+    "fr": "Couper",
+    "en": "Mute"
+  },
+  "ui.notification_settings_view.mute_chat": {
+    "fr": "Couper la discussion",
+    "en": "Mute chat"
+  },
+  "ui.notification_settings_view.mute_notifications": {
+    "fr": "Couper les notifications",
+    "en": "Mute notifications"
+  },
+  "ui.notification_settings_view.mute_notifications_during_meetings_and_calls": {
+    "fr": "Masquer les bannières pendant les appels et réunions",
+    "en": "Mute notifications during meetings and calls"
+  },
+  "ui.notification_settings_view.mute_until_i_join_or_send": {
+    "fr": "Couper jusqu’à ma participation",
+    "en": "Mute until I join or send a message"
+  },
+  "ui.notification_settings_view.never": {
+    "fr": "Jamais",
+    "en": "Never"
+  },
+  "ui.notification_settings_view.never_show": {
+    "fr": "Ne jamais afficher",
+    "en": "Never show"
+  },
+  "ui.notification_settings_view.no_banners_can_be_shown_while": {
+    "fr": "Aucune bannière ne peut s’afficher tant que macOS les refuse pour Oxide.",
+    "en": "No banners can be shown while macOS denies them for Oxide."
+  },
+  "ui.notification_settings_view.notification_settings": {
+    "fr": "Paramètres de notification…",
+    "en": "Notification settings…"
+  },
+  "ui.notification_settings_view.notifications": {
+    "fr": "Notifications",
+    "en": "Notifications"
+  },
+  "ui.notification_settings_view.notifications_and_activity": {
+    "fr": "Notifications et activité",
+    "en": "Notifications and activity"
+  },
+  "ui.notification_settings_view.off": {
+    "fr": "Désactivé",
+    "en": "Off"
+  },
+  "ui.notification_settings_view.only_show_in_feed": {
+    "fr": "Flux uniquement",
+    "en": "Only show in feed"
+  },
+  "ui.notification_settings_view.only_urgent_and_priority_notifications": {
+    "fr": "Seulement les notifications urgentes et prioritaires",
+    "en": "Only urgent and priority notifications"
+  },
+  "ui.notification_settings_view.open_system_settings": {
+    "fr": "Ouvrir les Réglages Système",
+    "en": "Open System Settings"
+  },
+  "ui.notification_settings_view.pause": {
+    "fr": "Suspendre",
+    "en": "Pause"
+  },
+  "ui.notification_settings_view.pause_banners": {
+    "fr": "Suspendre les bannières",
+    "en": "Pause banners"
+  },
+  "ui.notification_settings_view.pause_banners_until": {
+    "fr": "Suspendre les bannières jusqu’à",
+    "en": "Pause banners until"
+  },
+  "ui.notification_settings_view.paused_until": {
+    "fr": "En pause jusqu’à {until}",
+    "en": "Paused until {until}"
+  },
+  "ui.notification_settings_view.play": {
+    "fr": "Écouter",
+    "en": "Play"
+  },
+  "ui.notification_settings_view.play_sound_for_notifications": {
+    "fr": "Jouer un son pour les notifications",
+    "en": "Play sound for notifications"
+  },
+  "ui.notification_settings_view.preset": {
+    "fr": "Préréglage",
+    "en": "Preset"
+  },
+  "ui.notification_settings_view.privacy": {
+    "fr": "Confidentialité",
+    "en": "Privacy"
+  },
+  "ui.notification_settings_view.read_receipts": {
+    "fr": "Confirmations de lecture",
+    "en": "Read receipts"
+  },
+  "ui.notification_settings_view.read_receipts_detail": {
+    "fr": "Désactivées, vous ne voyez plus si vos messages ont été lus, dans les conversations à deux et les groupes de 20 personnes au plus.",
+    "en": "When off, you no longer see whether your messages were read, in one-on-one chats and group chats of 20 people or fewer."
+  },
+  "ui.notification_settings_view.replies_to_every_post_are_notified": {
+    "fr": "Les réponses de chaque publication sont notifiées comme un fil suivi.",
+    "en": "Replies to every post are notified like a followed thread."
+  },
+  "ui.notification_settings_view.resume": {
+    "fr": "Reprendre",
+    "en": "Resume"
+  },
+  "ui.notification_settings_view.ring_for_incoming_calls": {
+    "fr": "Sonnerie des appels entrants",
+    "en": "Ring for incoming calls"
+  },
+  "ui.notification_settings_view.run_the_packaged_app_oxide_app": {
+    "fr": "Lancez l’app empaquetée (Oxide.app) pour recevoir des bannières.",
+    "en": "Run the packaged app (Oxide.app) to get banners."
+  },
+  "ui.notification_settings_view.save": {
+    "fr": "Enregistrer",
+    "en": "Save"
+  },
+  "ui.notification_settings_view.show_message_preview": {
+    "fr": "Afficher l’aperçu du message",
+    "en": "Show message preview"
+  },
+  "ui.notification_settings_view.sound": {
+    "fr": "Son",
+    "en": "Sound"
+  },
+  "ui.notification_settings_view.sounds_and_preview": {
+    "fr": "Sons et aperçu",
+    "en": "Sounds and preview"
+  },
+  "ui.notification_settings_view.sounds_for_urgent_and_priority_messages": {
+    "fr": "Sons pour les messages urgents et prioritaires",
+    "en": "Sounds for urgent and priority messages"
+  },
+  "ui.notification_settings_view.sounds_when_i_m_busy_or": {
+    "fr": "Sons quand je suis occupé ou en réunion",
+    "en": "Sounds when I’m busy or in a meeting"
+  },
+  "ui.notification_settings_view.teams_and_channels": {
+    "fr": "Équipes et canaux",
+    "en": "Teams and channels"
+  },
+  "ui.notification_settings_view.test": {
+    "fr": "Tester",
+    "en": "Test"
+  },
+  "ui.notification_settings_view.the_activity_feed_badges_and_emails": {
+    "fr": "Le flux d’activité, les compteurs et les e-mails continuent.",
+    "en": "The activity feed, badges and emails keep going."
+  },
+  "ui.notification_settings_view.turn_off_channel_notifications": {
+    "fr": "Désactiver les notifications du canal",
+    "en": "Turn off channel notifications"
+  },
+  "ui.notification_settings_view.unmute_notifications": {
+    "fr": "Réactiver les notifications",
+    "en": "Unmute notifications"
+  },
+  "ui.notification_settings_view.until_tomorrow_8_00_am": {
+    "fr": "Jusqu’à demain 8:00",
+    "en": "Until tomorrow 8:00 AM"
+  },
+  "ui.notification_settings_view.urgent_sound": {
+    "fr": "Son urgent",
+    "en": "Urgent sound"
+  },
+  "ui.out_of_office.contacts_only": {
+    "fr": "Mes contacts uniquement",
+    "en": "My contacts only"
+  },
+  "ui.out_of_office.end": {
+    "fr": "Fin",
+    "en": "End"
+  },
+  "ui.out_of_office.everyone_outside": {
+    "fr": "Tous les expéditeurs externes",
+    "en": "All external senders"
+  },
+  "ui.out_of_office.explanation": {
+    "fr": "Vos contacts voient ce message quand ils vous écrivent dans Teams ou vous envoient un e-mail.",
+    "en": "People see this message when they message you in Teams or send you an email."
+  },
+  "ui.out_of_office.only_during_period": {
+    "fr": "Envoyer les réponses seulement pendant une période",
+    "en": "Send replies only during a time period"
+  },
+  "ui.out_of_office.reply_inside": {
+    "fr": "Message pour votre organisation",
+    "en": "Message for your organization"
+  },
+  "ui.out_of_office.reply_outside": {
+    "fr": "Répondre aussi en dehors de mon organisation",
+    "en": "Also reply outside my organization"
+  },
+  "ui.out_of_office.reply_outside_message": {
+    "fr": "Message pour l’extérieur",
+    "en": "Message for people outside"
+  },
+  "ui.out_of_office.save": {
+    "fr": "Enregistrer",
+    "en": "Save"
+  },
+  "ui.out_of_office.saving": {
+    "fr": "Enregistrement…",
+    "en": "Saving…"
+  },
+  "ui.out_of_office.start": {
+    "fr": "Début",
+    "en": "Start"
+  },
+  "ui.out_of_office.summary": {
+    "fr": "Réponses automatiques pendant votre absence",
+    "en": "Automatic replies while you're away"
+  },
+  "ui.out_of_office.title": {
+    "fr": "Absence du bureau",
+    "en": "Out of office"
+  },
+  "ui.out_of_office.turn_on": {
+    "fr": "Activer les réponses automatiques",
+    "en": "Turn on automatic replies"
+  },
+  "ui.presence.available": {
+    "fr": "Disponible",
+    "en": "Available"
+  },
+  "ui.presence.away": {
+    "fr": "Absent",
+    "en": "Away"
+  },
+  "ui.presence.be_right_back": {
+    "fr": "Je reviens bientôt",
+    "en": "Be right back"
+  },
+  "ui.presence.busy": {
+    "fr": "Occupé",
+    "en": "Busy"
+  },
+  "ui.presence.do_not_disturb": {
+    "fr": "Ne pas déranger",
+    "en": "Do not disturb"
+  },
+  "ui.presence.offline": {
+    "fr": "Hors connexion",
+    "en": "Offline"
+  },
+  "ui.presence.out_of_office": {
+    "fr": "{status}, absent du bureau",
+    "en": "{status}, out of office"
+  },
+  "ui.presence.unknown": {
+    "fr": "Statut inconnu",
+    "en": "Status unknown"
+  },
+  "ui.refresh_settings.constant_refresh": {
+    "fr": "Actualisation permanente",
+    "en": "Constant refresh"
+  },
+  "ui.refresh_settings.message_refresh": {
+    "fr": "Actualisation des messages",
+    "en": "Message refresh"
+  },
+  "ui.refresh_settings.mode": {
+    "fr": "Mode",
+    "en": "Mode"
+  },
+  "ui.refresh_settings.notification_channel_connected": {
+    "fr": "Canal de notifications connecté",
+    "en": "Notification channel connected"
+  },
+  "ui.refresh_settings.notification_channel_disconnected": {
+    "fr": "Canal de notifications déconnecté",
+    "en": "Notification channel disconnected"
+  },
+  "ui.refresh_settings.notification_channel_disconnected_2": {
+    "fr": "{label} · canal de notifications déconnecté",
+    "en": "{label} · notification channel disconnected"
+  },
+  "ui.refresh_settings.polling_detail": {
+    "fr": "La conversation ouverte est rechargée toutes les 5 s, la liste des discussions et l’activité toutes les 30 s, même quand le canal de notifications fonctionne.",
+    "en": "The open conversation reloads every 5 s, the chat list and activity every 30 s, even while the notification channel works."
+  },
+  "ui.refresh_settings.push_detail": {
+    "fr": "Les nouveaux messages arrivent par le canal de notifications. Oxide n’interroge le serveur que si ce canal est coupé, toutes les 5 s, le temps qu’il revienne.",
+    "en": "New messages arrive through the notification channel. Oxide only polls the server while that channel is down, every 5 s, until it comes back."
+  },
+  "ui.refresh_settings.real_time": {
+    "fr": "Temps réel",
+    "en": "Real time"
+  },
+  "ui.screen_share_picker.cancel": {
+    "fr": "Annuler",
+    "en": "Cancel"
+  },
+  "ui.screen_share_picker.open_settings": {
+    "fr": "Ouvrir les Réglages",
+    "en": "Open Settings"
+  },
+  "ui.screen_share_picker.oxide_must_be_allowed_in_system": {
+    "fr": "Oxide doit être autorisé dans Réglages Système › Confidentialité et sécurité › Enregistrement de l’écran, puis relancé.",
+    "en": "Oxide must be allowed in System Settings › Privacy & Security › Screen Recording, then restarted."
+  },
+  "ui.screen_share_picker.screens": {
+    "fr": "Écrans",
+    "en": "Screens"
+  },
+  "ui.screen_share_picker.share": {
+    "fr": "Partager",
+    "en": "Share"
+  },
+  "ui.screen_share_picker.share_screen": {
+    "fr": "Partager l’écran",
+    "en": "Share screen"
+  },
+  "ui.screen_share_picker.windows": {
+    "fr": "Fenêtres",
+    "en": "Windows"
+  },
+  "ui.screens.appearance": {
+    "fr": "Apparence",
+    "en": "Appearance"
+  },
+  "ui.screens.audio_and_video": {
+    "fr": "Audio et vidéo",
+    "en": "Audio and video"
+  },
+  "ui.screens.back_to_settings": {
+    "fr": "Retour aux paramètres",
+    "en": "Back to settings"
+  },
+  "ui.screens.cancel": {
+    "fr": "Annuler",
+    "en": "Cancel"
+  },
+  "ui.screens.couldn_t_load_participants": {
+    "fr": "Impossible de charger les participants : {error}",
+    "en": "Couldn’t load participants: {error}"
+  },
+  "ui.screens.create_chat": {
+    "fr": "Créer la discussion",
+    "en": "Create chat"
+  },
+  "ui.screens.creating": {
+    "fr": "Création…",
+    "en": "Creating…"
+  },
+  "ui.screens.filter_participants": {
+    "fr": "Filtrer les participants",
+    "en": "Filter participants"
+  },
+  "ui.screens.find_your_private_chats_and_your": {
+    "fr": "Retrouvez vos discussions privées et les canaux de vos équipes.",
+    "en": "Find your private chats and your teams’ channels."
+  },
+  "ui.screens.group_name_optional": {
+    "fr": "Nom du groupe (facultatif)",
+    "en": "Group name (optional)"
+  },
+  "ui.screens.language": {
+    "fr": "Langue",
+    "en": "Language"
+  },
+  "ui.screens.loading_participants": {
+    "fr": "Chargement des participants…",
+    "en": "Loading participants…"
+  },
+  "ui.screens.loading_teams": {
+    "fr": "Chargement des équipes…",
+    "en": "Loading teams…"
+  },
+  "ui.screens.loading_your_conversations": {
+    "fr": "Chargement de vos conversations…",
+    "en": "Loading your conversations…"
+  },
+  "ui.screens.message_refresh": {
+    "fr": "Actualisation des messages",
+    "en": "Message refresh"
+  },
+  "ui.screens.microphone_speaker_camera_test_call": {
+    "fr": "Micro, haut-parleur, caméra, appel de test",
+    "en": "Microphone, speaker, camera, test call"
+  },
+  "ui.screens.microsoft_sign_in_session_saved_in": {
+    "fr": "Connexion Microsoft · Session sauvegardée dans le Trousseau macOS",
+    "en": "Microsoft sign-in · Session saved in the macOS Keychain"
+  },
+  "ui.screens.name_or_email_address": {
+    "fr": "Nom ou adresse e-mail",
+    "en": "Name or email address"
+  },
+  "ui.screens.new_chat": {
+    "fr": "Nouvelle discussion",
+    "en": "New chat"
+  },
+  "ui.screens.no_people_found_for_this_search": {
+    "fr": "Aucune personne trouvée pour cette recherche.",
+    "en": "No people found for this search."
+  },
+  "ui.screens.no_teams_available_for_this_account": {
+    "fr": "Aucune équipe disponible pour ce compte.",
+    "en": "No teams available for this account."
+  },
+  "ui.screens.of_participants": {
+    "fr": "{shownCount} sur {membersCount} participants",
+    "en": "{shownCount} of {membersCount} participants"
+  },
+  "ui.screens.open_a_channel_to_see_its": {
+    "fr": "Ouvrez un canal pour retrouver ses publications et participer aux échanges.",
+    "en": "Open a channel to see its posts and join the conversation."
+  },
+  "ui.screens.open_in_teams_on_the_web": {
+    "fr": "Ouvrir dans Teams Web",
+    "en": "Open in Teams on the web"
+  },
+  "ui.screens.opens_the_page": {
+    "fr": "Ouvre la page {title}",
+    "en": "Opens the {title} page"
+  },
+  "ui.screens.participants": {
+    "fr": "Participants",
+    "en": "Participants"
+  },
+  "ui.screens.participants_2": {
+    "fr": "{membersCount} participants",
+    "en": "{membersCount} participants"
+  },
+  "ui.screens.refresh_participants": {
+    "fr": "Actualiser les participants",
+    "en": "Refresh participants"
+  },
+  "ui.screens.remove": {
+    "fr": "Retirer",
+    "en": "Remove"
+  },
+  "ui.screens.search": {
+    "fr": "Rechercher",
+    "en": "Search"
+  },
+  "ui.screens.search_for_a_person_or_pick": {
+    "fr": "Recherchez une personne ou choisissez un contact récent.",
+    "en": "Search for a person or pick a recent contact."
+  },
+  "ui.screens.searching": {
+    "fr": "Recherche…",
+    "en": "Searching…"
+  },
+  "ui.screens.sign_out": {
+    "fr": "Se déconnecter",
+    "en": "Sign out"
+  },
+  "ui.screens.the_service_returned_no_participants": {
+    "fr": "Aucun participant renvoyé par le service.",
+    "en": "The service returned no participants."
+  },
+  "ui.screens.the_teams_service_couldn_t_be": {
+    "fr": "Le service des équipes n’a pas pu être chargé.",
+    "en": "The teams service couldn’t be loaded."
+  },
+  "ui.screens.theme": {
+    "fr": "Thème",
+    "en": "Theme"
+  },
+  "ui.screens.to": {
+    "fr": "DESTINATAIRES",
+    "en": "TO"
+  },
+  "ui.screens.try_again": {
+    "fr": "Réessayer",
+    "en": "Try again"
+  },
+  "ui.screens.version": {
+    "fr": "Version {version}",
+    "en": "Version {version}"
+  },
+  "ui.screens.your_account": {
+    "fr": "Votre compte",
+    "en": "Your account"
+  },
+  "ui.screens.your_teams": {
+    "fr": "Vos équipes",
+    "en": "Your teams"
+  },
+  "ui.screens.your_workspace": {
+    "fr": "Votre espace de travail",
+    "en": "Your workspace"
+  },
+  "ui.search.any_time": {
+    "fr": "N’importe quand",
+    "en": "Any time"
+  },
+  "ui.search.anyone": {
+    "fr": "N’importe qui",
+    "en": "Anyone"
+  },
+  "ui.search.channels": {
+    "fr": "Canaux",
+    "en": "Channels"
+  },
+  "ui.search.chats": {
+    "fr": "Discussions",
+    "en": "Chats"
+  },
+  "ui.search.close": {
+    "fr": "Fermer la recherche",
+    "en": "Close search"
+  },
+  "ui.search.custom_range": {
+    "fr": "Période personnalisée",
+    "en": "Custom range"
+  },
+  "ui.search.date": {
+    "fr": "Date",
+    "en": "Date"
+  },
+  "ui.search.everywhere": {
+    "fr": "Discussions et canaux",
+    "en": "Chats and channels"
+  },
+  "ui.search.from": {
+    "fr": "De",
+    "en": "From"
+  },
+  "ui.search.has_attachment": {
+    "fr": "Avec pièce jointe",
+    "en": "Has attachment"
+  },
+  "ui.search.hide_bots": {
+    "fr": "Masquer les bots",
+    "en": "Hide bots"
+  },
+  "ui.search.last_month": {
+    "fr": "Le mois dernier",
+    "en": "Last month"
+  },
+  "ui.search.last_week": {
+    "fr": "La semaine dernière",
+    "en": "Last week"
+  },
+  "ui.search.last_year": {
+    "fr": "L’année dernière",
+    "en": "Last year"
+  },
+  "ui.search.mentions_me": {
+    "fr": "@Me mentionne",
+    "en": "@Mentions me"
+  },
+  "ui.search.more_results": {
+    "fr": "Plus de résultats",
+    "en": "More results"
+  },
+  "ui.search.no_results": {
+    "fr": "Aucun message trouvé.",
+    "en": "No messages found."
+  },
+  "ui.search.only_in": {
+    "fr": "Seulement dans « {name} »",
+    "en": "Only in “{name}”"
+  },
+  "ui.search.person": {
+    "fr": "Nom d’une personne",
+    "en": "A person's name"
+  },
+  "ui.search.press_return": {
+    "fr": "Entrée : rechercher dans tous les messages",
+    "en": "Return: search all messages"
+  },
+  "ui.search.results_count": {
+    "fr": "{count} résultat(s)",
+    "en": "{count} result(s)"
+  },
+  "ui.search.search_messages": {
+    "fr": "Rechercher dans les messages",
+    "en": "Search messages"
+  },
+  "ui.search.searching": {
+    "fr": "Recherche…",
+    "en": "Searching…"
+  },
+  "ui.search.this_month": {
+    "fr": "Ce mois-ci",
+    "en": "This month"
+  },
+  "ui.search.this_week": {
+    "fr": "Cette semaine",
+    "en": "This week"
+  },
+  "ui.search.this_year": {
+    "fr": "Cette année",
+    "en": "This year"
+  },
+  "ui.search.title": {
+    "fr": "Résultats de la recherche",
+    "en": "Search results"
+  },
+  "ui.search.today": {
+    "fr": "Aujourd’hui",
+    "en": "Today"
+  },
+  "ui.search.type": {
+    "fr": "Type",
+    "en": "Type"
+  },
+  "ui.search.type_or_filter": {
+    "fr": "Tapez un mot ou choisissez un filtre.",
+    "en": "Type a word or pick a filter."
+  },
+  "ui.search.yesterday": {
+    "fr": "Hier",
+    "en": "Yesterday"
+  },
+  "ui.sidebar_view.activity": {
+    "fr": "Activité",
+    "en": "Activity"
+  },
+  "ui.sidebar_view.all": {
+    "fr": "Tout",
+    "en": "All"
+  },
+  "ui.sidebar_view.chat": {
+    "fr": "Discussion",
+    "en": "Chat"
+  },
+  "ui.sidebar_view.chats": {
+    "fr": "Discussions",
+    "en": "Chats"
+  },
+  "ui.sidebar_view.favorites": {
+    "fr": "FAVORIS",
+    "en": "FAVORITES"
+  },
+  "ui.sidebar_view.loading_chats": {
+    "fr": "Chargement des discussions…",
+    "en": "Loading chats…"
+  },
+  "ui.sidebar_view.mark_all_as_read": {
+    "fr": "Tout marquer comme lu",
+    "en": "Mark all as read"
+  },
+  "ui.sidebar_view.meetings": {
+    "fr": "Réunions",
+    "en": "Meetings"
+  },
+  "ui.sidebar_view.more_chats": {
+    "fr": "Plus de discussions",
+    "en": "More chats"
+  },
+  "ui.sidebar_view.new_chat": {
+    "fr": "Nouvelle discussion",
+    "en": "New chat"
+  },
+  "ui.sidebar_view.no_chats_to_show": {
+    "fr": "Aucune discussion à afficher",
+    "en": "No chats to show"
+  },
+  "ui.sidebar_view.notifications_muted": {
+    "fr": "Notifications coupées",
+    "en": "Notifications muted"
+  },
+  "ui.sidebar_view.recent": {
+    "fr": "CONVERSATIONS",
+    "en": "RECENT"
+  },
+  "ui.sidebar_view.refresh_notifications": {
+    "fr": "Actualiser les notifications",
+    "en": "Refresh notifications"
+  },
+  "ui.sidebar_view.refresh_teams": {
+    "fr": "Actualiser les équipes",
+    "en": "Refresh teams"
+  },
+  "ui.sidebar_view.teams": {
+    "fr": "Équipes",
+    "en": "Teams"
+  },
+  "ui.sidebar_view.unread": {
+    "fr": "Non lus",
+    "en": "Unread"
+  },
+  "ui.sidebar_view.unread_2": {
+    "fr": "Non lu",
+    "en": "Unread"
+  },
+  "ui.sidebar_view.up_and_down_arrows_to_switch": {
+    "fr": "Flèches haut et bas pour changer de discussion",
+    "en": "Up and down arrows to switch chats"
+  },
+  "ui.sign_in_view.calendar_and_files": {
+    "fr": "Calendrier et fichiers",
+    "en": "Calendar and files"
+  },
+  "ui.sign_in_view.calls_and_meetings": {
+    "fr": "Appels et réunions",
+    "en": "Calls and meetings"
+  },
+  "ui.sign_in_view.chats_teams_and_channels": {
+    "fr": "Discussions, équipes et canaux",
+    "en": "Chats, teams and channels"
+  },
+  "ui.sign_in_view.independent_client_not_affiliated_with_microsoft": {
+    "fr": "Client indépendant, non affilié à Microsoft.",
+    "en": "Independent client, not affiliated with Microsoft."
+  },
+  "ui.sign_in_view.microsoft_teams_native_on_your_mac": {
+    "fr": "Microsoft Teams,\nen natif sur votre Mac.",
+    "en": "Microsoft Teams,\nnative on your Mac."
+  },
+  "ui.sign_in_view.sign_in_with_microsoft": {
+    "fr": "Se connecter avec Microsoft",
+    "en": "Sign in with Microsoft"
+  },
+  "ui.sign_in_view.sign_in_with_your_microsoft_work": {
+    "fr": "Connectez-vous avec votre compte Microsoft professionnel ou scolaire pour retrouver vos discussions, réunions et appels.",
+    "en": "Sign in with your Microsoft work or school account to get to your chats, meetings and calls."
+  },
+  "ui.sign_in_view.signing_in": {
+    "fr": "Connexion en cours…",
+    "en": "Signing in…"
+  },
+  "ui.sign_in_view.theme": {
+    "fr": "Thème : {theme}",
+    "en": "Theme: {theme}"
+  },
+  "ui.sign_in_view.welcome": {
+    "fr": "Bienvenue",
+    "en": "Welcome"
+  },
+  "ui.sign_in_view.you_sign_in_on_microsoft_s": {
+    "fr": "La connexion se fait sur la page de Microsoft : Oxide ne conserve pas votre mot de passe.",
+    "en": "You sign in on Microsoft’s page: Oxide never keeps your password."
+  },
+  "ui.sign_in_view.your_sign_in_tokens_stay_in": {
+    "fr": "Vos jetons de connexion restent dans le Trousseau de ce Mac.",
+    "en": "Your sign-in tokens stay in this Mac’s Keychain."
+  },
+  "ui.status_menu.1_hour": {
+    "fr": "1 heure",
+    "en": "1 hour"
+  },
+  "ui.status_menu.2_hours": {
+    "fr": "2 heures",
+    "en": "2 hours"
+  },
+  "ui.status_menu.30_minutes": {
+    "fr": "30 minutes",
+    "en": "30 minutes"
+  },
+  "ui.status_menu.4_hours": {
+    "fr": "4 heures",
+    "en": "4 hours"
+  },
+  "ui.status_menu.appear_away": {
+    "fr": "Paraître absent",
+    "en": "Appear away"
+  },
+  "ui.status_menu.appear_offline": {
+    "fr": "Paraître hors ligne",
+    "en": "Appear offline"
+  },
+  "ui.status_menu.automatic_replies_on": {
+    "fr": "Réponses automatiques activées",
+    "en": "Automatic replies are on"
+  },
+  "ui.status_menu.cancel": {
+    "fr": "Annuler",
+    "en": "Cancel"
+  },
+  "ui.status_menu.clear_after": {
+    "fr": "Effacer après",
+    "en": "Clear after"
+  },
+  "ui.status_menu.clear_message": {
+    "fr": "Effacer le message",
+    "en": "Clear message"
+  },
+  "ui.status_menu.close": {
+    "fr": "Fermer",
+    "en": "Close"
+  },
+  "ui.status_menu.done": {
+    "fr": "Terminé",
+    "en": "Done"
+  },
+  "ui.status_menu.never": {
+    "fr": "Jamais",
+    "en": "Never"
+  },
+  "ui.status_menu.reset_after": {
+    "fr": "Réinitialiser après",
+    "en": "Reset after"
+  },
+  "ui.status_menu.reset_status": {
+    "fr": "Réinitialiser le statut",
+    "en": "Reset status"
+  },
+  "ui.status_menu.schedule_out_of_office": {
+    "fr": "Planifier une absence",
+    "en": "Schedule out of office"
+  },
+  "ui.status_menu.set_status_message": {
+    "fr": "Définir le message d’état",
+    "en": "Set status message"
+  },
+  "ui.status_menu.settings": {
+    "fr": "Paramètres",
+    "en": "Settings"
+  },
+  "ui.status_menu.status_message": {
+    "fr": "Message d’état",
+    "en": "Status message"
+  },
+  "ui.status_menu.this_week": {
+    "fr": "Cette semaine",
+    "en": "This week"
+  },
+  "ui.status_menu.today": {
+    "fr": "Aujourd’hui",
+    "en": "Today"
+  },
+  "ui.store.back_online": {
+    "fr": "Connexion rétablie",
+    "en": "Back online"
+  },
+  "ui.store.earlier_posts": {
+    "fr": "Publications précédentes",
+    "en": "Earlier posts"
+  },
+  "ui.store.load_earlier_messages": {
+    "fr": "Charger les messages précédents",
+    "en": "Load earlier messages"
+  },
+  "ui.store.offline": {
+    "fr": "Hors ligne",
+    "en": "Offline"
+  },
+  "ui.store.text": {
+    "fr": "{author} : {excerpt}",
+    "en": "{author}: {excerpt}"
+  },
+  "ui.store.you": {
+    "fr": "Vous",
+    "en": "You"
+  },
+  "ui.teams_admin.add_channel": {
+    "fr": "Ajouter un canal",
+    "en": "Add channel"
+  },
+  "ui.teams_admin.channel_name": {
+    "fr": "Nom du canal",
+    "en": "Channel name"
+  },
+  "ui.teams_admin.channel_type": {
+    "fr": "Type de canal",
+    "en": "Channel type"
+  },
+  "ui.teams_admin.code_explanation": {
+    "fr": "Partagez ce code : il permet de rejoindre l’équipe directement.",
+    "en": "Share this code: people can use it to join the team directly."
+  },
+  "ui.teams_admin.code_pending": {
+    "fr": "Votre demande a été envoyée aux propriétaires de l’équipe.",
+    "en": "Your request was sent to the team's owners."
+  },
+  "ui.teams_admin.copy": {
+    "fr": "Copier",
+    "en": "Copy"
+  },
+  "ui.teams_admin.create": {
+    "fr": "Créer",
+    "en": "Create"
+  },
+  "ui.teams_admin.create_team": {
+    "fr": "Créer une équipe",
+    "en": "Create a team"
+  },
+  "ui.teams_admin.creating": {
+    "fr": "Création…",
+    "en": "Creating…"
+  },
+  "ui.teams_admin.description_optional": {
+    "fr": "Description (facultatif)",
+    "en": "Description (optional)"
+  },
+  "ui.teams_admin.enter_code": {
+    "fr": "Code de l’équipe",
+    "en": "Team code"
+  },
+  "ui.teams_admin.generate": {
+    "fr": "Générer",
+    "en": "Generate"
+  },
+  "ui.teams_admin.join": {
+    "fr": "Rejoindre",
+    "en": "Join"
+  },
+  "ui.teams_admin.join_or_create": {
+    "fr": "Rejoindre ou créer une équipe",
+    "en": "Join or create a team"
+  },
+  "ui.teams_admin.join_with_code": {
+    "fr": "Rejoindre avec un code",
+    "en": "Join with a code"
+  },
+  "ui.teams_admin.joined": {
+    "fr": "Rejointe",
+    "en": "Joined"
+  },
+  "ui.teams_admin.joining": {
+    "fr": "Connexion…",
+    "en": "Joining…"
+  },
+  "ui.teams_admin.known_members": {
+    "fr": "{count} personne(s) que vous connaissez",
+    "en": "{count} people you know"
+  },
+  "ui.teams_admin.leave_question": {
+    "fr": "Quitter « {name} » ?",
+    "en": "Leave “{name}”?"
+  },
+  "ui.teams_admin.leave_team": {
+    "fr": "Quitter l’équipe",
+    "en": "Leave the team"
+  },
+  "ui.teams_admin.more_teams": {
+    "fr": "Plus d’équipes",
+    "en": "More teams"
+  },
+  "ui.teams_admin.new_channel_in": {
+    "fr": "Nouveau canal dans « {team} »",
+    "en": "New channel in “{team}”"
+  },
+  "ui.teams_admin.no_code": {
+    "fr": "Cette équipe n’a pas encore de code.",
+    "en": "This team has no code yet."
+  },
+  "ui.teams_admin.no_suggestions": {
+    "fr": "Aucune équipe suggérée. Recherchez-en une.",
+    "en": "No suggested teams. Search for one."
+  },
+  "ui.teams_admin.no_teams_found": {
+    "fr": "Aucune équipe trouvée.",
+    "en": "No teams found."
+  },
+  "ui.teams_admin.org_wide": {
+    "fr": "À l’échelle de l’organisation",
+    "en": "Org-wide"
+  },
+  "ui.teams_admin.org_wide_explanation": {
+    "fr": "Tout le monde dans l’organisation en est membre automatiquement.",
+    "en": "Everyone in your org is a member automatically."
+  },
+  "ui.teams_admin.privacy": {
+    "fr": "Confidentialité",
+    "en": "Privacy"
+  },
+  "ui.teams_admin.private": {
+    "fr": "Privée",
+    "en": "Private"
+  },
+  "ui.teams_admin.private_channel": {
+    "fr": "Privé : seules certaines personnes de l’équipe y ont accès",
+    "en": "Private: only specific people on the team have access"
+  },
+  "ui.teams_admin.private_explanation": {
+    "fr": "Seuls les propriétaires peuvent ajouter des membres.",
+    "en": "Only owners can add members."
+  },
+  "ui.teams_admin.public": {
+    "fr": "Publique",
+    "en": "Public"
+  },
+  "ui.teams_admin.public_explanation": {
+    "fr": "Tout le monde dans l’organisation peut la rejoindre.",
+    "en": "Anyone in your org can join."
+  },
+  "ui.teams_admin.request_sent": {
+    "fr": "Demande envoyée",
+    "en": "Request sent"
+  },
+  "ui.teams_admin.request_to_join": {
+    "fr": "Demander à rejoindre",
+    "en": "Request to join"
+  },
+  "ui.teams_admin.reset_code": {
+    "fr": "Réinitialiser",
+    "en": "Reset"
+  },
+  "ui.teams_admin.search_teams": {
+    "fr": "Rechercher des équipes",
+    "en": "Search teams"
+  },
+  "ui.teams_admin.show_for_everyone": {
+    "fr": "Afficher ce canal dans la liste de tous les membres",
+    "en": "Show this channel in everyone's list"
+  },
+  "ui.teams_admin.standard_channel": {
+    "fr": "Standard : accessible à tous les membres de l’équipe",
+    "en": "Standard: everyone on the team has access"
+  },
+  "ui.teams_admin.team_code": {
+    "fr": "Code de l’équipe",
+    "en": "Team code"
+  },
+  "ui.teams_admin.team_code_of": {
+    "fr": "Code de « {team} »",
+    "en": "Code for “{team}”"
+  },
+  "ui.teams_admin.team_name": {
+    "fr": "Nom de l’équipe",
+    "en": "Team name"
+  },
+  "ui.teams_list.a_to_z": {
+    "fr": "De A à Z",
+    "en": "A to Z"
+  },
+  "ui.teams_list.all_your_teams_are_hidden": {
+    "fr": "Toutes vos équipes sont masquées.",
+    "en": "All your teams are hidden."
+  },
+  "ui.teams_list.archived": {
+    "fr": "Archivée",
+    "en": "Archived"
+  },
+  "ui.teams_list.archived_2": {
+    "fr": "Archivé",
+    "en": "Archived"
+  },
+  "ui.teams_list.archived_channel": {
+    "fr": "Canal archivé",
+    "en": "Archived channel"
+  },
+  "ui.teams_list.channels_couldn_t_be_refreshed": {
+    "fr": "Les canaux n’ont pas pu être actualisés.",
+    "en": "Channels couldn’t be refreshed."
+  },
+  "ui.teams_list.collapsed": {
+    "fr": "Réduite",
+    "en": "Collapsed"
+  },
+  "ui.teams_list.couldn_t_load_teams": {
+    "fr": "Chargement des équipes impossible",
+    "en": "Couldn’t load teams"
+  },
+  "ui.teams_list.expanded": {
+    "fr": "Développée",
+    "en": "Expanded"
+  },
+  "ui.teams_list.hidden": {
+    "fr": "Masquée",
+    "en": "Hidden"
+  },
+  "ui.teams_list.hidden_2": {
+    "fr": "Masqué",
+    "en": "Hidden"
+  },
+  "ui.teams_list.hidden_teams": {
+    "fr": "Équipes masquées ({hiddenCount})",
+    "en": "Hidden teams ({hiddenCount})"
+  },
+  "ui.teams_list.hide_channel": {
+    "fr": "Masquer le canal",
+    "en": "Hide channel"
+  },
+  "ui.teams_list.hide_hidden_channels": {
+    "fr": "Masquer les canaux masqués ({hiddenChannelCount})",
+    "en": "Hide hidden channels ({hiddenChannelCount})"
+  },
+  "ui.teams_list.hide_team": {
+    "fr": "Masquer l’équipe",
+    "en": "Hide team"
+  },
+  "ui.teams_list.hide_the_list_of_hidden_channels": {
+    "fr": "Masquer la liste des canaux masqués",
+    "en": "Hide the list of hidden channels"
+  },
+  "ui.teams_list.loading_channels": {
+    "fr": "Chargement des canaux…",
+    "en": "Loading channels…"
+  },
+  "ui.teams_list.loading_teams": {
+    "fr": "Chargement des équipes…",
+    "en": "Loading teams…"
+  },
+  "ui.teams_list.move_down": {
+    "fr": "Descendre",
+    "en": "Move down"
+  },
+  "ui.teams_list.move_up": {
+    "fr": "Monter",
+    "en": "Move up"
+  },
+  "ui.teams_list.no_channels_available": {
+    "fr": "Aucun canal disponible",
+    "en": "No channels available"
+  },
+  "ui.teams_list.no_matching_channels": {
+    "fr": "Aucun canal correspondant",
+    "en": "No matching channels"
+  },
+  "ui.teams_list.no_matching_teams_or_channels": {
+    "fr": "Aucune équipe ou aucun canal correspondant",
+    "en": "No matching teams or channels"
+  },
+  "ui.teams_list.no_teams_available": {
+    "fr": "Aucune équipe disponible",
+    "en": "No teams available"
+  },
+  "ui.teams_list.notifications_turned_off": {
+    "fr": "Notifications désactivées",
+    "en": "Notifications turned off"
+  },
+  "ui.teams_list.options_for_channel": {
+    "fr": "Options du canal {name}",
+    "en": "Options for channel {name}"
+  },
+  "ui.teams_list.options_for_team": {
+    "fr": "Options de l’équipe {name}",
+    "en": "Options for team {name}"
+  },
+  "ui.teams_list.private_channel": {
+    "fr": "Canal privé",
+    "en": "Private channel"
+  },
+  "ui.teams_list.refresh_channels": {
+    "fr": "Actualiser les canaux",
+    "en": "Refresh channels"
+  },
+  "ui.teams_list.saving_order": {
+    "fr": "Enregistrement de l’ordre…",
+    "en": "Saving order…"
+  },
+  "ui.teams_list.see_all_hidden_channels": {
+    "fr": "Voir tous les canaux masqués",
+    "en": "See all hidden channels"
+  },
+  "ui.teams_list.see_fewer_channels": {
+    "fr": "Voir moins de canaux",
+    "en": "See fewer channels"
+  },
+  "ui.teams_list.see_fewer_hidden_channels": {
+    "fr": "Voir moins de canaux masqués",
+    "en": "See fewer hidden channels"
+  },
+  "ui.teams_list.see_fewer_hidden_teams": {
+    "fr": "Voir moins d’équipes masquées",
+    "en": "See fewer hidden teams"
+  },
+  "ui.teams_list.see_fewer_teams": {
+    "fr": "Voir moins d’équipes",
+    "en": "See fewer teams"
+  },
+  "ui.teams_list.see_hidden_channels": {
+    "fr": "Voir les canaux masqués ({hiddenChannelCount})",
+    "en": "See hidden channels ({hiddenChannelCount})"
+  },
+  "ui.teams_list.see_more_channels": {
+    "fr": "Voir plus de canaux",
+    "en": "See more channels"
+  },
+  "ui.teams_list.see_more_hidden_channels": {
+    "fr": "Voir plus de canaux masqués",
+    "en": "See more hidden channels"
+  },
+  "ui.teams_list.see_more_hidden_teams": {
+    "fr": "Voir plus d’équipes masquées",
+    "en": "See more hidden teams"
+  },
+  "ui.teams_list.see_more_teams": {
+    "fr": "Voir plus d’équipes",
+    "en": "See more teams"
+  },
+  "ui.teams_list.shared_channel": {
+    "fr": "Canal partagé",
+    "en": "Shared channel"
+  },
+  "ui.teams_list.show_channel": {
+    "fr": "Afficher le canal",
+    "en": "Show channel"
+  },
+  "ui.teams_list.show_team": {
+    "fr": "Afficher l’équipe",
+    "en": "Show team"
+  },
+  "ui.teams_list.shown_hidden": {
+    "fr": "{shownCount} affichées · {hiddenCount} masquées",
+    "en": "{shownCount} shown · {hiddenCount} hidden"
+  },
+  "ui.teams_list.sort_teams": {
+    "fr": "Ordre des équipes",
+    "en": "Sort teams"
+  },
+  "ui.teams_list.teams_order": {
+    "fr": "Ordre Teams",
+    "en": "Teams order"
+  },
+  "ui.teams_list.the_team_list_couldn_t_be": {
+    "fr": "La liste des équipes n’a pas pu être entièrement actualisée.",
+    "en": "The team list couldn’t be fully refreshed."
+  },
+  "ui.teams_list.try_again": {
+    "fr": "Réessayer",
+    "en": "Try again"
+  },
+  "ui.teams_list.unread": {
+    "fr": "Messages non lus",
+    "en": "Unread messages"
+  },
+  "ui.test_call_report.couldn_t_establish_the_audio_video": {
+    "fr": "Impossible d’établir la connexion audio/vidéo.",
+    "en": "Couldn’t establish the audio/video connection."
+  },
+  "ui.test_call_report.no_audio_output_detected": {
+    "fr": "Aucune sortie audio détectée.",
+    "en": "No audio output detected."
+  },
+  "ui.test_call_report.no_camera_selected": {
+    "fr": "Aucune caméra sélectionnée.",
+    "en": "No camera selected."
+  },
+  "ui.test_call_report.no_microphone_detected": {
+    "fr": "Aucun micro détecté.",
+    "en": "No microphone detected."
+  },
+  "ui.test_call_report.no_sound_was_received_from_the": {
+    "fr": "Aucun son n’a été reçu de l’Echo Bot.",
+    "en": "No sound was received from the Echo Bot."
+  },
+  "ui.test_call_report.oxide_doesn_t_have_access_to": {
+    "fr": "Oxide n’a pas accès au micro.",
+    "en": "Oxide doesn’t have access to the microphone."
+  },
+  "ui.test_call_report.oxide_doesn_t_have_access_to_2": {
+    "fr": "Oxide n’a pas accès à la caméra.",
+    "en": "Oxide doesn’t have access to the camera."
+  },
+  "ui.test_call_report.poor_connection_quality_high_packet_loss": {
+    "fr": "Connexion de mauvaise qualité (pertes ou latence élevées).",
+    "en": "Poor connection quality (high packet loss or latency)."
+  },
+  "ui.test_call_report.the_camera_didn_t_start": {
+    "fr": "La caméra n’a pas démarré.",
+    "en": "The camera didn’t start."
+  },
+  "ui.test_call_report.the_connection_was_interrupted_during_the": {
+    "fr": "La connexion a été interrompue pendant l’appel.",
+    "en": "The connection was interrupted during the call."
+  },
+  "ui.test_call_report.the_mac_s_audio_output_is": {
+    "fr": "La sortie audio du Mac est coupée.",
+    "en": "The Mac’s audio output is muted."
+  },
+  "ui.test_call_report.the_microphone_didn_t_pick_up": {
+    "fr": "Le micro n’a capté aucun son.",
+    "en": "The microphone didn’t pick up any sound."
+  },
+  "ui.test_call_report.your_mic_was_muted": {
+    "fr": "Votre micro était coupé.",
+    "en": "Your mic was muted."
+  },
+  "ui.theme.dark": {
+    "fr": "Sombre",
+    "en": "Dark"
+  },
+  "ui.theme.light": {
+    "fr": "Clair",
+    "en": "Light"
+  },
+  "ui.theme.system": {
+    "fr": "Système",
+    "en": "System"
+  },
+  "ui.typing_indicator.seen": {
+    "fr": "Vu",
+    "en": "Seen"
+  },
+  "ui.typing_indicator.seen_by_everyone": {
+    "fr": "Vu par tout le monde",
+    "en": "Seen by everyone"
+  },
+  "ui.typing_indicator.sent": {
+    "fr": "Envoyé",
+    "en": "Sent"
+  },
+  "ui.voicemail_player.couldn_t_play_the_voicemail": {
+    "fr": "Lecture du message vocal impossible.",
+    "en": "Couldn’t play the voicemail."
+  }
+}

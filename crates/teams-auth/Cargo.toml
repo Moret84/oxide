@@ -1,0 +1,24 @@
+[package]
+name = "teams-auth"
+description = "Authentication seam for the Teams client: service discovery and request authorization."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[dependencies]
+teams-i18n.workspace = true
+http.workspace = true
+url.workspace = true
+thiserror.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+chrono.workspace = true
+reqwest = { workspace = true, features = ["form"] }
+tokio = { workspace = true, features = ["sync"] }
+base64 = "0.22"
+sha2 = "0.10"
+uuid = { version = "1", features = ["v4"] }
+
+[dev-dependencies]
+wiremock.workspace = true

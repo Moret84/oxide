@@ -1,0 +1,37 @@
+[package]
+name = "teams-calling"
+description = "Teams calling: call history, voicemail, meeting links and NGC signalling."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[dependencies]
+teams-i18n.workspace = true
+teams-auth.workspace = true
+
+http.workspace = true
+url.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+reqwest.workspace = true
+chrono.workspace = true
+thiserror.workspace = true
+percent-encoding.workspace = true
+base64 = "0.22"
+uuid = { version = "1", features = ["v4"] }
+tokio = { workspace = true, features = ["rt", "time", "sync", "macros"] }
+flate2 = "1"
+
+axum = { workspace = true, features = ["http1", "json", "tokio"], optional = true }
+teams-realtime = { workspace = true, features = ["fake"], optional = true }
+
+[features]
+# In-process conversation service pushing callbacks through the fake Trouter.
+fake = ["dep:axum", "dep:teams-realtime", "tokio/net"]
+
+[dev-dependencies]
+teams-calling = { path = ".", features = ["fake"] }
+teams-realtime = { workspace = true, features = ["fake"] }
+tokio.workspace = true
+wiremock.workspace = true

@@ -1,0 +1,6 @@
+bundles/
+.DS_Store
+target/
+.build/
+apps/macos/OxideCore.xcframework/
+docs/

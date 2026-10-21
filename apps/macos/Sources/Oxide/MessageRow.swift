@@ -1,0 +1,436 @@
+import SwiftUI
+import OxideCore
+
+struct MessageRow: View {
+    @Environment(Store.self) private var store
+    let message: MessageView
+    let bubble: Bool
+    /// Answers this message: opens the post's thread, or quotes it in the composer.
+    var reply: (() -> Void)?
+    /// Only the hovered message shows its action bar; the context menu and VoiceOver actions are always there.
+    @State private var hovered = false
+    /// The reaction picker is the view's own: opening it changes nothing in the core.
+    @State private var pickerOpen = false
+    @State private var confirmDelete = false
+
+    var body: some View {
+        Group {
+            if !bubble {
+                // Channel posts and thread replies: every message says who wrote it.
+                HStack(alignment: .top, spacing: 10) {
+                    Avatar(name: message.sender, id: message.senderId, size: 32)
+                    VStack(alignment: .leading, spacing: 4) {
+                        meta
+                        content
+                        reactionBar
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+            } else if message.mine {
+                HStack {
+                    Spacer(minLength: 80)
+                    VStack(alignment: .trailing, spacing: 4) {
+                        meta
+                        bubbleCard
+                        reactionBar
+                    }
+                    .frame(maxWidth: 560, alignment: .trailing)
+                }
+            } else {
+                HStack(alignment: .top, spacing: 10) {
+                    Avatar(name: message.sender, id: message.senderId, size: 32)
+                    VStack(alignment: .leading, spacing: 4) {
+                        meta
+                        bubbleCard
+                        reactionBar
+                    }
+                    .frame(maxWidth: 600, alignment: .leading)
+                    Spacer(minLength: 40)
+                }
+            }
+        }
+        .contentShape(Rectangle())
+        .onHover { hovered = $0 }
+        .contextMenu { if !message.editing { menu } }
+        .alert(L("ui.message_row.delete_this_message"), isPresented: $confirmDelete) {
+            Button(L("ui.message_row.delete"), role: .destructive) { store.send(.delete(id: message.id)) }
+            Button(L("ui.message_row.cancel"), role: .cancel) {}
+        } message: {
+            Text(L("ui.message_row.it_will_be_replaced_with_this"))
+        }
+        // Table cells are reused for other messages.
+        .onChange(of: message.id) {
+            pickerOpen = false
+            confirmDelete = false
+        }
+    }
+
+    private var canEdit: Bool { message.editable && !message.editing }
+    private var text: String { message.runs.map(\.text).joined() }
+
+    /// Everything the hover bar offers, and more, for the right click.
+    @ViewBuilder private var menu: some View {
+        if !message.deleted {
+            if message.canReact {
+                Menu(L("ui.message_row.react")) {
+                    ForEach(store.reactions, id: \.key) { reaction in
+                        Button("\(reaction.emoji) \(reaction.name)") { react(reaction.key) }
+                    }
+                    Divider()
+                    Button(L("ui.message_row.more_reactions")) { pickerOpen = true }
+                }
+            }
+            if let reply { Button(L("ui.message_row.reply"), action: reply) }
+            if !text.isEmpty { Button(L("ui.message_row.copy_text")) { copy() } }
+            if canEdit {
+                Divider()
+                Button(L("ui.message_row.edit")) { store.send(.edit(id: message.id)) }
+                Button(L("ui.message_row.delete_2"), role: .destructive) { confirmDelete = true }
+            }
+        }
+    }
+
+    /// The menu's commands as VoiceOver actions, plus the message's links.
+    @ViewBuilder private var accessibilityCommands: some View {
+        if message.canReact {
+            Button(L("ui.message_row.react")) { pickerOpen = true }
+            ForEach(store.reactions.prefix(3), id: \.key) { reaction in
+                Button(L("ui.message_row.react_2", ["name": reaction.name])) { react(reaction.key) }
+            }
+        }
+        if let reply { Button(L("ui.message_row.reply"), action: reply) }
+        Button(L("ui.message_row.copy_text")) { copy() }
+        if canEdit {
+            Button(L("ui.message_row.edit")) { store.send(.edit(id: message.id)) }
+            Button(L("ui.message_row.delete")) { confirmDelete = true }
+        }
+        ForEach(Array(Set(message.runs.compactMap(\.link))).sorted(), id: \.self) { link in
+            Button(L("ui.message_row.open_link", ["link": link])) { store.send(.openUrl(url: link)) }
+        }
+    }
+
+    private func react(_ key: String) {
+        store.send(.react(id: message.id, key: key))
+    }
+    private func copy() { NSPasteboard.copy(text) }
+
+    /// One VoiceOver element per message: who, when, what, and its reactions.
+    private var spokenLabel: String {
+        var parts = [message.mine ? L("ui.message_row.you") : message.sender, message.time]
+        if message.importance != .standard { parts.append(ImportanceTag.label(message.importance)) }
+        if let subject = message.subject { parts.append(subject) }
+        parts.append(message.deleted ? L("ui.message_row.this_message_has_been_deleted") : text)
+        if !message.images.isEmpty {
+            parts.append(message.images.count == 1 ? L("ui.message_row.1_image") : L("ui.message_row.images", ["imagesCount": message.images.count]))
+        }
+        if !message.files.isEmpty {
+            parts.append(message.files.count == 1 ? L("ui.message_row.1_file") : L("ui.message_row.files", ["filesCount": message.files.count]))
+        }
+        for reaction in message.reactions { parts.append("\(reaction.emoji) \(reaction.count)") }
+        if message.pending { parts.append(L("ui.message_row.sending_reaction")) }
+        return parts.filter { !$0.isEmpty }.joined(separator: ", ")
+    }
+
+    private var bubbleCard: some View {
+        content
+            .padding(.horizontal, 14)
+            .padding(.vertical, 10)
+            .background(message.mine ? Theme.mineBubble : Theme.surface, in: bubbleShape)
+            .overlay(bubbleShape.strokeBorder(message.mine ? .clear : Theme.bubbleBorder))
+    }
+    private var bubbleShape: UnevenRoundedRectangle {
+        message.mine
+            ? UnevenRoundedRectangle(topLeadingRadius: 12, bottomLeadingRadius: 12, bottomTrailingRadius: 12, topTrailingRadius: 4)
+            : UnevenRoundedRectangle(topLeadingRadius: 4, bottomLeadingRadius: 12, bottomTrailingRadius: 12, topTrailingRadius: 12)
+    }
+
+    /// « **Nom** · 20:12 » (only the time on my bubbles), carrying the actions so showing them never moves the feed.
+    private var meta: some View {
+        HStack(spacing: 8) {
+            if message.mine && bubble {
+                actions
+                // Spoken with the message itself.
+                Muted(message.time).accessibilityHidden(true)
+                if let receipt = message.receipt { ReceiptIcon(receipt: receipt) }
+            } else {
+                (Text(message.mine ? L("ui.message_row.you") : message.sender).font(.figtree(bubble ? 12 : 13, .semibold))
+                    + Text(" · \(message.time)").font(.figtree(12)).foregroundColor(Theme.muted))
+                    .lineLimit(1)
+                    .accessibilityHidden(true)
+                actions
+            }
+        }
+        .frame(height: 24)
+    }
+
+    @ViewBuilder private var actions: some View {
+        let visible = hovered || message.pending || pickerOpen
+        if visible && !message.deleted {
+            HStack(spacing: 2) {
+                if message.canReact || message.pending {
+                    Button {
+                        pickerOpen.toggle()
+                    } label: {
+                        Group {
+                            if message.pending {
+                                ProgressView().controlSize(.mini)
+                            } else {
+                                Image(systemName: "face.smiling")
+                            }
+                        }
+                        .frame(width: 24, height: 24)
+                    }
+                    .buttonStyle(GhostButtonStyle())
+                    .disabled(message.pending)
+                    .help(message.pending ? L("ui.message_row.sending_reaction_2") : L("ui.message_row.react"))
+                    .accessibilityLabel(message.pending ? L("ui.message_row.sending_reaction_3") : L("ui.message_row.react"))
+                    .popover(isPresented: $pickerOpen, arrowEdge: .top) {
+                        EmojiPicker(categories: store.composerEmoji) { item in
+                            // Keep an existing wire key so selecting our reaction again removes it.
+                            let mine = message.reactions.first {
+                                $0.mine && $0.emojiId == item.id
+                            }
+                            let key = mine?.key ?? store.reactions.first { $0.emoji == item.text }?.key ?? item.id
+                            pickerOpen = false
+                            store.send(.react(id: message.id, key: key))
+                        }
+                        .disabled(!message.canReact)
+                    }
+                }
+                if let reply, !message.pending {
+                    IconButton(symbol: "arrowshape.turn.up.left", help: L("ui.message_row.reply"), side: 24, glyph: 13, action: reply)
+                }
+                if canEdit {
+                    IconButton(symbol: "pencil", help: L("ui.message_row.edit"), side: 24, glyph: 13) {
+                        store.send(.edit(id: message.id))
+                    }
+                    IconButton(symbol: "trash", help: L("ui.message_row.delete"), side: 24, glyph: 13) {
+                        confirmDelete = true
+                    }
+                }
+            }
+        }
+    }
+
+    @ViewBuilder private var content: some View {
+        VStack(alignment: message.mine && bubble ? .trailing : .leading, spacing: 8) {
+            if message.importance != .standard { ImportanceTag(importance: message.importance) }
+            if let subject = message.subject {
+                Text(subject).font(.figtree(16, .semibold))
+            }
+            if message.editing {
+                editor
+            } else if message.deleted {
+                Muted(L("ui.message_row.this_message_has_been_deleted"), size: 14)
+                    .accessibilityLabel(spokenLabel)
+            } else {
+                // A selection overlay per message is costly in long feeds: copy from the menu.
+                MessageBlocks(blocks: message.blocks, size: MessageBlocks.emojiOnly(message.blocks) ? 30 : 14)
+                    .environment(\.cardMessageId, message.id)
+                    .font(.figtree(14))
+                    .environment(\.openURL, OpenURLAction { url in
+                        store.send(.openUrl(url: url.absoluteString))
+                        return .handled
+                    })
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel(spokenLabel)
+                    .accessibilityActions { accessibilityCommands }
+            }
+            // Images the body does not place itself (file previews, images in tables).
+            let inline = Set(MessageBlocks.images(message.blocks).map(\.src))
+            ForEach(message.images.filter { !inline.contains($0.src) }, id: \.src) { PreviewImage(image: $0) }
+            ForEach(message.files, id: \.key) { FileCard(file: $0).frame(width: 340) }
+        }
+    }
+
+    private var editor: some View {
+        MessageEditor(text: store.composer?.editText ?? "")
+    }
+
+    @ViewBuilder private var reactionBar: some View {
+        if !message.deleted && !message.reactions.isEmpty {
+            HStack(spacing: 6) {
+                ForEach(message.reactions, id: \.key) { reaction in
+                    Button {
+                        store.send(.react(id: message.id, key: reaction.key))
+                    } label: {
+                        HStack(spacing: 4) {
+                            TeamsEmoji(id: reaction.emojiId, text: reaction.emoji, size: 16)
+                            Text("\(reaction.count)").font(.figtree(12, reaction.mine ? .semibold : .regular))
+                        }
+                        .padding(.horizontal, 8)
+                        .frame(height: 24)
+                        .background(reaction.mine ? Theme.accentSoft : Theme.surface, in: Capsule())
+                        .overlay(Capsule().strokeBorder(reaction.mine ? Theme.accent : Theme.border))
+                    }
+                    .buttonStyle(.plain).pointerCursor()
+                    .disabled(!message.canReact)
+                    .help(reaction.hint)
+                }
+            }
+        }
+    }
+}
+
+/// Multi-line message editor, focused on open: Return saves, Option-Return breaks the line, Escape cancels.
+private struct MessageEditor: View {
+    @Environment(Store.self) private var store
+    let text: String
+    @FocusState private var focused: Bool
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            SyncedTextField(
+                placeholder: L("ui.message_row.edit_message"),
+                value: text,
+                axis: .vertical,
+                onChange: { store.send(.editChanged(value: $0)) },
+                onSubmit: { store.send(.saveEdit) }
+            )
+            .textFieldStyle(.roundedBorder)
+            // A fixed height: the feed measures the row once, and longer text scrolls.
+            .lineLimit(5, reservesSpace: true)
+            .focused($focused)
+            .frame(minWidth: 280)
+            HStack(spacing: 8) {
+                Button(L("ui.message_row.save")) { store.send(.saveEdit) }.buttonStyle(PrimaryButtonStyle())
+                Button(L("ui.message_row.cancel")) { store.send(.cancelEdit) }
+                    .buttonStyle(OutlineButtonStyle())
+                    .keyboardShortcut(.cancelAction)
+                Muted(L("ui.message_row.enter_to_save_enter_for_a"), size: 11)
+            }
+        }
+        .onAppear { focused = true }
+    }
+}
+
+/// A fixed box whether loaded or not, so rows never resize: the declared size capped like the web client, else 420×250.
+struct PreviewImage: View {
+    @Environment(Store.self) private var store
+    let image: ImageView
+    var height: CGFloat = 250
+
+    static let maxSize = CGSize(width: 620, height: 480)
+    /// The declared size, scaled down to fit `maxSize`.
+    static func declaredSize(_ image: ImageView) -> CGSize? {
+        guard let w = image.width, let h = image.height, w > 0, h > 0 else { return nil }
+        let (width, height) = (CGFloat(w), CGFloat(h))
+        let scale = min(1, maxSize.width / width, maxSize.height / height)
+        return CGSize(width: width * scale, height: height * scale)
+    }
+    /// Height in a column `width` wide, for the feed's first estimate.
+    static func estimatedHeight(_ image: ImageView, width: CGFloat) -> CGFloat {
+        guard let size = declaredSize(image) else { return 250 }
+        return size.height * min(1, width / size.width)
+    }
+
+    var body: some View {
+        if let size = Self.declaredSize(image) {
+            box
+                .aspectRatio(size.width / size.height, contentMode: .fit)
+                .frame(maxWidth: size.width, alignment: .leading)
+        } else {
+            box.frame(maxWidth: 420).frame(height: height)
+        }
+    }
+    @State private var zoomed = false
+    /// The alt text is kept for VoiceOver only: Teams fills it with « image » or a file name.
+    private var box: some View {
+        ZStack(alignment: .topLeading) {
+            // Placeholder only: a loaded image keeps the box but not its fill.
+            if case .ready = image.status, store.imageBox(image.src).image != nil {} else {
+                RoundedRectangle(cornerRadius: 8).fill(Theme.input)
+            }
+            switch image.status {
+            case .ready:
+                if let picture = store.imageBox(image.src).image {
+                    Image(nsImage: picture)
+                        .resizable()
+                        .interpolation(.medium)
+                        .scaledToFit()
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                        .onTapGesture { zoomed = true }
+                        .pointerCursor()
+                        .help(L("ui.message_row.enlarge_image"))
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                        .accessibilityLabel(image.alt)
+                        .accessibilityAddTraits(.isButton)
+                        .accessibilityAction { zoomed = true }
+                        .sheet(isPresented: $zoomed) { ImageViewer(picture: picture, alt: image.alt) }
+                }
+            case .loading:
+                ProgressView()
+                    .controlSize(.small)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .accessibilityLabel(L("ui.message_row.loading_image"))
+            case .failed(let reason):
+                VStack(alignment: .leading, spacing: 6) {
+                    Muted(reason, size: 11)
+                    Button(L("ui.message_row.retry_image")) { store.send(.retryImage(src: image.src)) }
+                        .buttonStyle(GhostButtonStyle())
+                        .font(.figtree(12))
+                }
+                .padding(10)
+            case .limit:
+                Muted(L("ui.message_row.preview_limit_reached_in_this_conversation"), size: 11).padding(10)
+            }
+        }
+    }
+}
+
+/// Full-size view of a message image, fitted to the screen; Escape or a click closes it.
+private struct ImageViewer: View {
+    @Environment(\.dismiss) private var dismiss
+    let picture: NSImage
+    let alt: String
+    var body: some View {
+        let size = fittedSize
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                // Teams' default alt texts say nothing: only a real name is worth a caption.
+                if !["image", "images", "image partagée"].contains(alt.lowercased()) {
+                    Muted(alt, size: 12).lineLimit(1)
+                }
+                Spacer()
+                IconButton(symbol: "xmark", help: L("ui.message_row.close"), side: 28, glyph: 13) { dismiss() }
+                    .keyboardShortcut(.cancelAction)
+            }
+            Image(nsImage: picture)
+                .resizable()
+                .interpolation(.high)
+                .scaledToFit()
+                .frame(width: size.width, height: size.height)
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+                .onTapGesture { dismiss() }
+                .accessibilityLabel(alt)
+        }
+        .padding(14)
+        .background(Theme.surface)
+    }
+
+    /// Native size, shrunk to 85% of the screen if needed (never enlarged past 2×).
+    private var fittedSize: CGSize {
+        let screen = NSScreen.main?.visibleFrame.size ?? CGSize(width: 1280, height: 800)
+        let bounds = CGSize(width: screen.width * 0.85, height: screen.height * 0.85 - 60)
+        let native = picture.size
+        guard native.width > 0, native.height > 0 else { return bounds }
+        let scale = min(bounds.width / native.width, bounds.height / native.height, 2)
+        return CGSize(width: native.width * scale, height: native.height * scale)
+    }
+}
+
+/// "IMPORTANT!" or "URGENT!" above a message, as Teams marks it.
+struct ImportanceTag: View {
+    let importance: Importance
+    var body: some View {
+        Label(Self.label(importance), systemImage: importance == .urgent ? "bell.badge.fill" : "exclamationmark")
+            .font(.figtree(11, .semibold))
+            .foregroundStyle(Theme.errorText)
+    }
+    static func label(_ importance: Importance) -> String {
+        switch importance {
+        case .urgent: L("ui.composer.urgent_tag")
+        case .high: L("ui.composer.important_tag")
+        case .standard: ""
+        }
+    }
+}

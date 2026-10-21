@@ -1,0 +1,11 @@
+[package]
+name = "teams-i18n"
+description = "Language of the messages the crates show on screen (French or English)."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true

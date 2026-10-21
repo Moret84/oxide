@@ -1,0 +1,37 @@
+[workspace]
+resolver = "3"
+members = ["crates/teams-auth", "crates/teams-chat", "crates/teams-calendar", "crates/teams-files", "crates/teams-calling", "crates/teams-realtime", "crates/teams-core", "crates/teams-probe", "crates/teams-i18n"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+license = "GPL-3.0-or-later"
+
+[workspace.dependencies]
+teams-calendar = { path = "crates/teams-calendar" }
+teams-files = { path = "crates/teams-files" }
+teams-auth = { path = "crates/teams-auth" }
+teams-chat = { path = "crates/teams-chat" }
+teams-calling = { path = "crates/teams-calling" }
+teams-realtime = { path = "crates/teams-realtime" }
+teams-i18n = { path = "crates/teams-i18n" }
+http = "1.5.0"
+url = "2.5.8"
+thiserror = "2.0.21"
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.154"
+percent-encoding = "2.3.2"
+reqwest = { version = "0.13.5", features = ["json", "gzip", "brotli"] }
+tokio = { version = "1.53.3", features = ["macros", "rt-multi-thread"] }
+axum = { version = "0.8.9", default-features = false, features = ["http1", "json", "tokio"] }
+chrono = { version = "0.4.45", default-features = false, features = ["clock", "std"] }
+wiremock = "0.6.5"
+
+# The core runs on the UI's critical path: optimise across crates. UniFFI needs unwinding.
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+strip = "symbols"
+panic = "unwind"

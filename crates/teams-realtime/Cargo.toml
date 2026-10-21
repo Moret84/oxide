@@ -1,0 +1,31 @@
+[package]
+name = "teams-realtime"
+description = "Trouter push channel and registrar for the Teams calling stack."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[dependencies]
+teams-i18n.workspace = true
+teams-auth.workspace = true
+http.workspace = true
+url.workspace = true
+serde_json.workspace = true
+reqwest.workspace = true
+tokio = { workspace = true, features = ["time", "sync", "macros"] }
+uuid = { version = "1", features = ["v4"] }
+tokio-tungstenite = { version = "0.29.0", default-features = false, features = ["connect", "__rustls-tls"] }
+futures-util = { version = "0.3.34", default-features = false, features = ["sink", "std"] }
+rustls = { version = "0.23.46", default-features = false, features = ["std"] }
+rustls-platform-verifier = "0.7.1"
+
+axum = { workspace = true, features = ["ws", "http1", "tokio", "query"], optional = true }
+
+[features]
+# In-process fake Trouter and registrar, for tests and demo mode.
+fake = ["dep:axum", "tokio/net", "tokio/rt"]
+
+[dev-dependencies]
+teams-realtime = { path = ".", features = ["fake"] }
+tokio = { workspace = true, features = ["rt-multi-thread", "macros", "time"] }

@@ -1,0 +1,22 @@
+[package]
+name = "teams-probe"
+description = "Developer harness validating the calling protocol against a real tenant."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish = false
+
+[dependencies]
+teams-auth.workspace = true
+teams-chat.workspace = true
+teams-calling.workspace = true
+teams-realtime.workspace = true
+uuid = { version = "1", features = ["v4"] }
+http.workspace = true
+url.workspace = true
+serde_json.workspace = true
+tokio = { workspace = true, features = ["io-std", "io-util", "signal", "time", "sync"] }
+
+[target.'cfg(target_os = "macos")'.dependencies]
+keyring = { version = "3.6.3", features = ["apple-native"] }
