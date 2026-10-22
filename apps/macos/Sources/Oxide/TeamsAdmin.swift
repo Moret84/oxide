@@ -210,7 +210,7 @@ struct TeamsGallerySheet: View {
     private func card(_ team: GalleryTeamView) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 10) {
-                Avatar(name: team.name, id: team.groupId, size: 36, group: true)
+                Avatar(name: team.name, id: team.groupId, size: 36, shape: .square)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(team.name).font(.figtree(14, .semibold)).lineLimit(2)
                     Muted(team.private ? L("ui.teams_admin.private") : L("ui.teams_admin.public"), size: 11)

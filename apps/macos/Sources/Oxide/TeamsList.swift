@@ -182,7 +182,7 @@ private struct TeamHeaderRow<Options: View>: View {
             Button { store.send(.toggleTeam(id: team.id)) } label: {
                 HStack(spacing: 8) {
                     Image(systemName: team.showChannels ? "chevron.down" : "chevron.right").font(.system(size: 10, weight: .semibold)).foregroundStyle(Theme.subtle).frame(width: 12)
-                    Avatar(name: team.name, id: team.id, size: 30, group: true)
+                    Avatar(name: team.name, id: team.id, size: 30, shape: .square)
                     Text(team.name).font(.figtree(13, team.unread ? .bold : .semibold)).lineLimit(1).frame(maxWidth: .infinity, alignment: .leading)
                     // Collapsed: the channels' dots are out of sight.
                     if team.unread && !team.showChannels {

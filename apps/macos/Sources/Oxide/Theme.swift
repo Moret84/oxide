@@ -196,23 +196,25 @@ struct Avatar: View {
     let name: String
     let id: String
     var size: CGFloat = 32
-    var group = false
+    var shape: AvatarShape = .round
     /// Direct chats: the other person's availability, drawn on the bottom-right corner.
     var presence: PresenceView? = nil
     var body: some View {
         let photo = store.avatarBox(id).image
-        let shape = RoundedRectangle(cornerRadius: group ? size * 0.25 : size / 2)
+        let shape = RoundedRectangle(cornerRadius: shape == .square ? size * 0.25 : size / 2)
         Group {
             if let photo {
                 Image(nsImage: photo).resizable().scaledToFill()
             } else {
+                // Only behind initials: under a photo it bleeds through the clipped edge as a coloured ring.
                 Text(initials(name))
+                    .font(.figtree(size * 0.32, .semibold))
+                    .foregroundStyle(.white)
+                    .frame(width: size, height: size)
+                    .background(Theme.avatar(id))
             }
         }
-        .font(.figtree(size * 0.32, .semibold))
-        .foregroundStyle(.white)
         .frame(width: size, height: size)
-        .background(Theme.avatar(id), in: shape)
         .clipShape(shape)
         // Asks again if the core evicts the photo while it is on screen.
         .task(id: "\(id)|\(name)|\(photo == nil)") {

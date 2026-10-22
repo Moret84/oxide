@@ -2924,7 +2924,7 @@ public struct ChatRow: Equatable, Hashable {
      */
     public var hidden: Bool
     public var canLeave: Bool
-    public var group: Bool
+    public var avatarShape: AvatarShape
     public var selected: Bool
     /**
      * Notifications turned off (`alerts`), or a meeting chat muted by default.
@@ -2940,7 +2940,7 @@ public struct ChatRow: Equatable, Hashable {
     public init(id: String, title: String, preview: String, time: String, unread: Bool, pinned: Bool, 
         /**
          * Hidden by hand; listed only while searching.
-         */hidden: Bool, canLeave: Bool, group: Bool, selected: Bool, 
+         */hidden: Bool, canLeave: Bool, avatarShape: AvatarShape, selected: Bool, 
         /**
          * Notifications turned off (`alerts`), or a meeting chat muted by default.
          */muted: Bool, 
@@ -2955,7 +2955,7 @@ public struct ChatRow: Equatable, Hashable {
         self.pinned = pinned
         self.hidden = hidden
         self.canLeave = canLeave
-        self.group = group
+        self.avatarShape = avatarShape
         self.selected = selected
         self.muted = muted
         self.presence = presence
@@ -2985,7 +2985,7 @@ public struct FfiConverterTypeChatRow: FfiConverterRustBuffer {
                 pinned: FfiConverterBool.read(from: &buf), 
                 hidden: FfiConverterBool.read(from: &buf), 
                 canLeave: FfiConverterBool.read(from: &buf), 
-                group: FfiConverterBool.read(from: &buf), 
+                avatarShape: FfiConverterTypeAvatarShape.read(from: &buf), 
                 selected: FfiConverterBool.read(from: &buf), 
                 muted: FfiConverterBool.read(from: &buf), 
                 presence: FfiConverterOptionTypePresenceView.read(from: &buf)
@@ -3001,7 +3001,7 @@ public struct FfiConverterTypeChatRow: FfiConverterRustBuffer {
         FfiConverterBool.write(value.pinned, into: &buf)
         FfiConverterBool.write(value.hidden, into: &buf)
         FfiConverterBool.write(value.canLeave, into: &buf)
-        FfiConverterBool.write(value.group, into: &buf)
+        FfiConverterTypeAvatarShape.write(value.avatarShape, into: &buf)
         FfiConverterBool.write(value.selected, into: &buf)
         FfiConverterBool.write(value.muted, into: &buf)
         FfiConverterOptionTypePresenceView.write(value.presence, into: &buf)
@@ -3375,6 +3375,7 @@ public struct ConversationView: Equatable, Hashable {
      * Direct chats: the other person's presence, once known.
      */
     public var presence: PresenceView?
+    public var avatarShape: AvatarShape
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
@@ -3393,7 +3394,7 @@ public struct ConversationView: Equatable, Hashable {
          */firstUnread: String?, 
         /**
          * Direct chats: the other person's presence, once known.
-         */presence: PresenceView?) {
+         */presence: PresenceView?, avatarShape: AvatarShape) {
         self.target = target
         self.title = title
         self.subtitle = subtitle
@@ -3409,6 +3410,7 @@ public struct ConversationView: Equatable, Hashable {
         self.muted = muted
         self.firstUnread = firstUnread
         self.presence = presence
+        self.avatarShape = avatarShape
     }
 
     
@@ -3441,7 +3443,8 @@ public struct FfiConverterTypeConversationView: FfiConverterRustBuffer {
                 canCall: FfiConverterBool.read(from: &buf), 
                 muted: FfiConverterBool.read(from: &buf), 
                 firstUnread: FfiConverterOptionString.read(from: &buf), 
-                presence: FfiConverterOptionTypePresenceView.read(from: &buf)
+                presence: FfiConverterOptionTypePresenceView.read(from: &buf), 
+                avatarShape: FfiConverterTypeAvatarShape.read(from: &buf)
         )
     }
 
@@ -3461,6 +3464,7 @@ public struct FfiConverterTypeConversationView: FfiConverterRustBuffer {
         FfiConverterBool.write(value.muted, into: &buf)
         FfiConverterOptionString.write(value.firstUnread, into: &buf)
         FfiConverterOptionTypePresenceView.write(value.presence, into: &buf)
+        FfiConverterTypeAvatarShape.write(value.avatarShape, into: &buf)
     }
 }
 
@@ -4899,6 +4903,7 @@ public struct MessageView: Equatable, Hashable {
     public var id: String
     public var sender: String
     public var senderId: String
+    public var senderAvatarShape: AvatarShape
     public var mine: Bool
     public var time: String
     public var day: String
@@ -4930,7 +4935,7 @@ public struct MessageView: Equatable, Hashable {
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(id: String, sender: String, senderId: String, mine: Bool, time: String, day: String, subject: String?, 
+    public init(id: String, sender: String, senderId: String, senderAvatarShape: AvatarShape, mine: Bool, time: String, day: String, subject: String?, 
         /**
          * Marked Important or Urgent by its sender.
          */importance: Importance, deleted: Bool, editing: Bool, 
@@ -4946,6 +4951,7 @@ public struct MessageView: Equatable, Hashable {
         self.id = id
         self.sender = sender
         self.senderId = senderId
+        self.senderAvatarShape = senderAvatarShape
         self.mine = mine
         self.time = time
         self.day = day
@@ -4983,6 +4989,7 @@ public struct FfiConverterTypeMessageView: FfiConverterRustBuffer {
                 id: FfiConverterString.read(from: &buf), 
                 sender: FfiConverterString.read(from: &buf), 
                 senderId: FfiConverterString.read(from: &buf), 
+                senderAvatarShape: FfiConverterTypeAvatarShape.read(from: &buf), 
                 mine: FfiConverterBool.read(from: &buf), 
                 time: FfiConverterString.read(from: &buf), 
                 day: FfiConverterString.read(from: &buf), 
@@ -5006,6 +5013,7 @@ public struct FfiConverterTypeMessageView: FfiConverterRustBuffer {
         FfiConverterString.write(value.id, into: &buf)
         FfiConverterString.write(value.sender, into: &buf)
         FfiConverterString.write(value.senderId, into: &buf)
+        FfiConverterTypeAvatarShape.write(value.senderAvatarShape, into: &buf)
         FfiConverterBool.write(value.mine, into: &buf)
         FfiConverterString.write(value.time, into: &buf)
         FfiConverterString.write(value.day, into: &buf)
@@ -7504,6 +7512,7 @@ public struct ThreadView: Equatable, Hashable {
      */
     public var rootSender: String
     public var rootSenderId: String
+    public var rootSenderAvatarShape: AvatarShape
     public var rootTime: String
     public var loading: Bool
     public var hasMore: Bool
@@ -7522,7 +7531,7 @@ public struct ThreadView: Equatable, Hashable {
     public init(rootPreview: String, 
         /**
          * Who started the thread and when, shown above the replies.
-         */rootSender: String, rootSenderId: String, rootTime: String, loading: Bool, hasMore: Bool, emptyText: String?, 
+         */rootSender: String, rootSenderId: String, rootSenderAvatarShape: AvatarShape, rootTime: String, loading: Bool, hasMore: Bool, emptyText: String?, 
         /**
          * Id of the post, for its follow toggle.
          */post: String, 
@@ -7532,6 +7541,7 @@ public struct ThreadView: Equatable, Hashable {
         self.rootPreview = rootPreview
         self.rootSender = rootSender
         self.rootSenderId = rootSenderId
+        self.rootSenderAvatarShape = rootSenderAvatarShape
         self.rootTime = rootTime
         self.loading = loading
         self.hasMore = hasMore
@@ -7559,6 +7569,7 @@ public struct FfiConverterTypeThreadView: FfiConverterRustBuffer {
                 rootPreview: FfiConverterString.read(from: &buf), 
                 rootSender: FfiConverterString.read(from: &buf), 
                 rootSenderId: FfiConverterString.read(from: &buf), 
+                rootSenderAvatarShape: FfiConverterTypeAvatarShape.read(from: &buf), 
                 rootTime: FfiConverterString.read(from: &buf), 
                 loading: FfiConverterBool.read(from: &buf), 
                 hasMore: FfiConverterBool.read(from: &buf), 
@@ -7572,6 +7583,7 @@ public struct FfiConverterTypeThreadView: FfiConverterRustBuffer {
         FfiConverterString.write(value.rootPreview, into: &buf)
         FfiConverterString.write(value.rootSender, into: &buf)
         FfiConverterString.write(value.rootSenderId, into: &buf)
+        FfiConverterTypeAvatarShape.write(value.rootSenderAvatarShape, into: &buf)
         FfiConverterString.write(value.rootTime, into: &buf)
         FfiConverterBool.write(value.loading, into: &buf)
         FfiConverterBool.write(value.hasMore, into: &buf)
@@ -8742,6 +8754,75 @@ public func FfiConverterTypeActivityBadge_lift(_ buf: RustBuffer) throws -> Acti
 #endif
 public func FfiConverterTypeActivityBadge_lower(_ value: ActivityBadge) -> RustBuffer {
     return FfiConverterTypeActivityBadge.lower(value)
+}
+
+
+
+/**
+ * How an avatar is framed, as in Teams: people and chats in a circle, apps and teams in a rounded square.
+ */
+
+public enum AvatarShape: Equatable, Hashable {
+    
+    case round
+    case square
+
+
+
+
+
+}
+
+#if compiler(>=6)
+extension AvatarShape: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeAvatarShape: FfiConverterRustBuffer {
+    typealias SwiftType = AvatarShape
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> AvatarShape {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+        
+        case 1: return .round
+        
+        case 2: return .square
+        
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: AvatarShape, into buf: inout [UInt8]) {
+        switch value {
+        
+        
+        case .round:
+            writeInt(&buf, Int32(1))
+        
+        
+        case .square:
+            writeInt(&buf, Int32(2))
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeAvatarShape_lift(_ buf: RustBuffer) throws -> AvatarShape {
+    return try FfiConverterTypeAvatarShape.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeAvatarShape_lower(_ value: AvatarShape) -> RustBuffer {
+    return FfiConverterTypeAvatarShape.lower(value)
 }
 
 
