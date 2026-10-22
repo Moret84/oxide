@@ -326,6 +326,7 @@ struct SettingsScreen: View {
                 OxideMark().frame(width: 28, height: 28)
                 Text("Oxide").font(.figtree(13, .semibold)).foregroundStyle(Theme.textSoft)
                 Muted(L("ui.screens.version", ["version": displayVersion]), size: 11).textSelection(.enabled)
+                UpdateSettingsRow().padding(.top, 4)
             }
             .frame(maxWidth: .infinity)
             .padding(.top, 14)

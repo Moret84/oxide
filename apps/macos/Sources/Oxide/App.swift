@@ -82,6 +82,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         NSApp.activate()
         // Before any banner response is delivered, including the one that launched the app.
         MainActor.assumeIsolated { NotificationRouter.shared.configure() }
+        Task { @MainActor in await Updater.shared.check(interactive: false) }
     }
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
         true
@@ -128,5 +129,8 @@ struct RootView: View {
         .foregroundStyle(Theme.text)
         .onAppear { appearance.apply() }
         .onChange(of: appearance) { appearance.apply() }
+        .sheet(item: Binding(get: { Updater.shared.prompt }, set: { Updater.shared.prompt = $0 })) {
+            UpdatePromptView(release: $0)
+        }
     }
 }
