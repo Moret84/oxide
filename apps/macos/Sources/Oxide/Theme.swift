@@ -206,13 +206,15 @@ struct Avatar: View {
             if let photo {
                 Image(nsImage: photo).resizable().scaledToFill()
             } else {
+                // Only behind initials: under a photo it bleeds through the clipped edge as a coloured ring.
                 Text(initials(name))
+                    .font(.figtree(size * 0.32, .semibold))
+                    .foregroundStyle(.white)
+                    .frame(width: size, height: size)
+                    .background(Theme.avatar(id))
             }
         }
-        .font(.figtree(size * 0.32, .semibold))
-        .foregroundStyle(.white)
         .frame(width: size, height: size)
-        .background(Theme.avatar(id), in: shape)
         .clipShape(shape)
         // Asks again if the core evicts the photo while it is on screen.
         .task(id: "\(id)|\(name)|\(photo == nil)") {
