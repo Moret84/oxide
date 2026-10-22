@@ -445,7 +445,7 @@ private struct InCallView: View {
             VideoTile(track: store.media.localVideo, mirrored: true, placeholder: placeholder)
         } else {
             VStack(spacing: 14) {
-                Avatar(name: call.title, id: call.id, size: 96, group: call.isMeeting)
+                Avatar(name: call.title, id: call.id, size: 96, shape: call.isMeeting ? .square : .round)
                 Text(placeholder).font(.figtree(14)).foregroundStyle(Theme.muted)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)

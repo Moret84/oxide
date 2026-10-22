@@ -1442,3 +1442,53 @@ fn avatars_show_people_bots_and_direct_chat_peers() {
     assert_eq!(mri("group"), None);
     assert_eq!(mri("19:channel@thread.tacv2"), None);
 }
+/// As in Teams: apps and teams in a rounded square, people and group chats in a circle.
+#[test]
+fn apps_and_channels_get_square_avatars_people_and_groups_round_ones() {
+    let mut app = App::empty();
+    *app.me = "8:orgid:me".into();
+    let chat = |id: &str, one_on_one: bool, peers: &[&str]| {
+        let members: Vec<_> = std::iter::once("8:orgid:me")
+            .chain(peers.iter().copied())
+            .map(|id| serde_json::json!({ "id": id }))
+            .collect();
+        serde_json::from_value(serde_json::json!({
+            "id": id, "isOneOnOne": one_on_one, "members": members
+        }))
+        .unwrap()
+    };
+    *app.chats = vec![
+        chat("person", true, &["8:orgid:peer"]),
+        chat("bot", true, &["28:app"]),
+        chat("group", false, &["8:orgid:peer", "28:app"]),
+    ];
+    let rows = app.sidebar().chats;
+    let row = |id: &str| rows.iter().find(|r| r.id == id).unwrap().avatar_shape;
+    assert_eq!(row("person"), view::AvatarShape::Round);
+    assert_eq!(row("bot"), view::AvatarShape::Square);
+    assert_eq!(row("group"), view::AvatarShape::Round);
+
+    let header = |app: &App| app.conversation_part().view.unwrap().avatar_shape;
+    *app.selected = Some(Selection::Chat("bot".into()));
+    assert_eq!(header(&app), view::AvatarShape::Square);
+    *app.selected = Some(Selection::Chat("person".into()));
+    assert_eq!(header(&app), view::AvatarShape::Round);
+    *app.selected = Some(Selection::Channel {
+        team: "team".into(),
+        channel: "19:c@thread.tacv2".into(),
+    });
+    assert_eq!(header(&app), view::AvatarShape::Square);
+
+    let from = |mri: &str| Message {
+        from: format!("https://x/v1/users/ME/contacts/{mri}"),
+        ..Default::default()
+    };
+    assert_eq!(
+        app.message_view(&from("28:app")).sender_avatar_shape,
+        view::AvatarShape::Square
+    );
+    assert_eq!(
+        app.message_view(&from("8:orgid:peer")).sender_avatar_shape,
+        view::AvatarShape::Round
+    );
+}

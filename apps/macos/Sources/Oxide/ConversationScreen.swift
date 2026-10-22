@@ -64,7 +64,7 @@ struct ConversationScreen: View, Equatable {
     private var header: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack(spacing: 12) {
-                Avatar(name: view.title, id: view.target.id, size: 36, group: true, presence: view.presence)
+                Avatar(name: view.title, id: view.target.id, size: 36, shape: view.avatarShape, presence: view.presence)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(view.title).font(.figtree(17, .semibold)).lineLimit(1)
                     Muted(view.subtitle).lineLimit(1)
@@ -158,7 +158,7 @@ private struct ThreadPanel: View {
                 }
                 if !thread.rootPreview.isEmpty || !thread.rootSender.isEmpty {
                     HStack(alignment: .top, spacing: 8) {
-                        Avatar(name: thread.rootSender, id: thread.rootSenderId, size: 24)
+                        Avatar(name: thread.rootSender, id: thread.rootSenderId, size: 24, shape: thread.rootSenderAvatarShape)
                         VStack(alignment: .leading, spacing: 2) {
                             (Text(thread.rootSender).font(.figtree(12, .semibold))
                                 + Text(thread.rootTime.isEmpty ? "" : " · \(thread.rootTime)")

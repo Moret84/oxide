@@ -120,6 +120,34 @@ impl From<&teams_chat::Presence> for PresenceView {
     }
 }
 
+/// How an avatar is framed, as in Teams: people and chats in a circle, apps and teams in a rounded square.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Hash, uniffi::Enum)]
+pub enum AvatarShape {
+    #[default]
+    Round,
+    Square,
+}
+impl AvatarShape {
+    /// Apps and bots have `28:` MRIs.
+    pub(crate) fn of(mri: &str) -> Self {
+        if mri.starts_with("28:") {
+            Self::Square
+        } else {
+            Self::Round
+        }
+    }
+    /// A direct chat with an app takes the app's shape; any other chat is round.
+    fn of_chat(c: &Conversation, me: &str) -> Self {
+        if c.is_group() {
+            return Self::Round;
+        }
+        c.members
+            .iter()
+            .find(|m| !m.id.eq_ignore_ascii_case(me))
+            .map_or(Self::Round, |m| Self::of(&m.id))
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Hash, uniffi::Record)]
 pub struct ChatRow {
     pub id: String,
@@ -131,7 +159,7 @@ pub struct ChatRow {
     /// Hidden by hand; listed only while searching.
     pub hidden: bool,
     pub can_leave: bool,
-    pub group: bool,
+    pub avatar_shape: AvatarShape,
     pub selected: bool,
     /// Notifications turned off (`alerts`), or a meeting chat muted by default.
     pub muted: bool,
@@ -385,6 +413,7 @@ pub struct MessageView {
     pub id: String,
     pub sender: String,
     pub sender_id: String,
+    pub sender_avatar_shape: AvatarShape,
     pub mine: bool,
     pub time: String,
     pub day: String,
@@ -420,6 +449,7 @@ pub struct ThreadView {
     /// Who started the thread and when, shown above the replies.
     pub root_sender: String,
     pub root_sender_id: String,
+    pub root_sender_avatar_shape: AvatarShape,
     pub root_time: String,
     pub loading: bool,
     pub has_more: bool,
@@ -452,6 +482,7 @@ pub struct ConversationView {
     pub first_unread: Option<String>,
     /// Direct chats: the other person's presence, once known.
     pub presence: Option<PresenceView>,
+    pub avatar_shape: AvatarShape,
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash, uniffi::Record)]
 pub struct ConversationPart {
@@ -1149,7 +1180,7 @@ impl App {
             pinned: self.is_favorite(c),
             hidden: self.is_hidden(c),
             can_leave: c.id != super::NOTES && c.is_group() && !c.is_meeting(),
-            group: c.is_group(),
+            avatar_shape: AvatarShape::of_chat(c, &self.me),
             selected: self.selected.as_ref() == Some(&Selection::Chat(c.id.clone())),
             muted: self.chat_muted(&c.id),
             presence: self.peer_presence(c),
@@ -1299,6 +1330,7 @@ impl App {
             id: m.id.clone(),
             sender,
             sender_id: m.sender_mri().to_owned(),
+            sender_avatar_shape: AvatarShape::of(m.sender_mri()),
             mine,
             time: stamp.map(short_time).unwrap_or_default(),
             day: stamp.map(date_label).unwrap_or_default(),
@@ -1634,6 +1666,9 @@ impl App {
                 root_sender_id: root
                     .map(|root| root.sender_mri().to_owned())
                     .unwrap_or_default(),
+                root_sender_avatar_shape: root
+                    .map(|root| AvatarShape::of(root.sender_mri()))
+                    .unwrap_or_default(),
                 root_time: root
                     .map(|_| {
                         let day = stamp.map(date_label).unwrap_or_default();
@@ -1678,6 +1713,14 @@ impl App {
                         .find(|c| &c.id == id)
                         .and_then(|c| self.peer_presence(c)),
                     Selection::Channel { .. } => None,
+                },
+                avatar_shape: match &selection {
+                    Selection::Chat(id) => self
+                        .chats
+                        .iter()
+                        .find(|c| &c.id == id)
+                        .map_or(AvatarShape::Round, |c| AvatarShape::of_chat(c, &self.me)),
+                    Selection::Channel { .. } => AvatarShape::Square,
                 },
                 is_meeting,
                 can_call,

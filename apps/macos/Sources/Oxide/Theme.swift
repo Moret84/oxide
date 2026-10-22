@@ -196,12 +196,12 @@ struct Avatar: View {
     let name: String
     let id: String
     var size: CGFloat = 32
-    var group = false
+    var shape: AvatarShape = .round
     /// Direct chats: the other person's availability, drawn on the bottom-right corner.
     var presence: PresenceView? = nil
     var body: some View {
         let photo = store.avatarBox(id).image
-        let shape = RoundedRectangle(cornerRadius: group ? size * 0.25 : size / 2)
+        let shape = RoundedRectangle(cornerRadius: shape == .square ? size * 0.25 : size / 2)
         Group {
             if let photo {
                 Image(nsImage: photo).resizable().scaledToFill()

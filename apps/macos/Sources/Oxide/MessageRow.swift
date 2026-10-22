@@ -18,7 +18,7 @@ struct MessageRow: View {
             if !bubble {
                 // Channel posts and thread replies: every message says who wrote it.
                 HStack(alignment: .top, spacing: 10) {
-                    Avatar(name: message.sender, id: message.senderId, size: 32)
+                    Avatar(name: message.sender, id: message.senderId, size: 32, shape: message.senderAvatarShape)
                     VStack(alignment: .leading, spacing: 4) {
                         meta
                         content
@@ -38,7 +38,7 @@ struct MessageRow: View {
                 }
             } else {
                 HStack(alignment: .top, spacing: 10) {
-                    Avatar(name: message.sender, id: message.senderId, size: 32)
+                    Avatar(name: message.sender, id: message.senderId, size: 32, shape: message.senderAvatarShape)
                     VStack(alignment: .leading, spacing: 4) {
                         meta
                         bubbleCard

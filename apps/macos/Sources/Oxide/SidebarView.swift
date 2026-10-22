@@ -169,7 +169,7 @@ private struct ChatRowView: View, Equatable {
             store.send(.select(target: Target(team: nil, id: row.id)))
         } label: {
             HStack(spacing: 12) {
-                Avatar(name: row.title, id: row.id, size: 40, group: row.group, presence: row.presence)
+                Avatar(name: row.title, id: row.id, size: 40, shape: row.avatarShape, presence: row.presence)
                 VStack(alignment: .leading, spacing: 2) {
                     HStack(spacing: 8) {
                         Text(row.title)

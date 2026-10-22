@@ -101,7 +101,7 @@ private struct CallLogRow: View {
     private func callBack(video: Bool) { store.send(.calls(action: .callBack(id: log.id, video: video))) }
     var body: some View {
         HStack(spacing: 12) {
-            Avatar(name: log.name, id: log.peer.isEmpty ? log.id : log.peer, size: 36, group: log.group)
+            Avatar(name: log.name, id: log.peer.isEmpty ? log.id : log.peer, size: 36)
             VStack(alignment: .leading, spacing: 3) {
                 Text(log.name).font(.figtree(14, .semibold))
                     .foregroundStyle(log.outcome == .missed ? Theme.danger : Theme.text)
