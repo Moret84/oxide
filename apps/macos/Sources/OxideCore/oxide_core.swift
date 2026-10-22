@@ -7216,24 +7216,16 @@ public struct TeamListControls: Equatable, Hashable {
     public var shownCount: UInt32
     public var hiddenCount: UInt32
     public var showHidden: Bool
-    public var moreShown: Bool
-    public var moreHidden: Bool
-    public var allShown: Bool
-    public var allHidden: Bool
     public var savingOrder: Bool
     public var orderAvailable: Bool
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(sort: TeamSort, shownCount: UInt32, hiddenCount: UInt32, showHidden: Bool, moreShown: Bool, moreHidden: Bool, allShown: Bool, allHidden: Bool, savingOrder: Bool, orderAvailable: Bool) {
+    public init(sort: TeamSort, shownCount: UInt32, hiddenCount: UInt32, showHidden: Bool, savingOrder: Bool, orderAvailable: Bool) {
         self.sort = sort
         self.shownCount = shownCount
         self.hiddenCount = hiddenCount
         self.showHidden = showHidden
-        self.moreShown = moreShown
-        self.moreHidden = moreHidden
-        self.allShown = allShown
-        self.allHidden = allHidden
         self.savingOrder = savingOrder
         self.orderAvailable = orderAvailable
     }
@@ -7258,10 +7250,6 @@ public struct FfiConverterTypeTeamListControls: FfiConverterRustBuffer {
                 shownCount: FfiConverterUInt32.read(from: &buf), 
                 hiddenCount: FfiConverterUInt32.read(from: &buf), 
                 showHidden: FfiConverterBool.read(from: &buf), 
-                moreShown: FfiConverterBool.read(from: &buf), 
-                moreHidden: FfiConverterBool.read(from: &buf), 
-                allShown: FfiConverterBool.read(from: &buf), 
-                allHidden: FfiConverterBool.read(from: &buf), 
                 savingOrder: FfiConverterBool.read(from: &buf), 
                 orderAvailable: FfiConverterBool.read(from: &buf)
         )
@@ -7272,10 +7260,6 @@ public struct FfiConverterTypeTeamListControls: FfiConverterRustBuffer {
         FfiConverterUInt32.write(value.shownCount, into: &buf)
         FfiConverterUInt32.write(value.hiddenCount, into: &buf)
         FfiConverterBool.write(value.showHidden, into: &buf)
-        FfiConverterBool.write(value.moreShown, into: &buf)
-        FfiConverterBool.write(value.moreHidden, into: &buf)
-        FfiConverterBool.write(value.allShown, into: &buf)
-        FfiConverterBool.write(value.allHidden, into: &buf)
         FfiConverterBool.write(value.savingOrder, into: &buf)
         FfiConverterBool.write(value.orderAvailable, into: &buf)
     }
@@ -7302,10 +7286,6 @@ public struct TeamRow: Equatable, Hashable {
     public var pending: Bool
     public var hiddenChannelCount: UInt32
     public var showHiddenChannels: Bool
-    public var moreChannels: Bool
-    public var allChannels: Bool
-    public var moreHiddenChannels: Bool
-    public var allHiddenChannels: Bool
     public var id: String
     public var name: String
     public var description: String
@@ -7325,7 +7305,7 @@ public struct TeamRow: Equatable, Hashable {
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(hidden: Bool, pending: Bool, hiddenChannelCount: UInt32, showHiddenChannels: Bool, moreChannels: Bool, allChannels: Bool, moreHiddenChannels: Bool, allHiddenChannels: Bool, id: String, name: String, description: String, archived: Bool, expanded: Bool, 
+    public init(hidden: Bool, pending: Bool, hiddenChannelCount: UInt32, showHiddenChannels: Bool, id: String, name: String, description: String, archived: Bool, expanded: Bool, 
         /**
          * Channels are listed under the team in the sidebar (open, or a search is active).
          */showChannels: Bool, channels: [ChannelRow], 
@@ -7336,10 +7316,6 @@ public struct TeamRow: Equatable, Hashable {
         self.pending = pending
         self.hiddenChannelCount = hiddenChannelCount
         self.showHiddenChannels = showHiddenChannels
-        self.moreChannels = moreChannels
-        self.allChannels = allChannels
-        self.moreHiddenChannels = moreHiddenChannels
-        self.allHiddenChannels = allHiddenChannels
         self.id = id
         self.name = name
         self.description = description
@@ -7372,10 +7348,6 @@ public struct FfiConverterTypeTeamRow: FfiConverterRustBuffer {
                 pending: FfiConverterBool.read(from: &buf), 
                 hiddenChannelCount: FfiConverterUInt32.read(from: &buf), 
                 showHiddenChannels: FfiConverterBool.read(from: &buf), 
-                moreChannels: FfiConverterBool.read(from: &buf), 
-                allChannels: FfiConverterBool.read(from: &buf), 
-                moreHiddenChannels: FfiConverterBool.read(from: &buf), 
-                allHiddenChannels: FfiConverterBool.read(from: &buf), 
                 id: FfiConverterString.read(from: &buf), 
                 name: FfiConverterString.read(from: &buf), 
                 description: FfiConverterString.read(from: &buf), 
@@ -7394,10 +7366,6 @@ public struct FfiConverterTypeTeamRow: FfiConverterRustBuffer {
         FfiConverterBool.write(value.pending, into: &buf)
         FfiConverterUInt32.write(value.hiddenChannelCount, into: &buf)
         FfiConverterBool.write(value.showHiddenChannels, into: &buf)
-        FfiConverterBool.write(value.moreChannels, into: &buf)
-        FfiConverterBool.write(value.allChannels, into: &buf)
-        FfiConverterBool.write(value.moreHiddenChannels, into: &buf)
-        FfiConverterBool.write(value.allHiddenChannels, into: &buf)
         FfiConverterString.write(value.id, into: &buf)
         FfiConverterString.write(value.name, into: &buf)
         FfiConverterString.write(value.description, into: &buf)
@@ -14682,11 +14650,7 @@ public enum TeamListAction: Equatable, Hashable {
     )
     case hiddenTeams(expanded: Bool
     )
-    case moreTeams(hidden: Bool, expanded: Bool
-    )
     case hiddenChannels(team: String, expanded: Bool
-    )
-    case moreChannels(team: String, hidden: Bool, expanded: Bool
     )
     case show(team: String, channel: String?, shown: Bool
     )
@@ -14721,22 +14685,16 @@ public struct FfiConverterTypeTeamListAction: FfiConverterRustBuffer {
         case 2: return .hiddenTeams(expanded: try FfiConverterBool.read(from: &buf)
         )
         
-        case 3: return .moreTeams(hidden: try FfiConverterBool.read(from: &buf), expanded: try FfiConverterBool.read(from: &buf)
+        case 3: return .hiddenChannels(team: try FfiConverterString.read(from: &buf), expanded: try FfiConverterBool.read(from: &buf)
         )
         
-        case 4: return .hiddenChannels(team: try FfiConverterString.read(from: &buf), expanded: try FfiConverterBool.read(from: &buf)
+        case 4: return .show(team: try FfiConverterString.read(from: &buf), channel: try FfiConverterOptionString.read(from: &buf), shown: try FfiConverterBool.read(from: &buf)
         )
         
-        case 5: return .moreChannels(team: try FfiConverterString.read(from: &buf), hidden: try FfiConverterBool.read(from: &buf), expanded: try FfiConverterBool.read(from: &buf)
+        case 5: return .move(id: try FfiConverterString.read(from: &buf), before: try FfiConverterOptionString.read(from: &buf)
         )
         
-        case 6: return .show(team: try FfiConverterString.read(from: &buf), channel: try FfiConverterOptionString.read(from: &buf), shown: try FfiConverterBool.read(from: &buf)
-        )
-        
-        case 7: return .move(id: try FfiConverterString.read(from: &buf), before: try FfiConverterOptionString.read(from: &buf)
-        )
-        
-        case 8: return .shift(id: try FfiConverterString.read(from: &buf), up: try FfiConverterBool.read(from: &buf)
+        case 6: return .shift(id: try FfiConverterString.read(from: &buf), up: try FfiConverterBool.read(from: &buf)
         )
         
         default: throw UniffiInternalError.unexpectedEnumCase
@@ -14757,40 +14715,27 @@ public struct FfiConverterTypeTeamListAction: FfiConverterRustBuffer {
             FfiConverterBool.write(expanded, into: &buf)
             
         
-        case let .moreTeams(hidden,expanded):
-            writeInt(&buf, Int32(3))
-            FfiConverterBool.write(hidden, into: &buf)
-            FfiConverterBool.write(expanded, into: &buf)
-            
-        
         case let .hiddenChannels(team,expanded):
-            writeInt(&buf, Int32(4))
+            writeInt(&buf, Int32(3))
             FfiConverterString.write(team, into: &buf)
-            FfiConverterBool.write(expanded, into: &buf)
-            
-        
-        case let .moreChannels(team,hidden,expanded):
-            writeInt(&buf, Int32(5))
-            FfiConverterString.write(team, into: &buf)
-            FfiConverterBool.write(hidden, into: &buf)
             FfiConverterBool.write(expanded, into: &buf)
             
         
         case let .show(team,channel,shown):
-            writeInt(&buf, Int32(6))
+            writeInt(&buf, Int32(4))
             FfiConverterString.write(team, into: &buf)
             FfiConverterOptionString.write(channel, into: &buf)
             FfiConverterBool.write(shown, into: &buf)
             
         
         case let .move(id,before):
-            writeInt(&buf, Int32(7))
+            writeInt(&buf, Int32(5))
             FfiConverterString.write(id, into: &buf)
             FfiConverterOptionString.write(before, into: &buf)
             
         
         case let .shift(id,up):
-            writeInt(&buf, Int32(8))
+            writeInt(&buf, Int32(6))
             FfiConverterString.write(id, into: &buf)
             FfiConverterBool.write(up, into: &buf)
             
