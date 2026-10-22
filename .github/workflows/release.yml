@@ -1,0 +1,72 @@
+# Builds Oxide.app and publishes the GitHub release for an existing tag.
+# Run it by hand from the Actions tab, picking the tag (vX.Y.Z) in "Use workflow from":
+# it never creates the tag itself.
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      draft:
+        description: Create the release as a draft
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    # Apple Silicon runner: the release is arm64 only.
+    runs-on: macos-26
+    steps:
+      - name: Require a tag
+        if: github.ref_type != 'tag'
+        run: |
+          echo "::error::Run this workflow from a tag (Use workflow from → Tags → vX.Y.Z)."
+          exit 1
+
+      # Full history: build-app.sh counts commits for the build number, and the changelog needs the previous tag.
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check the tag matches Cargo.toml
+        id: version
+        run: |
+          VERSION="$(sed -n '/^\[workspace.package\]/,/^\[/s/^version = "\(.*\)"/\1/p' Cargo.toml)"
+          if [ "$GITHUB_REF_NAME" != "v$VERSION" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match the version in Cargo.toml (v$VERSION)."
+            exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+
+      - uses: actions/cache@v4
+        with:
+          path: apps/macos/.build
+          key: swiftpm-${{ runner.os }}-${{ hashFiles('apps/macos/Package.resolved') }}
+          restore-keys: swiftpm-${{ runner.os }}-
+
+      # No SIGN_IDENTITY: the app is signed ad hoc.
+      - name: Build Oxide.app
+        run: ./scripts/build-app.sh
+
+      - name: Check the signature is ad hoc
+        run: codesign -dvv target/Oxide.app 2>&1 | grep -q '^Signature=adhoc$'
+
+      - name: Package
+        run: ditto -c -k --keepParent target/Oxide.app "Oxide-${{ steps.version.outputs.version }}.zip"
+
+      # The install notes, then GitHub's changelog since the previous tag (--generate-notes appends it).
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
+          DRAFT: ${{ inputs.draft && '--draft' || '' }}
+        run: |
+          sed "s/{{VERSION}}/$VERSION/g" .github/release-notes.md > notes.md
+          gh release create "$GITHUB_REF_NAME" "Oxide-$VERSION.zip" \
+            --title "Oxide $VERSION" --notes-file notes.md --generate-notes --verify-tag $DRAFT
