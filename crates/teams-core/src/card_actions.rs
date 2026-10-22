@@ -301,15 +301,12 @@ impl App {
             return Task::done(Msg::OpenUrl(url.clone()));
         }
         // Required inputs block the button, as the SDK's validation does.
-        let missing = shown.items.iter().any(|item| match item {
-            crate::cards::CardItem::Input(input) => {
-                input.required
-                    && inputs
-                        .iter()
-                        .find(|v| v.id == input.id)
-                        .is_none_or(|v| v.value.trim().is_empty())
-            }
-            _ => false,
+        let missing = shown.inputs().any(|input| {
+            input.required
+                && inputs
+                    .iter()
+                    .find(|v| v.id == input.id)
+                    .is_none_or(|v| v.value.trim().is_empty())
         });
         if missing && button.kind != ActionKind::OpenUrl {
             let mut state = self.card_states.get(&key).cloned().unwrap_or_default();

@@ -199,36 +199,7 @@ private struct CardBlock: View {
             if let subtitle = card.subtitle {
                 Muted(subtitle, size: 13).fixedSize(horizontal: false, vertical: true)
             }
-            ForEach(Array(card.items.enumerated()), id: \.offset) { _, item in
-                switch item {
-                case .text(let runs, let muted):
-                    MessageEmojiText(runs: runs)
-                        .foregroundStyle(muted ? Theme.muted : Theme.text)
-                        .lineSpacing(3)
-                        .fixedSize(horizontal: false, vertical: true)
-                case .blocks(let blocks):
-                    MessageBlocks(blocks: blocks, size: 14)
-                case .gap(let points, let separator):
-                    if separator {
-                        Divider().overlay(Theme.border).padding(.vertical, CGFloat(points) / 2)
-                    } else {
-                        Color.clear.frame(height: CGFloat(points))
-                    }
-                case .facts(let facts):
-                    Grid(alignment: .leadingFirstTextBaseline, horizontalSpacing: 12, verticalSpacing: 4) {
-                        ForEach(Array(facts.enumerated()), id: \.offset) { _, fact in
-                            GridRow {
-                                Text(fact.title).font(.figtree(13, .semibold))
-                                Text(fact.value).font(.figtree(13)).fixedSize(horizontal: false, vertical: true)
-                            }
-                        }
-                    }
-                case .image(let image):
-                    PreviewImage(image: image, height: 180)
-                case .input(let input):
-                    CardInputField(input: input, value: binding(input))
-                }
-            }
+            CardItems(items: card.items, binding: binding)
             if !card.actions.isEmpty {
                 let layout = card.actions.count <= 3
                     ? AnyLayout(HStackLayout(spacing: 8)) : AnyLayout(VStackLayout(alignment: .leading, spacing: 6))
@@ -261,11 +232,74 @@ private struct CardBlock: View {
             return
         }
         guard let messageId else { return }
-        let inputs = card.items.compactMap { item -> CardInputValue? in
-            guard case .input(let input) = item else { return nil }
-            return CardInputValue(id: input.id, value: values[input.id] ?? input.value)
+        let inputs = CardItems.inputs(card.items).map { input in
+            CardInputValue(id: input.id, value: values[input.id] ?? input.value)
         }
         store.send(.cardAction(messageId: messageId, card: card.index, action: UInt32(index), inputs: inputs))
+    }
+}
+
+/// A card's items, top to bottom; a ColumnSet's columns side by side.
+private struct CardItems: View {
+    let items: [CardItemView]
+    let binding: (CardInputView) -> Binding<String>
+
+    var body: some View {
+        ForEach(Array(items.enumerated()), id: \.offset) { _, item in
+            switch item {
+            case .text(let runs, let muted):
+                MessageEmojiText(runs: runs)
+                    .foregroundStyle(muted ? Theme.muted : Theme.text)
+                    .lineSpacing(3)
+                    .fixedSize(horizontal: false, vertical: true)
+            case .blocks(let blocks):
+                MessageBlocks(blocks: blocks, size: 14)
+            case .gap(let points, let separator):
+                if separator {
+                    Divider().overlay(Theme.border).padding(.vertical, CGFloat(points) / 2)
+                } else {
+                    Color.clear.frame(height: CGFloat(points))
+                }
+            case .facts(let facts):
+                Grid(alignment: .leadingFirstTextBaseline, horizontalSpacing: 12, verticalSpacing: 4) {
+                    ForEach(Array(facts.enumerated()), id: \.offset) { _, fact in
+                        GridRow {
+                            Text(fact.title).font(.figtree(13, .semibold))
+                            Text(fact.value).font(.figtree(13)).fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
+                }
+            case .image(let image):
+                PreviewImage(image: image, height: 180)
+            case .input(let input):
+                CardInputField(input: input, value: binding(input))
+            case .columns(let columns):
+                HStack(alignment: .top, spacing: 8) {
+                    ForEach(Array(columns.enumerated()), id: \.offset) { _, column in
+                        sized(column.width, AnyView(
+                            VStack(alignment: .leading, spacing: 8) { CardItems(items: column.items, binding: binding) }
+                        ))
+                    }
+                }
+            }
+        }
+    }
+    /// `auto` takes what its content needs first; the others share the rest (weights alike).
+    @ViewBuilder private func sized(_ width: CardColumnWidth, _ column: AnyView) -> some View {
+        switch width {
+        case .auto: column.layoutPriority(1)
+        case .points(let points): column.frame(width: CGFloat(points), alignment: .leading)
+        case .stretch, .weight: column.frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+    static func inputs(_ items: [CardItemView]) -> [CardInputView] {
+        items.flatMap { item -> [CardInputView] in
+            switch item {
+            case .input(let input): [input]
+            case .columns(let columns): columns.flatMap { inputs($0.items) }
+            default: []
+            }
+        }
     }
 }
 
