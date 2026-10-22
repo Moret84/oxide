@@ -645,6 +645,23 @@ impl App {
     pub(crate) fn measured(&self) -> (u64, usize) {
         (self.generation, self.conv.messages().len())
     }
+    /// Whose photo an avatar shows: a person or bot by MRI, or a direct chat's peer.
+    pub(crate) fn avatar_mri(&self, id: &str) -> Option<String> {
+        let has_photo = |mri: &str| mri.starts_with("8:") || mri.starts_with("28:");
+        if has_photo(id) {
+            return Some(id.to_owned());
+        }
+        self.chats
+            .iter()
+            .find(|c| c.id == id && !c.is_group())
+            .and_then(|c| {
+                c.members
+                    .iter()
+                    .find(|m| !m.id.eq_ignore_ascii_case(&self.me))
+            })
+            .map(|m| m.id.clone())
+            .filter(|mri| has_photo(mri))
+    }
     /// Marks parts whose change no cell sees: the avatar cache, or what shows the time.
     pub(crate) fn mark(&mut self, parts: Parts) {
         self.marked |= parts;
@@ -2121,20 +2138,7 @@ impl App {
                 if name == "Participant" || relocalized(&name, &PLACEHOLDERS).is_some() {
                     return Task::none();
                 }
-                let mri = if id.starts_with("8:") {
-                    Some(id.clone())
-                } else {
-                    self.chats
-                        .iter()
-                        .find(|c| c.id == id && !c.is_group())
-                        .and_then(|c| {
-                            c.members
-                                .iter()
-                                .find(|m| !m.id.eq_ignore_ascii_case(&self.me))
-                        })
-                        .map(|m| m.id.clone())
-                };
-                if let Some(mri) = mri.filter(|id| id.starts_with("8:")) {
+                if let Some(mri) = self.avatar_mri(&id) {
                     self.avatars.lock().unwrap().request(id, mri, name);
                     self.mark(Parts::AVATARS);
                 }

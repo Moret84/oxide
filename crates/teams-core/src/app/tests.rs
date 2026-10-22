@@ -1415,3 +1415,30 @@ fn direct_chats_show_their_peer_presence_and_unchanged_polls_redraw_nothing() {
     let _ = app.update(presence("AvailableIdle"));
     assert!(!app.take_changes().has(Parts::SIDEBAR));
 }
+#[test]
+fn avatars_show_people_bots_and_direct_chat_peers() {
+    let mut app = App::empty();
+    *app.me = "8:orgid:me".into();
+    let chat = |id: &str, one_on_one: bool, peers: &[&str]| {
+        let members: Vec<_> = std::iter::once("8:orgid:me")
+            .chain(peers.iter().copied())
+            .map(|id| serde_json::json!({ "id": id }))
+            .collect();
+        serde_json::from_value(serde_json::json!({
+            "id": id, "isOneOnOne": one_on_one, "members": members
+        }))
+        .unwrap()
+    };
+    *app.chats = vec![
+        chat("person", true, &["8:orgid:peer"]),
+        chat("bot", true, &["28:app"]),
+        chat("group", false, &["8:orgid:peer", "28:app"]),
+    ];
+    let mri = |id: &str| app.avatar_mri(id);
+    assert_eq!(mri("8:orgid:peer").as_deref(), Some("8:orgid:peer"));
+    assert_eq!(mri("28:app").as_deref(), Some("28:app"));
+    assert_eq!(mri("person").as_deref(), Some("8:orgid:peer"));
+    assert_eq!(mri("bot").as_deref(), Some("28:app"));
+    assert_eq!(mri("group"), None);
+    assert_eq!(mri("19:channel@thread.tacv2"), None);
+}
