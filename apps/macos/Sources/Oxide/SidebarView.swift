@@ -10,6 +10,7 @@ struct SidebarView: View {
     let activityUnread: UInt32
     let loading: Bool
     let searching: Bool
+    @Namespace private var chipSpace
 
     private var title: String {
         switch nav {
@@ -25,7 +26,7 @@ struct SidebarView: View {
                 Text(title).font(.figtree(20, .semibold)).frame(maxWidth: .infinity, alignment: .leading)
                 if nav == .teams {
                     TeamsAddMenu()
-                    IconButton(symbol: "arrow.clockwise", help: L("ui.sidebar_view.refresh_teams")) { store.send(.refresh) }
+                    RefreshButton(help: L("ui.sidebar_view.refresh_teams"), spinning: loading) { store.send(.refresh) }
                 } else {
                     IconButton(symbol: "line.3.horizontal.decrease", help: L("ui.sidebar_view.unread")) {
                         store.send(.setFilter(filter: filter == .unread ? .all : .unread))
@@ -35,7 +36,9 @@ struct SidebarView: View {
                             store.send(.notifications(action: .markAllActivityRead))
                         }
                         .disabled(activityUnread == 0)
-                        IconButton(symbol: "arrow.clockwise", help: L("ui.sidebar_view.refresh_notifications")) { store.send(.refresh) }
+                        RefreshButton(help: L("ui.sidebar_view.refresh_notifications"), spinning: store.sidebar?.activityLoading == true) {
+                            store.send(.refresh)
+                        }
                     } else {
                         Button {
                             store.send(.newChat)
@@ -71,6 +74,7 @@ struct SidebarView: View {
             if nav != .activity { chip(L("ui.sidebar_view.meetings"), .meetings) }
         }
         .padding(EdgeInsets(top: 0, leading: 16, bottom: 12, trailing: 12))
+        .animation(Motion.select, value: filter)
     }
     private func chip(_ title: String, _ chip: Filter) -> some View {
         let active = filter == chip
@@ -82,7 +86,13 @@ struct SidebarView: View {
                 .foregroundStyle(active ? Theme.accentText : Theme.textSoft)
                 .padding(.horizontal, 12)
                 .frame(height: 28)
-                .background(active ? Theme.accentSoft : Theme.input, in: Capsule())
+                .background {
+                    if active {
+                        Capsule().fill(Theme.accentSoft).matchedGeometryEffect(id: "chip", in: chipSpace)
+                    } else {
+                        Capsule().fill(Theme.input)
+                    }
+                }
         }
         .buttonStyle(.plain).pointerCursor()
         .accessibilityAddTraits(active ? .isSelected : [])
@@ -114,8 +124,12 @@ private struct ChatList: View, Equatable {
                         ForEach(recent, id: \.id) { ChatRowView(row: $0, focused: focused) { focused = true }.equatable() }
                     }
                     if chats.isEmpty {
-                        Muted(loading ? L("ui.sidebar_view.loading_chats") : L("ui.sidebar_view.no_chats_to_show"))
-                            .padding(20)
+                        if loading {
+                            SkeletonList(rows: 8).padding(.top, 8)
+                                .accessibilityElement().accessibilityLabel(L("ui.sidebar_view.loading_chats"))
+                        } else {
+                            Muted(L("ui.sidebar_view.no_chats_to_show")).padding(20)
+                        }
                     }
                     if more {
                         Button(L("ui.sidebar_view.more_chats")) { store.send(.moreChats) }
@@ -194,9 +208,11 @@ private struct ChatRowView: View, Equatable {
                             .frame(maxWidth: .infinity, alignment: .leading)
                         if row.unread {
                             Circle().fill(Theme.accent).frame(width: 10, height: 10)
+                                .transition(.pop)
                                 .accessibilityLabel(L("ui.sidebar_view.unread_2"))
                         }
                     }
+                    .animation(Motion.pop, value: row.unread)
                 }
             }
             .padding(.horizontal, 10)
@@ -209,6 +225,8 @@ private struct ChatRowView: View, Equatable {
                 RoundedRectangle(cornerRadius: 8)
                     .strokeBorder(row.selected && focused ? Theme.accent : .clear, lineWidth: 1.5)
             )
+            .animation(Motion.hover, value: hovered)
+            .animation(Motion.hover, value: row.selected)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain).pointerCursor()

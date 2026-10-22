@@ -12,10 +12,14 @@ struct ActivityList: View {
                     ActivityRowView(row: row)
                 }
                 if sidebar.activities.isEmpty && sidebar.activityError == nil {
-                    Muted(sidebar.activityLoading ? L("ui.activity_view.loading_notifications")
-                          : unreadOnly ? L("ui.activity_view.no_unread_notifications")
-                          : L("ui.activity_view.no_notifications_to_show"))
-                        .padding(16)
+                    if sidebar.activityLoading {
+                        SkeletonList(rows: 7, avatar: 36)
+                            .accessibilityElement().accessibilityLabel(L("ui.activity_view.loading_notifications"))
+                    } else {
+                        Muted(unreadOnly ? L("ui.activity_view.no_unread_notifications")
+                              : L("ui.activity_view.no_notifications_to_show"))
+                            .padding(16)
+                    }
                 }
                 if let problem = sidebar.activityError {
                     Muted(problem).padding(12)
@@ -85,6 +89,7 @@ private struct ActivityRowView: View {
             }
         }
         .background(row.selected ? Theme.accentSoft : hovered ? Theme.input : .clear, in: RoundedRectangle(cornerRadius: 8))
+        .animation(Motion.hover, value: hovered)
         .onHover { hovered = $0 }
     }
 }

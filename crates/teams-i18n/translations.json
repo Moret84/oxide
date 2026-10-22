@@ -5683,41 +5683,9 @@
     "fr": "Voir tous les canaux masqués",
     "en": "See all hidden channels"
   },
-  "ui.teams_list.see_fewer_channels": {
-    "fr": "Voir moins de canaux",
-    "en": "See fewer channels"
-  },
-  "ui.teams_list.see_fewer_hidden_channels": {
-    "fr": "Voir moins de canaux masqués",
-    "en": "See fewer hidden channels"
-  },
-  "ui.teams_list.see_fewer_hidden_teams": {
-    "fr": "Voir moins d’équipes masquées",
-    "en": "See fewer hidden teams"
-  },
-  "ui.teams_list.see_fewer_teams": {
-    "fr": "Voir moins d’équipes",
-    "en": "See fewer teams"
-  },
   "ui.teams_list.see_hidden_channels": {
     "fr": "Voir les canaux masqués ({hiddenChannelCount})",
     "en": "See hidden channels ({hiddenChannelCount})"
-  },
-  "ui.teams_list.see_more_channels": {
-    "fr": "Voir plus de canaux",
-    "en": "See more channels"
-  },
-  "ui.teams_list.see_more_hidden_channels": {
-    "fr": "Voir plus de canaux masqués",
-    "en": "See more hidden channels"
-  },
-  "ui.teams_list.see_more_hidden_teams": {
-    "fr": "Voir plus d’équipes masquées",
-    "en": "See more hidden teams"
-  },
-  "ui.teams_list.see_more_teams": {
-    "fr": "Voir plus d’équipes",
-    "en": "See more teams"
   },
   "ui.teams_list.shared_channel": {
     "fr": "Canal partagé",

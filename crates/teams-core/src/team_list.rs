@@ -5,8 +5,6 @@ use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 use teams_i18n::tf;
 
-const TEAM_LIMIT: usize = 8;
-const CHANNEL_LIMIT: usize = 5;
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct TeamOrder {
@@ -27,17 +25,8 @@ pub enum TeamListAction {
     HiddenTeams {
         expanded: bool,
     },
-    MoreTeams {
-        hidden: bool,
-        expanded: bool,
-    },
     HiddenChannels {
         team: String,
-        expanded: bool,
-    },
-    MoreChannels {
-        team: String,
-        hidden: bool,
         expanded: bool,
     },
     Show {
@@ -58,8 +47,6 @@ pub enum TeamListAction {
 pub(crate) struct TeamListState {
     sort: TeamSort,
     show_hidden: bool,
-    more_teams: HashSet<bool>,
-    more_channels: HashSet<(String, bool)>,
     hidden_channels: HashSet<String>,
     initialized: HashSet<String>,
     shown: HashMap<String, bool>,
@@ -80,10 +67,6 @@ pub struct TeamListControls {
     pub shown_count: u32,
     pub hidden_count: u32,
     pub show_hidden: bool,
-    pub more_shown: bool,
-    pub more_hidden: bool,
-    pub all_shown: bool,
-    pub all_hidden: bool,
     pub saving_order: bool,
     pub order_available: bool,
 }
@@ -142,36 +125,16 @@ impl App {
             return;
         };
         let hidden = !self.team_shown(team);
-        let team_position = self
-            .ordered_teams()
-            .into_iter()
-            .filter(|t| self.team_shown(t) != hidden)
-            .position(|t| t.id == team_id)
-            .unwrap_or(0);
         let channel_hidden = team
             .channels
             .iter()
             .find(|c| c.id == channel_id)
             .is_some_and(|c| !self.channel_shown(team, c));
-        let channel_position = team
-            .channels
-            .iter()
-            .filter(|c| self.channel_shown(team, c) != channel_hidden)
-            .position(|c| c.id == channel_id)
-            .unwrap_or(0);
         if hidden {
             self.team_list.show_hidden = true;
         }
-        if team_position >= TEAM_LIMIT {
-            self.team_list.more_teams.insert(hidden);
-        }
         if channel_hidden {
             self.team_list.hidden_channels.insert(team_id.into());
-        }
-        if channel_position >= CHANNEL_LIMIT {
-            self.team_list
-                .more_channels
-                .insert((team_id.into(), channel_hidden));
         }
     }
     pub(super) fn initialize_team_list(&mut self, order: Option<Vec<TeamOrder>>) {
@@ -245,10 +208,8 @@ impl App {
             let hidden = !self.team_shown(team);
             let index = usize::from(hidden);
             counts[index] += 1;
-            if !searching
-                && ((hidden && !self.team_list.show_hidden)
-                    || (counts[index] > TEAM_LIMIT && !self.team_list.more_teams.contains(&hidden)))
-            {
+            // Every team is listed, as in Teams; only the hidden ones wait behind their toggle.
+            if !searching && hidden && !self.team_list.show_hidden {
                 continue;
             }
             let team_match = matches_search(&team.display_name, &self.search);
@@ -262,12 +223,8 @@ impl App {
                 let bucket = usize::from(channel_hidden);
                 channel_counts[bucket] += 1;
                 if !searching
-                    && ((channel_hidden && !self.team_list.hidden_channels.contains(&team.id))
-                        || (channel_counts[bucket] > CHANNEL_LIMIT
-                            && !self
-                                .team_list
-                                .more_channels
-                                .contains(&(team.id.clone(), channel_hidden))))
+                    && channel_hidden
+                    && !self.team_list.hidden_channels.contains(&team.id)
                 {
                     continue;
                 }
@@ -293,12 +250,6 @@ impl App {
                 continue;
             }
             let expanded = self.expanded.contains(&team.id);
-            let overflows = |bucket: usize| !searching && channel_counts[bucket] > CHANNEL_LIMIT;
-            let all = |hidden: bool| {
-                self.team_list
-                    .more_channels
-                    .contains(&(team.id.clone(), hidden))
-            };
             rows.push(view::TeamRow {
                 id: team.id.clone(),
                 name: team.display_name.clone(),
@@ -321,10 +272,6 @@ impl App {
                 hidden_channel_count: channel_counts[1] as u32,
                 show_hidden_channels: searching
                     || self.team_list.hidden_channels.contains(&team.id),
-                more_channels: overflows(0) && !all(false),
-                all_channels: overflows(0) && all(false),
-                more_hidden_channels: overflows(1) && !all(true),
-                all_hidden_channels: overflows(1) && all(true),
             });
         }
         let controls = TeamListControls {
@@ -332,10 +279,6 @@ impl App {
             shown_count: counts[0] as u32,
             hidden_count: counts[1] as u32,
             show_hidden: self.team_list.show_hidden,
-            more_shown: counts[0] > TEAM_LIMIT && !self.team_list.more_teams.contains(&false),
-            more_hidden: counts[1] > TEAM_LIMIT && !self.team_list.more_teams.contains(&true),
-            all_shown: self.team_list.more_teams.contains(&false),
-            all_hidden: self.team_list.more_teams.contains(&true),
             saving_order: self.team_list.saving_order,
             order_available: self.team_list.order.is_some(),
         };
@@ -382,17 +325,9 @@ impl App {
             TeamListMsg::Action(action) => match action {
                 TeamListAction::Sort { sort } => self.team_list.sort = sort,
                 TeamListAction::HiddenTeams { expanded } => self.team_list.show_hidden = expanded,
-                TeamListAction::MoreTeams { hidden, expanded } => {
-                    toggle(&mut self.team_list.more_teams, hidden, expanded)
-                }
                 TeamListAction::HiddenChannels { team, expanded } => {
                     toggle(&mut self.team_list.hidden_channels, team, expanded)
                 }
-                TeamListAction::MoreChannels {
-                    team,
-                    hidden,
-                    expanded,
-                } => toggle(&mut self.team_list.more_channels, (team, hidden), expanded),
                 TeamListAction::Show {
                     team,
                     channel,
@@ -563,27 +498,17 @@ mod tests {
         assert_eq!(shown, [true, false, true]);
     }
     #[test]
-    fn separates_visibility_from_notifications_and_pages_both_levels() {
+    fn lists_every_shown_team_and_channel_and_keeps_hidden_ones_behind_toggles() {
         let mut app = app();
         let (rows, c) = app.team_list_rows();
         assert_eq!((c.shown_count, c.hidden_count), (10, 2));
-        assert_eq!(rows.len(), 8);
-        assert!(c.more_shown);
-        assert_eq!(rows[0].channels.len(), 5);
-        assert!(rows[0].more_channels);
+        assert_eq!(rows.len(), 10);
+        assert_eq!(rows[0].channels.len(), 7);
         assert_eq!(rows[0].hidden_channel_count, 3);
         assert!(
             !rows[0].channels.iter().any(|c| c.id == "team-00"),
             "the independently hidden general channel stays hidden"
         );
-        action(
-            &mut app,
-            TeamListAction::MoreTeams {
-                hidden: false,
-                expanded: true,
-            },
-        );
-        assert_eq!(app.team_list_rows().0.len(), 10);
         action(&mut app, TeamListAction::HiddenTeams { expanded: true });
         assert_eq!(app.team_list_rows().0.len(), 12);
         action(
@@ -595,15 +520,7 @@ mod tests {
         );
         let rows = app.team_list_rows().0;
         assert_eq!(rows[0].channels.iter().filter(|c| c.hidden).count(), 3);
-        action(
-            &mut app,
-            TeamListAction::MoreChannels {
-                team: "team-00".into(),
-                hidden: false,
-                expanded: true,
-            },
-        );
-        assert_eq!(app.team_list_rows().0[0].channels.len(), 10);
+        assert_eq!(rows[0].channels.len(), 10);
         app.teams[0].extra.insert("isFollowed".into(), json!(false));
         assert!(app.team_shown(&app.teams[0]));
     }

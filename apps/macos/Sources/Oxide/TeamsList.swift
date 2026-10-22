@@ -25,13 +25,8 @@ struct TeamsList: View {
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 3) {
                     ForEach(sidebar.teams.filter { !$0.hidden }, id: \.id) { team in teamSection(team) }
-                    if !searching {
-                        if controls.moreShown {
-                            more(L("ui.teams_list.see_more_teams"), indent: 12) { send(.moreTeams(hidden: false, expanded: true)) }
-                        } else if controls.allShown && controls.shownCount > 8 {
-                            more(L("ui.teams_list.see_fewer_teams"), indent: 12) { send(.moreTeams(hidden: false, expanded: false)) }
-                        }
-                        if controls.shownCount == 0 && controls.hiddenCount > 0 { Muted(L("ui.teams_list.all_your_teams_are_hidden"), size: 12).padding(12) }
+                    if !searching && controls.shownCount == 0 && controls.hiddenCount > 0 {
+                        Muted(L("ui.teams_list.all_your_teams_are_hidden"), size: 12).padding(12)
                     }
                     if controls.hiddenCount > 0 && !searching {
                         Button { send(.hiddenTeams(expanded: !controls.showHidden)) } label: {
@@ -43,14 +38,10 @@ struct TeamsList: View {
                         }.buttonStyle(GhostButtonStyle()).padding(.top, 8)
                     }
                     ForEach(sidebar.teams.filter(\.hidden), id: \.id) { team in teamSection(team) }
-                    if !searching && controls.showHidden {
-                        if controls.moreHidden {
-                            more(L("ui.teams_list.see_more_hidden_teams"), indent: 12) { send(.moreTeams(hidden: true, expanded: true)) }
-                        } else if controls.allHidden && controls.hiddenCount > 8 {
-                            more(L("ui.teams_list.see_fewer_hidden_teams"), indent: 12) { send(.moreTeams(hidden: true, expanded: false)) }
-                        }
-                    }
-                    if sidebar.teamCount == 0 || (searching && sidebar.teams.isEmpty) {
+                    if sidebar.teamCount == 0 && loading && !searching {
+                        SkeletonList(rows: 6, avatar: 28)
+                            .accessibilityElement().accessibilityLabel(L("ui.teams_list.loading_teams"))
+                    } else if sidebar.teamCount == 0 || (searching && sidebar.teams.isEmpty) {
                         Muted(loading ? L("ui.teams_list.loading_teams")
                               : sidebar.teamsProblem != nil ? L("ui.teams_list.couldn_t_load_teams")
                               : searching ? L("ui.teams_list.no_matching_teams_or_channels")
@@ -86,8 +77,6 @@ struct TeamsList: View {
             teamRow(team)
             if team.showChannels {
                 ForEach(team.channels.filter { !$0.hidden }, id: \.id) { TeamChannelRow(channel: $0) }
-                if team.moreChannels { more(L("ui.teams_list.see_more_channels"), indent: 36, context: team.name) { send(.moreChannels(team: team.id, hidden: false, expanded: true)) } }
-                if team.allChannels { more(L("ui.teams_list.see_fewer_channels"), indent: 36, context: team.name) { send(.moreChannels(team: team.id, hidden: false, expanded: false)) } }
                 if team.hiddenChannelCount > 0 && !searching {
                     more(team.showHiddenChannels
                          ? L("ui.teams_list.hide_hidden_channels", ["hiddenChannelCount": team.hiddenChannelCount])
@@ -96,11 +85,7 @@ struct TeamsList: View {
                     }
                 }
                 ForEach(team.channels.filter(\.hidden), id: \.id) { TeamChannelRow(channel: $0) }
-                if team.showHiddenChannels {
-                    if team.moreHiddenChannels { more(L("ui.teams_list.see_more_hidden_channels"), indent: 36, context: team.name) { send(.moreChannels(team: team.id, hidden: true, expanded: true)) } }
-                    if team.allHiddenChannels { more(L("ui.teams_list.see_fewer_hidden_channels"), indent: 36, context: team.name) { send(.moreChannels(team: team.id, hidden: true, expanded: false)) } }
-                }
-                if team.loading { Muted(L("ui.teams_list.loading_channels"), size: 11).padding(.leading, 36).padding(.vertical, 6) }
+                if team.loading { LoadingLabel(text: L("ui.teams_list.loading_channels"), size: 11).padding(.leading, 36).padding(.vertical, 6) }
                 if team.failed {
                     VStack(alignment: .leading, spacing: 4) {
                         Muted(L("ui.teams_list.channels_couldn_t_be_refreshed"), size: 11)
@@ -147,7 +132,7 @@ struct TeamsList: View {
     private func canShift(_ team: TeamRow, up: Bool) -> Bool {
         guard canMove else { return false }
         let peers = sidebar.teams.filter { $0.hidden == team.hidden }
-        return up ? peers.first?.id != team.id : peers.last?.id != team.id || (team.hidden ? controls.moreHidden : controls.moreShown)
+        return up ? peers.first?.id != team.id : peers.last?.id != team.id
     }
     private var canMove: Bool { controls.orderAvailable && !controls.savingOrder && controls.sort == .teams && !searching }
     private func more(_ title: String, indent: CGFloat, context: String? = nil, action: @escaping () -> Void) -> some View {

@@ -7,16 +7,19 @@ struct Welcome: View {
     var body: some View {
         VStack(spacing: 16) {
             Image(systemName: "bubble.left").font(.system(size: 48)).foregroundStyle(Theme.accent)
+                .symbolEffect(.pulse, isActive: loading && !Motion.reduced)
             Text(L("ui.screens.your_workspace")).font(.figtree(26, .semibold))
-            Muted(
-                loading ? L("ui.screens.loading_your_conversations")
-                    : L("ui.screens.find_your_private_chats_and_your"),
-                size: 14
-            )
+            if loading {
+                LoadingLabel(text: L("ui.screens.loading_your_conversations"), size: 14)
+            } else {
+                Muted(L("ui.screens.find_your_private_chats_and_your"), size: 14)
+                    .transition(.opacity)
+            }
             Button(L("ui.screens.new_chat")) { store.send(.newChat) }.buttonStyle(PrimaryButtonStyle())
         }
         .padding(32)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .animation(Motion.standard, value: loading)
     }
 }
 
@@ -119,7 +122,7 @@ struct MembersScreen: View {
                         }
                     }
                     if view.loading {
-                        Muted(L("ui.screens.loading_participants"), size: 13)
+                        LoadingLabel(text: L("ui.screens.loading_participants"), size: 13)
                     }
                     if let error = view.error {
                         Muted(L("ui.screens.couldn_t_load_participants", ["error": error]), size: 13)
