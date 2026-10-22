@@ -326,9 +326,9 @@ async fn incoming(
                 Json(json!({
                     "callInvitation": {
                         "mediaContent": {"contentType": "application/sdp-ngc-1.0", "blob": offer},
-                        "links": {"progress": link("progress"), "accept": link("accept")},
+                        "links": {"progress": link("progress"), "acceptance": link("accept"), "callLeg": link("reject")},
                     },
-                    "links": {"reject": link("reject"), "leave": fake.0.base.join("c/incoming/leave").unwrap().as_str()},
+                    "links": {"leave": fake.0.base.join("c/incoming/leave").unwrap().as_str()},
                 })),
             )
         }
