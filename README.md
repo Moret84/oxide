@@ -81,7 +81,16 @@ light and dark themes.
 
 ## Installation
 
-There is no prebuilt release yet: Oxide is built from source.
+### Prebuilt app
+
+Download `Oxide-<version>.zip` from the [releases](https://github.com/neicureuil/oxide/releases),
+unzip it and move `Oxide.app` to `/Applications`. It needs macOS 14 Sonoma or later on Apple silicon,
+and updates itself from then on.
+
+The app is not notarized, so macOS blocks its first launch: allow it in
+System Settings › Privacy & Security, or run `xattr -dr com.apple.quarantine /Applications/Oxide.app`.
+
+### From source
 
 **Requirements**
 - macOS 14 Sonoma or later.
