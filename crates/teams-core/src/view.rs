@@ -1016,7 +1016,12 @@ impl App {
                 .chain(self.participants_notice.iter())
                 .cloned()
                 .collect(),
-            unread: self.chats.iter().filter(|c| c.is_unread()).count() as u32,
+            // A hidden chat is out of the list, so it cannot be read: counting it left a ghost in the badge.
+            unread: self
+                .chats
+                .iter()
+                .filter(|c| c.is_unread() && !self.is_hidden(c))
+                .count() as u32,
             activity_unread: self.activity_unread_count(),
             // Toggled every 30 s by background refreshes; only matters while a list is empty or can grow, so skip redrawing the window.
             loading_workspace: *self.loading_workspace
@@ -2713,6 +2718,20 @@ mod sidebar_tests {
         app.chats[3].is_read = Some(false);
         assert_eq!(app.sidebar().chats[0].id, "newer");
         assert_eq!(app.sidebar().chats.len(), 1);
+    }
+
+    #[test]
+    fn hidden_unread_chats_stay_out_of_the_unread_count() {
+        let mut app = App::empty();
+        let mut hidden = chat("hidden", "2026-10-15T10:00:00Z");
+        hidden.is_read = Some(false);
+        let mut shown = chat("shown", "2026-10-15T10:00:00Z");
+        shown.is_read = Some(false);
+        *app.chats = vec![hidden, shown];
+        assert_eq!(app.shell().unread, 2);
+        let after = conversations::last_message_time(&app.chats[0]).unwrap();
+        app.hidden_chats.insert("hidden".into(), after);
+        assert_eq!(app.shell().unread, 1);
     }
 
     #[test]
