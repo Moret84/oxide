@@ -47,6 +47,27 @@ async fn ams_is_rewritten_and_headers_are_removed_on_non_ams_redirects() {
     assert!(!requests[1].headers.contains_key("x-skypetoken"));
 }
 #[tokio::test]
+async fn card_images_through_the_url_preview_proxy_are_authenticated() {
+    let server = MockServer::start().await;
+    Mock::given(method("GET"))
+        .and(path("/urlp/v1/url/content"))
+        .and(header("authorization", "Bearer private"))
+        .and(query_param("url", "https://teams.github.com/pr-icon.png"))
+        .respond_with(ResponseTemplate::new(200).set_body_bytes(b"icon"))
+        .expect(1)
+        .mount(&server)
+        .await;
+    Mock::given(method("GET"))
+        .and(path("/media/v1/objects/image/views/imgo"))
+        .respond_with(ResponseTemplate::new(302).insert_header(
+            "location",
+            "/urlp/v1/url/content?url=https%3a%2f%2fteams.github.com%2fpr-icon.png",
+        ))
+        .mount(&server)
+        .await;
+    assert_eq!(client(&server).download_image(SOURCE).await.unwrap(), b"icon");
+}
+#[tokio::test]
 async fn insecure_external_redirects_and_oversized_images_are_rejected() {
     let server = MockServer::start().await;
     let external = MockServer::start().await;

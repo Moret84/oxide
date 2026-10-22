@@ -13,6 +13,10 @@ fn object_path(url: &Url) -> Option<&str> {
         || (parts.get(2) == Some(&"objects") && parts.len() >= 5))
         .then_some(tail)
 }
+/// The URL preview proxy that relays external images of cards (`…/urlp/v1/url/content?url=…`); it wants AMS credentials too.
+fn url_preview_path(url: &Url) -> bool {
+    url.path().ends_with("/v1/url/content")
+}
 fn ams_host(url: &Url) -> bool {
     let host = url.host_str().unwrap_or("");
     host.ends_with(".asm.skype.com")
@@ -76,8 +80,8 @@ impl<A: Authenticator> ChatClient<A> {
         let mut auth_retries = 0;
         for _ in 0..6 {
             let configured = ams.as_ref().is_some_and(|b| b.origin() == target.origin());
-            // Only discovered AMS or Microsoft AMS object URLs receive IC3 credentials.
-            let authenticated_ams = object_path(&target).is_some()
+            // Only object and URL preview URLs of the discovered AMS or a Microsoft AMS host receive IC3 credentials.
+            let authenticated_ams = (object_path(&target).is_some() || url_preview_path(&target))
                 && (configured || (safe_url(&target) && ams_host(&target)));
             if !safe_url(&target) && !configured {
                 return Err(Error::Media(t("chat.media.non_https_image_redirect_refused")));
@@ -161,6 +165,12 @@ mod tests {
             &Url::parse("https://eu-api.asm.skype.com.attacker.test/v1/objects/abc/views/imgo")
                 .unwrap()
         ));
+        let preview = Url::parse(
+            "https://eu-prod.asyncgw.teams.microsoft.com/urlp/v1/url/content?url=https%3a%2f%2fteams.github.com%2fpr.png",
+        )
+        .unwrap();
+        assert!(ams_host(&preview) && url_preview_path(&preview));
+        assert!(!url_preview_path(&a));
         assert!(!safe_url(
             &Url::parse("https://user:pass@example.test/image.png").unwrap()
         ));
