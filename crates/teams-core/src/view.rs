@@ -769,7 +769,7 @@ impl Snapshot {
     }
 }
 /// The app a bot message comes from, per `properties.fromAppMetadata`: an object or a JSON string `{id, name}`.
-fn app_metadata_name(m: &Message) -> Option<String> {
+pub(crate) fn app_metadata_name(m: &Message) -> Option<String> {
     if !m.sender_mri().starts_with("28:") {
         return None;
     }
@@ -1209,7 +1209,9 @@ impl App {
             .or_else(|| {
                 m.imdisplayname
                     .as_deref()
-                    .filter(|s| !s.trim().is_empty())
+                    .filter(|s| {
+                        !s.trim().is_empty() && !teams_chat::is_placeholder_name(m.sender_mri(), s)
+                    })
                     .map(str::to_owned)
             })
             .or_else(|| self.known_name(m.sender_mri()))

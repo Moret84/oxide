@@ -80,7 +80,7 @@ impl Person {
         ]
         .into_iter()
         .map(str::trim)
-        .find(|s| !s.is_empty() && *s != self.mri)
+        .find(|s| !s.is_empty() && !crate::is_placeholder_name(&self.mri, s))
     }
     pub fn name(&self) -> &str {
         if !self.display_name.is_empty() {
