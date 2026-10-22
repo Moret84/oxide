@@ -29,6 +29,21 @@ pub enum CardItem {
     Facts(Vec<Fact>),
     Image(InlineImage),
     Input(CardInput),
+    /// A `ColumnSet` of two or more visible columns, side by side.
+    Columns(Vec<CardColumn>),
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct CardColumn {
+    pub width: ColumnWidth,
+    pub items: Vec<CardItem>,
+}
+/// A column's `width`: `auto` fits its content, `stretch` and weights share what is left.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ColumnWidth {
+    Auto,
+    Stretch,
+    Weight(u32),
+    Points(u32),
 }
 /// An `Input.*` element: its id names its value in what a button sends.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -83,23 +98,7 @@ impl Card {
         let mut parts: Vec<String> = Vec::new();
         parts.extend(self.title.clone());
         parts.extend(self.subtitle.clone());
-        for item in &self.items {
-            match item {
-                CardItem::Text { runs, .. } => {
-                    parts.push(runs.iter().map(|r| r.text.as_str()).collect())
-                }
-                CardItem::Blocks(blocks) => {
-                    parts.push(html::Document::new(blocks.clone(), vec![]).text())
-                }
-                CardItem::Facts(facts) => parts.extend(
-                    facts
-                        .iter()
-                        .map(|f| tf!("core.cards.text", title = f.title, value = f.value)),
-                ),
-                CardItem::Input(input) => parts.extend(input.label.clone()),
-                CardItem::Image(_) | CardItem::Gap { .. } => {}
-            }
-        }
+        item_texts(&self.items, &mut parts);
         if parts.is_empty() {
             parts.push(t("core.cards.card").into());
         }
@@ -109,10 +108,62 @@ impl Card {
         }]
     }
     pub fn images(&self) -> impl Iterator<Item = &InlineImage> {
-        self.items.iter().filter_map(|item| match item {
-            CardItem::Image(image) => Some(image),
-            _ => None,
-        })
+        let mut images = Vec::new();
+        walk(&self.items, &mut |item| {
+            if let CardItem::Image(image) = item {
+                images.push(image);
+            }
+        });
+        images.into_iter()
+    }
+    pub fn inputs(&self) -> impl Iterator<Item = &CardInput> {
+        let mut inputs = Vec::new();
+        walk(&self.items, &mut |item| {
+            if let CardItem::Input(input) = item {
+                inputs.push(input);
+            }
+        });
+        inputs.into_iter()
+    }
+}
+/// Every item, columns included, in reading order.
+fn walk<'a>(items: &'a [CardItem], visit: &mut impl FnMut(&'a CardItem)) {
+    for item in items {
+        visit(item);
+        if let CardItem::Columns(columns) = item {
+            for column in columns {
+                walk(&column.items, visit);
+            }
+        }
+    }
+}
+fn item_texts(items: &[CardItem], parts: &mut Vec<String>) {
+    for item in items {
+        match item {
+            CardItem::Text { runs, .. } => {
+                parts.push(runs.iter().map(|r| r.text.as_str()).collect())
+            }
+            CardItem::Blocks(blocks) => {
+                parts.push(html::Document::new(blocks.clone(), vec![]).text())
+            }
+            CardItem::Facts(facts) => parts.extend(
+                facts
+                    .iter()
+                    .map(|f| tf!("core.cards.text", title = f.title, value = f.value)),
+            ),
+            CardItem::Input(input) => parts.extend(input.label.clone()),
+            // A row of columns reads as one line.
+            CardItem::Columns(columns) => {
+                let mut row = Vec::new();
+                for column in columns {
+                    item_texts(&column.items, &mut row);
+                }
+                if !row.is_empty() {
+                    parts.push(row.join(" "));
+                }
+            }
+            CardItem::Image(_) | CardItem::Gap { .. } => {}
+        }
     }
 }
 /// Cards attached through `properties.cards` (a JSON string, sometimes encoded twice).
@@ -393,28 +444,21 @@ fn elements(list: Option<&Value>, out: &mut Card, depth: usize) {
                     out.items.push(CardItem::Facts(facts));
                 }
             }
-            "Image" => image(element, "url", out),
+            "Image" => image(element, "url", None, out),
             "ImageSet" => {
+                // An ImageSet's images are medium unless it says otherwise.
+                let size = str_at(element, "imageSize").or(Some("medium"));
                 for item in element
                     .get("images")
                     .and_then(Value::as_array)
                     .into_iter()
                     .flatten()
                 {
-                    image(item, "url", out);
+                    image(item, "url", size, out);
                 }
             }
             "Container" => elements(element.get("items"), out, depth + 1),
-            "ColumnSet" => {
-                for column in element
-                    .get("columns")
-                    .and_then(Value::as_array)
-                    .into_iter()
-                    .flatten()
-                {
-                    elements(column.get("items"), out, depth + 1);
-                }
-            }
+            "ColumnSet" => column_set(element, out, depth),
             "Table" => {
                 for row in element
                     .get("rows")
@@ -447,19 +491,93 @@ fn elements(list: Option<&Value>, out: &mut Card, depth: usize) {
         }
     }
 }
-fn image(value: &Value, key: &str, out: &mut Card) {
+/// Columns without `isVisible: false`; one alone is drawn as plain items, as before.
+fn column_set(element: &Value, out: &mut Card, depth: usize) {
+    let mut columns = Vec::new();
+    for column in element
+        .get("columns")
+        .and_then(Value::as_array)
+        .into_iter()
+        .flatten()
+        .filter(|c| c.get("isVisible") != Some(&Value::Bool(false)))
+    {
+        let mut inner = Card::default();
+        elements(column.get("items"), &mut inner, depth + 1);
+        out.actions.append(&mut inner.actions);
+        if !inner.items.is_empty() {
+            columns.push(CardColumn {
+                width: column_width(column.get("width")),
+                items: inner.items,
+            });
+        }
+    }
+    match columns.len() {
+        0 => {}
+        1 => out.items.append(&mut columns.remove(0).items),
+        _ => out.items.push(CardItem::Columns(columns)),
+    }
+}
+/// `"auto"`, `"stretch"` (the default), a weight such as `2` or `"2"`, or `"50px"`.
+fn column_width(value: Option<&Value>) -> ColumnWidth {
+    match value {
+        Some(Value::Number(n)) => n
+            .as_u64()
+            .filter(|&n| n > 0)
+            .map_or(ColumnWidth::Stretch, |n| ColumnWidth::Weight(n.min(100) as u32)),
+        Some(Value::String(s)) => {
+            let s = s.trim().to_ascii_lowercase();
+            if s == "auto" {
+                ColumnWidth::Auto
+            } else if let Some(px) = s.strip_suffix("px").and_then(|n| n.trim().parse::<u32>().ok())
+            {
+                ColumnWidth::Points(px.min(600))
+            } else if let Some(n) = s.parse::<u32>().ok().filter(|&n| n > 0) {
+                ColumnWidth::Weight(n.min(100))
+            } else {
+                ColumnWidth::Stretch
+            }
+        }
+        _ => ColumnWidth::Stretch,
+    }
+}
+/// `"40px"` as points.
+fn pixels(value: &Value, key: &str) -> Option<u32> {
+    str_at(value, key)?
+        .to_ascii_lowercase()
+        .strip_suffix("px")?
+        .trim()
+        .parse()
+        .ok()
+        .filter(|&n| n > 0)
+}
+/// `default_size` is the enclosing ImageSet's `imageSize`.
+fn image(value: &Value, key: &str, default_size: Option<&str>, out: &mut Card) {
     let Some(src) =
         str_at(value, key).filter(|s| s.starts_with("https://") || s.starts_with("data:image/"))
     else {
         return;
     };
+    // The host config's sizes: an avatar asks for `small`, not a full-width box.
+    let side = match str_at(value, "size")
+        .or(default_size)
+        .map(str::to_ascii_lowercase)
+        .as_deref()
+    {
+        Some("small") => Some(40),
+        Some("medium") => Some(80),
+        Some("large") => Some(160),
+        _ => None,
+    };
+    let width = pixels(value, "width").or(side);
+    let height = pixels(value, "height").or(side).or(width);
     out.items.push(CardItem::Image(InlineImage {
         src: src.to_owned(),
         alt: str_at(value, "altText")
             .or_else(|| str_at(value, "alt"))
             .unwrap_or(t("core.cards.card_image"))
             .to_owned(),
-        ..Default::default()
+        width: width.map(|w| w.min(600)),
+        height: height.map(|h| h.min(600)),
     }));
 }
 fn actions(list: Option<&Value>, out: &mut Vec<CardAction>) {
@@ -525,7 +643,7 @@ fn hero(card: &Value) -> Card {
         .into_iter()
         .flatten()
     {
-        self::image(image, "url", &mut out);
+        self::image(image, "url", None, &mut out);
     }
     out.items
         .extend(str_at(card, "text").and_then(|t| rich_text(t, false, false)));
@@ -821,6 +939,51 @@ mod tests {
         );
         assert_eq!(card.actions[1].url, None);
         assert_eq!(card.actions[2].url, None);
+    }
+    #[test]
+    fn column_sets_stay_side_by_side_without_their_hidden_columns() {
+        let text = |t: &str| json!({"type": "TextBlock", "text": t});
+        let cards = from_message(&message(json!([{
+            "contentType": "application/vnd.microsoft.card.adaptive",
+            "content": {"type": "AdaptiveCard", "body": [
+                {"type": "ColumnSet", "columns": [
+                    {"width": "auto", "items": [{"type": "Image", "url": "https://example.test/a.png", "size": "Small", "style": "Person"}]},
+                    {"width": "stretch", "items": [text("bot wants to merge 4 commits")]}
+                ]},
+                {"type": "ColumnSet", "columns": [
+                    {"id": "closed", "width": "auto", "items": [text("1 Reviewer ▼")]},
+                    {"id": "open", "isVisible": false, "width": "auto", "items": [text("1 Reviewer ▲")]},
+                    {"width": "auto", "items": [text("•")]},
+                    {"width": 2, "items": [text("3 Files changed")]},
+                    {"width": "20px", "items": []}
+                ]},
+                {"type": "ColumnSet", "columns": [{"items": [text("seule")]}]}
+            ]}
+        }])));
+        let card = &cards[0];
+        let CardItem::Columns(header) = &card.items[0] else {
+            panic!("{card:?}");
+        };
+        assert_eq!(header[0].width, ColumnWidth::Auto);
+        let CardItem::Image(avatar) = &header[0].items[0] else {
+            panic!("{header:?}");
+        };
+        assert_eq!((avatar.width, avatar.height), (Some(40), Some(40)));
+        assert_eq!(header[1].width, ColumnWidth::Stretch);
+        let CardItem::Columns(stats) = &card.items[1] else {
+            panic!("{card:?}");
+        };
+        assert_eq!(
+            stats.iter().map(|c| c.width).collect::<Vec<_>>(),
+            [ColumnWidth::Auto, ColumnWidth::Auto, ColumnWidth::Weight(2)],
+            "the hidden and empty columns are gone"
+        );
+        assert!(matches!(&card.items[2], CardItem::Text { runs, .. } if runs[0].text == "seule"));
+        assert_eq!(card.images().count(), 1);
+        assert_eq!(
+            card.text_runs()[0].text,
+            "bot wants to merge 4 commits\n1 Reviewer ▼ • 3 Files changed\nseule"
+        );
     }
     #[test]
     fn hero_and_connector_cards() {

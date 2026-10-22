@@ -270,6 +270,19 @@ pub enum CardItemView {
     Facts { facts: Vec<FactView> },
     Image { image: ImageView },
     Input { input: CardInputView },
+    Columns { columns: Vec<CardColumnView> },
+}
+#[derive(Debug, Clone, PartialEq, Eq, Hash, uniffi::Record)]
+pub struct CardColumnView {
+    pub width: CardColumnWidth,
+    pub items: Vec<CardItemView>,
+}
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, uniffi::Enum)]
+pub enum CardColumnWidth {
+    Auto,
+    Stretch,
+    Weight { weight: u32 },
+    Points { points: u32 },
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash, uniffi::Enum)]
 pub enum CardInputKind {
@@ -1342,8 +1355,55 @@ impl App {
             height: image.height,
         }
     }
+    fn card_item_views(&self, items: &[crate::cards::CardItem]) -> Vec<CardItemView> {
+        use crate::cards::{CardItem, ColumnWidth};
+        items
+            .iter()
+            .map(|item| match item {
+                CardItem::Text { runs, muted } => CardItemView::Text {
+                    runs: run_views(runs),
+                    muted: *muted,
+                },
+                CardItem::Facts(facts) => CardItemView::Facts {
+                    facts: facts
+                        .iter()
+                        .map(|f| FactView {
+                            title: f.title.clone(),
+                            value: f.value.clone(),
+                        })
+                        .collect(),
+                },
+                CardItem::Image(image) => CardItemView::Image {
+                    image: self.image_view(image),
+                },
+                CardItem::Blocks(blocks) => CardItemView::Blocks {
+                    blocks: self.block_views(blocks),
+                },
+                CardItem::Gap { points, separator } => CardItemView::Gap {
+                    points: *points,
+                    separator: *separator,
+                },
+                CardItem::Input(input) => CardItemView::Input {
+                    input: card_input_view(input),
+                },
+                CardItem::Columns(columns) => CardItemView::Columns {
+                    columns: columns
+                        .iter()
+                        .map(|column| CardColumnView {
+                            width: match column.width {
+                                ColumnWidth::Auto => CardColumnWidth::Auto,
+                                ColumnWidth::Stretch => CardColumnWidth::Stretch,
+                                ColumnWidth::Weight(weight) => CardColumnWidth::Weight { weight },
+                                ColumnWidth::Points(points) => CardColumnWidth::Points { points },
+                            },
+                            items: self.card_item_views(&column.items),
+                        })
+                        .collect(),
+                },
+            })
+            .collect()
+    }
     pub(crate) fn block_views(&self, blocks: &[html::Block]) -> Vec<BlockView> {
-        use crate::cards::CardItem;
         use html::Block;
         blocks
             .iter()
@@ -1405,38 +1465,7 @@ impl App {
                         busy: false,
                         title: card.title.clone(),
                         subtitle: card.subtitle.clone(),
-                        items: card
-                            .items
-                            .iter()
-                            .map(|item| match item {
-                                CardItem::Text { runs, muted } => CardItemView::Text {
-                                    runs: run_views(runs),
-                                    muted: *muted,
-                                },
-                                CardItem::Facts(facts) => CardItemView::Facts {
-                                    facts: facts
-                                        .iter()
-                                        .map(|f| FactView {
-                                            title: f.title.clone(),
-                                            value: f.value.clone(),
-                                        })
-                                        .collect(),
-                                },
-                                CardItem::Image(image) => CardItemView::Image {
-                                    image: self.image_view(image),
-                                },
-                                CardItem::Blocks(blocks) => CardItemView::Blocks {
-                                    blocks: self.block_views(blocks),
-                                },
-                                CardItem::Gap { points, separator } => CardItemView::Gap {
-                                    points: *points,
-                                    separator: *separator,
-                                },
-                                CardItem::Input(input) => CardItemView::Input {
-                                    input: card_input_view(input),
-                                },
-                            })
-                            .collect(),
+                        items: self.card_item_views(&card.items),
                         actions: card
                             .actions
                             .iter()

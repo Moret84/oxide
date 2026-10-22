@@ -323,8 +323,13 @@ struct PreviewImage: View {
         return size.height * min(1, width / size.width)
     }
 
+    /// A card's avatar or icon: its exact size, and only a glyph if it fails.
+    private var small: Bool { Self.declaredSize(image).map { $0.width <= 160 && $0.height <= 160 } ?? false }
+
     var body: some View {
-        if let size = Self.declaredSize(image) {
+        if let size = Self.declaredSize(image), small {
+            box.frame(width: size.width, height: size.height)
+        } else if let size = Self.declaredSize(image) {
             box
                 .aspectRatio(size.width / size.height, contentMode: .fit)
                 .frame(maxWidth: size.width, alignment: .leading)
@@ -362,6 +367,14 @@ struct PreviewImage: View {
                     .controlSize(.small)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .accessibilityLabel(L("ui.message_row.loading_image"))
+            case .failed(let reason) where small:
+                Button { store.send(.retryImage(src: image.src)) } label: {
+                    Image(systemName: "photo").foregroundStyle(Theme.muted)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                }
+                .buttonStyle(.plain)
+                .help("\(reason) · \(L("ui.message_row.retry_image"))")
+                .accessibilityLabel(L("ui.message_row.retry_image"))
             case .failed(let reason):
                 VStack(alignment: .leading, spacing: 6) {
                     Muted(reason, size: 11)

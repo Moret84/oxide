@@ -413,6 +413,29 @@ fn seed() -> Db {
             messages,
         });
     }
+    // A bot card laid out in columns, with a hidden column and an avatar that cannot load.
+    if let Some(message) = chats
+        .iter_mut()
+        .find(|c| c.conversation.id == "19:engineering@thread.tacv2")
+        .and_then(|c| c.messages.first_mut())
+    {
+        let text = |t: &str| json!({"type": "TextBlock", "text": t, "wrap": true});
+        let stat = |t: &str| json!({"width": "auto", "items": [text(t)]});
+        message.properties.insert("cards".into(), json!(json!([{
+            "contentType": "application/vnd.microsoft.card.adaptive",
+            "content": {"type": "AdaptiveCard", "body": [
+                {"type": "ColumnSet", "columns": [
+                    {"width": "auto", "items": [{"type": "Image", "url": "https://example.invalid/avatar.png", "size": "Small", "style": "Person"}]},
+                    {"width": "stretch", "items": [text("[ci-bot](https://example.test/) wants to merge 4 commits from [fix/theme](https://example.test/) into [main](https://example.test/)")]}
+                ]},
+                {"type": "ColumnSet", "columns": [
+                    stat("1 Reviewer ▼"),
+                    {"width": "auto", "isVisible": false, "items": [text("1 Reviewer ▲")]},
+                    stat("•"), stat("1 Comment"), stat("•"), stat("3 Files changed")
+                ]}
+            ]}
+        }]).to_string()));
+    }
     // A real file-shaped fixture exercises rendering without fabricating uploads.
     if let Some(chat) = chats
         .iter_mut()

@@ -2481,6 +2481,60 @@ public func FfiConverterTypeCardChoiceView_lower(_ value: CardChoiceView) -> Rus
 }
 
 
+public struct CardColumnView: Equatable, Hashable {
+    public var width: CardColumnWidth
+    public var items: [CardItemView]
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(width: CardColumnWidth, items: [CardItemView]) {
+        self.width = width
+        self.items = items
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension CardColumnView: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeCardColumnView: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> CardColumnView {
+        return
+            try CardColumnView(
+                width: FfiConverterTypeCardColumnWidth.read(from: &buf), 
+                items: FfiConverterSequenceTypeCardItemView.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: CardColumnView, into buf: inout [UInt8]) {
+        FfiConverterTypeCardColumnWidth.write(value.width, into: &buf)
+        FfiConverterSequenceTypeCardItemView.write(value.items, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCardColumnView_lift(_ buf: RustBuffer) throws -> CardColumnView {
+    return try FfiConverterTypeCardColumnView.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCardColumnView_lower(_ value: CardColumnView) -> RustBuffer {
+    return FfiConverterTypeCardColumnView.lower(value)
+}
+
+
 /**
  * A value typed into a card input, by input id; multi-choice values joined by commas.
  */
@@ -9879,6 +9933,92 @@ public func FfiConverterTypeCardActionKind_lower(_ value: CardActionKind) -> Rus
 
 
 
+public enum CardColumnWidth: Equatable, Hashable {
+    
+    case auto
+    case stretch
+    case weight(weight: UInt32
+    )
+    case points(points: UInt32
+    )
+
+
+
+
+
+}
+
+#if compiler(>=6)
+extension CardColumnWidth: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeCardColumnWidth: FfiConverterRustBuffer {
+    typealias SwiftType = CardColumnWidth
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> CardColumnWidth {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+        
+        case 1: return .auto
+        
+        case 2: return .stretch
+        
+        case 3: return .weight(weight: try FfiConverterUInt32.read(from: &buf)
+        )
+        
+        case 4: return .points(points: try FfiConverterUInt32.read(from: &buf)
+        )
+        
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: CardColumnWidth, into buf: inout [UInt8]) {
+        switch value {
+        
+        
+        case .auto:
+            writeInt(&buf, Int32(1))
+        
+        
+        case .stretch:
+            writeInt(&buf, Int32(2))
+        
+        
+        case let .weight(weight):
+            writeInt(&buf, Int32(3))
+            FfiConverterUInt32.write(weight, into: &buf)
+            
+        
+        case let .points(points):
+            writeInt(&buf, Int32(4))
+            FfiConverterUInt32.write(points, into: &buf)
+            
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCardColumnWidth_lift(_ buf: RustBuffer) throws -> CardColumnWidth {
+    return try FfiConverterTypeCardColumnWidth.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeCardColumnWidth_lower(_ value: CardColumnWidth) -> RustBuffer {
+    return FfiConverterTypeCardColumnWidth.lower(value)
+}
+
+
+
+
 public enum CardInputKind: Equatable, Hashable {
     
     case text(placeholder: String, multiline: Bool
@@ -10003,6 +10143,8 @@ public indirect enum CardItemView: Equatable, Hashable {
     )
     case input(input: CardInputView
     )
+    case columns(columns: [CardColumnView]
+    )
 
 
 
@@ -10040,6 +10182,9 @@ public struct FfiConverterTypeCardItemView: FfiConverterRustBuffer {
         )
         
         case 6: return .input(input: try FfiConverterTypeCardInputView.read(from: &buf)
+        )
+        
+        case 7: return .columns(columns: try FfiConverterSequenceTypeCardColumnView.read(from: &buf)
         )
         
         default: throw UniffiInternalError.unexpectedEnumCase
@@ -10080,6 +10225,11 @@ public struct FfiConverterTypeCardItemView: FfiConverterRustBuffer {
         case let .input(input):
             writeInt(&buf, Int32(6))
             FfiConverterTypeCardInputView.write(input, into: &buf)
+            
+        
+        case let .columns(columns):
+            writeInt(&buf, Int32(7))
+            FfiConverterSequenceTypeCardColumnView.write(columns, into: &buf)
             
         }
     }
@@ -16216,6 +16366,31 @@ fileprivate struct FfiConverterSequenceTypeCardChoiceView: FfiConverterRustBuffe
         seq.reserveCapacity(Int(len))
         for _ in 0 ..< len {
             seq.append(try FfiConverterTypeCardChoiceView.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypeCardColumnView: FfiConverterRustBuffer {
+    typealias SwiftType = [CardColumnView]
+
+    public static func write(_ value: [CardColumnView], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeCardColumnView.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [CardColumnView] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [CardColumnView]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeCardColumnView.read(from: &buf))
         }
         return seq
     }
