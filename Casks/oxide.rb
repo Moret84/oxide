@@ -27,7 +27,7 @@ cask "oxide" do
   ]
 
   caveats <<~EOS
-    Oxide is not notarized: macOS blocks its first launch.
+    Oxide is not notarized: macOS refuses to open it after each install or upgrade.
     Allow it in System Settings › Privacy & Security, or run:
       xattr -dr com.apple.quarantine #{appdir}/Oxide.app
   EOS

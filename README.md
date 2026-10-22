@@ -87,9 +87,6 @@ Download `Oxide-<version>.zip` from the [releases](https://github.com/neicureuil
 unzip it and move `Oxide.app` to `/Applications`. It needs macOS 14 Sonoma or later on Apple silicon,
 and updates itself from then on.
 
-The app is not notarized, so macOS blocks its first launch: allow it in
-System Settings › Privacy & Security, or run `xattr -dr com.apple.quarantine /Applications/Oxide.app`.
-
 ### With Homebrew
 
 ```sh
@@ -97,7 +94,15 @@ brew tap neicureuil/oxide https://github.com/neicureuil/oxide
 brew install --cask oxide
 ```
 
-The same first-launch step applies; Homebrew prints it after installing.
+### First launch
+
+Whichever way it was installed, the app is not notarized, so macOS refuses to open it.
+After each install or upgrade from the zip or with Homebrew, allow it in
+System Settings › Privacy & Security, or run:
+
+```sh
+xattr -dr com.apple.quarantine /Applications/Oxide.app
+```
 
 ### From source
 
