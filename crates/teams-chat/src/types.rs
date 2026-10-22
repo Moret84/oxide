@@ -322,8 +322,18 @@ impl Member {
             .into_iter()
             .filter_map(|key| self.extra.get(key).and_then(Value::as_str))
             .map(str::trim)
-            .find(|s| !s.is_empty() && *s != self.id)
+            .find(|s| !s.is_empty() && !is_placeholder_name(&self.id, s))
     }
+}
+
+/// A name that only restates the id: the MRI itself, or `Bot-{id}`, which Teams gives a bot (`28:{id}`) it has no name for.
+pub fn is_placeholder_name(mri: &str, name: &str) -> bool {
+    name == mri
+        || mri.strip_prefix("28:").is_some_and(|id| {
+            name.get(..4)
+                .is_some_and(|prefix| prefix.eq_ignore_ascii_case("bot-"))
+                && name[4..].eq_ignore_ascii_case(id)
+        })
 }
 
 /// Body of `POST v1/threads` (create a chat).

@@ -240,14 +240,14 @@ pub fn needs_details(chat: &Conversation, me: &str) -> bool {
                     .iter()
                     .any(|m| !m.id.eq_ignore_ascii_case(me) && m.display_name().is_none()))
 }
-/// `imdisplayname`, unless empty or just the sender's MRI.
+/// `imdisplayname`, unless empty or just a placeholder for the sender's MRI.
 fn author_name(message: &Message) -> Option<&str> {
     let mri = message.sender_mri();
     message
         .imdisplayname
         .as_deref()
         .map(str::trim)
-        .filter(|name| !name.is_empty() && *name != mri)
+        .filter(|name| !name.is_empty() && !teams_chat::is_placeholder_name(mri, name))
 }
 fn set_name(member: &mut teams_chat::Member, name: &str) {
     member
@@ -268,12 +268,15 @@ pub(crate) fn name_members_from_messages<'a>(
         return;
     }
     for message in messages {
-        let Some(name) = author_name(message) else {
+        // A bot signs with its app's name, as the conversation shows it.
+        let Some(name) = crate::app::view::app_metadata_name(message)
+            .or_else(|| author_name(message).map(str::to_owned))
+        else {
             continue;
         };
         let mri = message.sender_mri();
         if let Some(index) = nameless.iter().position(|m| m.id.eq_ignore_ascii_case(mri)) {
-            set_name(nameless.swap_remove(index), name);
+            set_name(nameless.swap_remove(index), &name);
         }
     }
 }
@@ -500,7 +503,7 @@ pub async fn resolve(
             is_direct(chat)
                 && chat.members.iter().any(|m| {
                     m.display_name().is_none()
-                        && !known.contains_key(&m.id)
+                        && known.get(&m.id).is_none_or(|p| p.known_name().is_none())
                         && !result
                             .profiles
                             .iter()
@@ -577,6 +580,31 @@ mod tests {
         assert_eq!(chat.members.len(), 2);
         assert_eq!(chat.members[0].display_name(), Some("Moi"));
         assert_eq!(chat_title(&chat, "8:orgid:me"), "Maxime Externe");
+    }
+    #[test]
+    fn a_bot_is_named_after_its_app_not_its_placeholder() {
+        const BOT: &str = "ca9e26b7-dce5-44a0-b2b7-a70a3d65ce25";
+        let mut chat: Conversation = serde_json::from_value(json!({
+            "id": "chat", "isOneOnOne": true,
+            "members": [{"id": "8:orgid:me"}, {"id": format!("28:{BOT}"), "friendlyName": format!("Bot-{BOT}")}]
+        }))
+        .unwrap();
+        assert_eq!(chat.members[1].display_name(), None);
+        let messages: Vec<Message> = serde_json::from_value(json!([
+            {"from": format!("28:{BOT}"), "imdisplayname": format!("Bot-{}", BOT.to_uppercase())},
+            {"from": format!("28:{BOT}"), "imdisplayname": "Bot-x",
+             "properties": {"fromAppMetadata": "{\"id\":\"app\",\"name\":\"GitHub\"}"}}
+        ]))
+        .unwrap();
+        name_members_from_messages(&mut chat, &messages);
+        assert_eq!(chat_title(&chat, "8:orgid:me"), "GitHub");
+        let placeholder = Person {
+            mri: format!("28:{BOT}"),
+            display_name: format!("Bot-{BOT}"),
+            ..Default::default()
+        };
+        assert_eq!(placeholder.known_name(), None);
+        assert!(!teams_chat::is_placeholder_name("28:other", &format!("Bot-{BOT}")));
     }
     #[test]
     fn legacy_direct_chat_recovers_only_authors_identified_by_its_id() {
