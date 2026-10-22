@@ -90,6 +90,15 @@ and updates itself from then on.
 The app is not notarized, so macOS blocks its first launch: allow it in
 System Settings › Privacy & Security, or run `xattr -dr com.apple.quarantine /Applications/Oxide.app`.
 
+### With Homebrew
+
+```sh
+brew tap neicureuil/oxide https://github.com/neicureuil/oxide
+brew install --cask oxide
+```
+
+The same first-launch step applies; Homebrew prints it after installing.
+
 ### From source
 
 **Requirements**
