@@ -417,7 +417,7 @@ impl App {
                         .map(|s| {
                             s.roster
                                 .values()
-                                .filter(|p| p.id != *self.me)
+                                .filter(|p| !p.id.eq_ignore_ascii_case(&self.me))
                                 .map(|p| CallParticipantView {
                                     id: p.id.clone(),
                                     name: p
@@ -618,6 +618,11 @@ impl App {
         {
             let text: String = body.to_string().chars().take(3000).collect();
             teams_calling::diagnostics::record(&format!("{name} body {text}"));
+        }
+        if let Input::Callback { name, body, .. } = &input
+            && name == "rosterUpdate"
+        {
+            teams_calling::diagnostics::record(&teams_calling::diagnostics::roster_shape(body));
         }
         let commands = session.handle(input);
         teams_calling::diagnostics::record(&format!("{input_kind} phase={:?}", session.phase));

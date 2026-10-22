@@ -551,26 +551,34 @@ impl CallSession {
         };
         match roster.get("participants") {
             Some(Value::Object(map)) => {
-                for (id, value) in map {
+                for (key, value) in map {
                     if let Some(version) = value.get("version").and_then(Value::as_i64) {
                         if self
                             .roster_versions
-                            .get(id)
+                            .get(key)
                             .is_some_and(|seen| version <= *seen)
                         {
                             continue;
                         }
-                        self.roster_versions.insert(id.clone(), version);
+                        self.roster_versions.insert(key.clone(), version);
                     }
+                    // `fromRoster`: the person is `details.id`, not the key, which can name one of their endpoints.
+                    let id = text(value.pointer("/details/id")).unwrap_or_else(|| key.clone());
+                    // `fromRoster` returns null without a call, lobby, mapped or stream endpoint: not in the call.
+                    let present = value.get("endpoints").and_then(Value::as_object).is_none_or(|e| {
+                        e.values().any(|e| {
+                            ["call", "lobby", "mappedParticipant", "stream", "streamLobby"]
+                                .iter()
+                                .any(|k| e.get(*k).is_some())
+                        })
+                    });
                     let gone = value.is_null()
                         || value.get("state").and_then(Value::as_str) == Some("inactive")
-                        || value
-                            .get("endpoints")
-                            .is_some_and(|e| e.as_object().is_some_and(|o| o.is_empty()));
+                        || !present;
                     if gone {
-                        self.roster.remove(id);
+                        self.roster.remove(&id);
                     } else {
-                        self.roster.insert(id.clone(), entry(id, value));
+                        self.roster.insert(id.clone(), entry(&id, value));
                     }
                 }
             }
@@ -1026,7 +1034,11 @@ impl CallSession {
                 phrase: "ConversationServiceError".into(),
                 local: true,
             }),
-            (Op::Attach, Ok(body)) => {
+            (Op::Attach, Ok(mut body)) => {
+                // `participants` is `{from, to}` of the invitation, not a roster: read as one, it adds both people twice.
+                if let Some(body) = body.as_object_mut() {
+                    body.remove("participants");
+                }
                 self.apply(&body);
                 // The answer to the join action carries the conversation links.
                 if let Some(join) = body
@@ -1036,6 +1048,12 @@ impl CallSession {
                     .and_then(|r| r.get("output").or_else(|| r.get("response")))
                 {
                     self.apply(join);
+                }
+                // `processAttachResponse`: accept on `acceptance`, decline with a DELETE on `callLeg`.
+                for (name, link) in [("accept", "acceptance"), ("reject", "callLeg")] {
+                    if let Some(url) = text(body.pointer(&format!("/callInvitation/links/{link}"))) {
+                        self.links.insert(name.into(), url);
+                    }
                 }
                 let offer = [
                     body.get("mediaContent"),
@@ -1688,6 +1706,23 @@ mod tests {
     }
 
     #[test]
+    fn roster_entries_are_people_by_details_id_not_by_key() {
+        let mut session = meeting(None);
+        joined(&mut session);
+        callback(
+            &mut session,
+            Scope::Conversation,
+            "rosterUpdate",
+            json!({"type": "MultiPartyEndpoint", "sequenceNumber": 1, "participants": {
+                "leg-1": {"details": {"id": "8:orgid:bob", "displayName": "Bob"}, "endpoints": {"e1": {"call": {}}}},
+                "leg-2": {"details": {"id": "8:orgid:bob", "displayName": "Bob"}, "endpoints": {"e2": {"call": {}}}},
+                "leg-3": {"details": {"id": "8:orgid:carol"}, "endpoints": {"e3": {"endpointMetadata": {}}}},
+            }}),
+        );
+        assert_eq!(session.roster.keys().collect::<Vec<_>>(), ["8:orgid:bob"]);
+    }
+
+    #[test]
     fn roster_updates_are_ordered_per_participant_not_by_conversation_updates() {
         let mut session = meeting(None);
         joined(&mut session);
@@ -2008,8 +2043,10 @@ mod tests {
         session.handle(Input::Begin);
         let commands = session.handle(Input::Response(Op::Attach, Ok(json!({
             "callInvitation": {"mediaContent": {"blob": "offer"},
-                "links": {"progress": "https://conv.example/progress", "accept": "https://conv.example/accept"}}}))));
+                "links": {"progress": "https://conv.example/progress", "acceptance": "https://conv.example/accept"}},
+            "participants": {"from": {"id": "8:orgid:caller", "displayName": "Caller"}, "to": {"id": "8:orgid:me"}}}))));
         assert_eq!(commands[0], Command::RemoteMedia("offer".into()));
+        assert!(session.roster.is_empty());
         assert!(
             matches!(&commands[1], Command::Http { op: Op::Progress, body, .. } if body["callProgress"]["status"] == "ringing")
         );
@@ -2336,8 +2373,8 @@ mod tests {
         );
         assert!(commands.contains(&Command::Timer(Timer::Establish, INCOMING_TIMEOUT)));
         let commands = session.handle(Input::Response(Op::Attach, Ok(json!({
-            "links": {"reject": "https://conv.example/reject", "accept": "https://conv.example/accept"},
-            "mediaContent": {"blob": "offer"}}))));
+            "callInvitation": {"mediaContent": {"blob": "offer"},
+                "links": {"callLeg": "https://conv.example/reject", "acceptance": "https://conv.example/accept"}}}))));
         assert_eq!(commands, [Command::RemoteMedia("offer".into())]);
         let commands = session.handle(Input::Decline);
         assert!(
