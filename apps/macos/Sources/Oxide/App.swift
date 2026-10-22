@@ -121,6 +121,9 @@ struct RootView: View {
                 ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
+        .transition(.opacity)
+        .animation(Motion.standard, value: store.shell == nil)
+        .animation(Motion.standard, value: store.shell?.signedIn)
         // A new language rebuilds every view, so none keeps a text of the previous one.
         .id(language)
         .environment(\.locale, L10n.locale)

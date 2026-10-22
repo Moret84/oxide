@@ -109,6 +109,8 @@ struct PrimaryButtonStyle: ButtonStyle {
                 enabled ? Theme.accent.opacity(configuration.isPressed ? 0.8 : 1) : Theme.accent.opacity(0.4),
                 in: RoundedRectangle(cornerRadius: 8)
             )
+            .scaleEffect(configuration.isPressed ? 0.97 : 1)
+            .animation(Motion.hover, value: configuration.isPressed)
             .pointerCursor()
     }
 }
@@ -123,6 +125,8 @@ struct OutlineButtonStyle: ButtonStyle {
             .frame(minHeight: 32)
             .background(configuration.isPressed ? Theme.input : Theme.surface, in: RoundedRectangle(cornerRadius: 8))
             .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(Theme.borderStrong))
+            .scaleEffect(configuration.isPressed ? 0.97 : 1)
+            .animation(Motion.hover, value: configuration.isPressed)
             .pointerCursor()
     }
 }
@@ -138,6 +142,7 @@ struct GhostButtonStyle: ButtonStyle {
                 in: RoundedRectangle(cornerRadius: 8)
             )
             .contentShape(Rectangle())
+            .animation(Motion.hover, value: hovered || configuration.isPressed)
             .onHover { if hovered != $0 { hovered = $0 } }
             .pointerCursor()
     }
@@ -148,17 +153,23 @@ struct SegmentedPicker<Value: Hashable & Identifiable>: View {
     @Binding var selection: Value
     let options: [Value]
     let label: (Value) -> String
+    @Namespace private var selectionSpace
     var body: some View {
         HStack(spacing: 2) {
             ForEach(options) { option in
                 let active = option == selection
-                Button { selection = option } label: {
+                Button { withAnimation(Motion.select) { selection = option } } label: {
                     Text(label(option))
                         .font(.figtree(13, active ? .semibold : .regular))
                         .foregroundStyle(active ? Theme.accentText : Theme.textSoft)
                         .padding(.horizontal, 14)
                         .frame(minHeight: 26)
-                        .background(active ? Theme.accentSoft : .clear, in: RoundedRectangle(cornerRadius: 6))
+                        .background {
+                            if active {
+                                RoundedRectangle(cornerRadius: 6).fill(Theme.accentSoft)
+                                    .matchedGeometryEffect(id: "selection", in: selectionSpace)
+                            }
+                        }
                         .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
@@ -204,7 +215,7 @@ struct Avatar: View {
         let shape = RoundedRectangle(cornerRadius: shape == .square ? size * 0.25 : size / 2)
         Group {
             if let photo {
-                Image(nsImage: photo).resizable().scaledToFill()
+                Image(nsImage: photo).resizable().scaledToFill().transition(.opacity)
             } else {
                 // Only behind initials: under a photo it bleeds through the clipped edge as a coloured ring.
                 Text(initials(name))
@@ -214,6 +225,7 @@ struct Avatar: View {
                     .background(Theme.avatar(id))
             }
         }
+        .animation(Motion.standard, value: photo == nil)
         .frame(width: size, height: size)
         .clipShape(shape)
         // Asks again if the core evicts the photo while it is on screen.

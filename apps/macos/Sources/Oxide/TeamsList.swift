@@ -50,7 +50,10 @@ struct TeamsList: View {
                             more(L("ui.teams_list.see_fewer_hidden_teams"), indent: 12) { send(.moreTeams(hidden: true, expanded: false)) }
                         }
                     }
-                    if sidebar.teamCount == 0 || (searching && sidebar.teams.isEmpty) {
+                    if sidebar.teamCount == 0 && loading && !searching {
+                        SkeletonList(rows: 6, avatar: 28)
+                            .accessibilityElement().accessibilityLabel(L("ui.teams_list.loading_teams"))
+                    } else if sidebar.teamCount == 0 || (searching && sidebar.teams.isEmpty) {
                         Muted(loading ? L("ui.teams_list.loading_teams")
                               : sidebar.teamsProblem != nil ? L("ui.teams_list.couldn_t_load_teams")
                               : searching ? L("ui.teams_list.no_matching_teams_or_channels")
@@ -100,7 +103,7 @@ struct TeamsList: View {
                     if team.moreHiddenChannels { more(L("ui.teams_list.see_more_hidden_channels"), indent: 36, context: team.name) { send(.moreChannels(team: team.id, hidden: true, expanded: true)) } }
                     if team.allHiddenChannels { more(L("ui.teams_list.see_fewer_hidden_channels"), indent: 36, context: team.name) { send(.moreChannels(team: team.id, hidden: true, expanded: false)) } }
                 }
-                if team.loading { Muted(L("ui.teams_list.loading_channels"), size: 11).padding(.leading, 36).padding(.vertical, 6) }
+                if team.loading { LoadingLabel(text: L("ui.teams_list.loading_channels"), size: 11).padding(.leading, 36).padding(.vertical, 6) }
                 if team.failed {
                     VStack(alignment: .leading, spacing: 4) {
                         Muted(L("ui.teams_list.channels_couldn_t_be_refreshed"), size: 11)

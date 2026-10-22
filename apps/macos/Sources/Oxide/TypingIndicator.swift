@@ -10,6 +10,7 @@ struct TypingIndicator: View {
             if let text {
                 TypingDots()
                 Text(text).font(.figtree(12)).foregroundStyle(Theme.muted).lineLimit(1)
+                    .transition(.opacity.combined(with: .offset(y: 4)))
             }
         }
         .frame(maxWidth: .infinity, minHeight: 20, alignment: .leading)

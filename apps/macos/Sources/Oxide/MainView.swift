@@ -26,12 +26,19 @@ struct MainView: View {
                 }
                 VStack(spacing: 0) {
                     Banners(error: shell.error, notices: shell.notices)
-                    if store.search?.open == true {
-                        SearchResultsScreen()
-                    } else {
-                        ContentRouter(shell: shell)
+                    Group {
+                        if store.search?.open == true {
+                            SearchResultsScreen()
+                        } else {
+                            ContentRouter(shell: shell)
+                        }
                     }
+                    .transition(.opacity)
+                    .animation(Motion.standard, value: store.search?.open == true)
                 }
+                .animation(Motion.standard, value: shell.error)
+                .animation(Motion.standard, value: shell.notices)
+                .animation(Motion.standard, value: store.online)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .background(Theme.conversation)
             }
@@ -69,7 +76,7 @@ struct MainView: View {
             .frame(maxWidth: 560, minHeight: 34)
             .background(Theme.input, in: RoundedRectangle(cornerRadius: 8))
             Spacer()
-            IconButton(symbol: "arrow.clockwise", help: L("ui.main_view.refresh"), side: 36) { store.send(.refresh) }
+            RefreshButton(help: L("ui.main_view.refresh"), spinning: shell.loadingWorkspace, side: 36) { store.send(.refresh) }
             AccountButton(name: shell.displayName, id: shell.me, email: shell.accountEmail)
         }
         .padding(.horizontal, 16)
@@ -118,6 +125,7 @@ struct Banners: View {
         .padding(.horizontal, 16)
         .padding(.vertical, 6)
         .background(background)
+        .transition(.slideDown)
     }
 }
 
@@ -186,6 +194,7 @@ private struct OfflineBanner: View {
             .padding(.horizontal, 16)
             .padding(.vertical, 6)
             .background(Theme.errorBackground)
+            .transition(.slideDown)
             .accessibilityElement(children: .combine)
             .accessibilityAddTraits(.isStaticText)
         }
@@ -199,6 +208,7 @@ struct Rail: View, Equatable {
     let activityUnread: UInt32
     /// Highlighted from the click until the core confirms, which may take a full rebuild.
     @State private var pending: Nav?
+    @Namespace private var selectionSpace
     private let items = RailCommands.items
     static func == (a: Rail, b: Rail) -> Bool {
         a.nav == b.nav && a.activityUnread == b.activityUnread
@@ -209,7 +219,8 @@ struct Rail: View, Equatable {
                 RailItem(
                     symbol: symbol, name: name,
                     active: (pending ?? nav) == item,
-                    badge: item == .activity ? activityUnread : 0
+                    badge: item == .activity ? activityUnread : 0,
+                    selectionSpace: selectionSpace
                 ) { go(item) }
             }
             Spacer()
@@ -219,6 +230,7 @@ struct Rail: View, Equatable {
         .padding(.top, 8)
         .frame(width: 72)
         .background(Theme.surface)
+        .animation(Motion.select, value: pending ?? nav)
         // Clicks are applied in order: an earlier one landing keeps the latest highlighted.
         .onChange(of: nav) { if nav == pending { pending = nil } }
     }
@@ -233,38 +245,51 @@ private struct RailItem: View {
     let name: String
     let active: Bool
     let badge: UInt32
+    let selectionSpace: Namespace.ID
     let action: () -> Void
     @State private var hovered = false
+    /// Bumped when the item becomes active, so only the newly selected icon bounces.
+    @State private var bounces = 0
     var body: some View {
         Button(action: action) {
             VStack(spacing: 4) {
                 Image(systemName: symbol)
                     .symbolVariant(active ? .fill : .none)
+                    .symbolEffect(.bounce, options: .speed(1.5), value: bounces)
                     .font(.system(size: 19))
                     .frame(height: 22)
                     .overlay(alignment: .topTrailing) {
                         if badge > 0 {
                             Text("\(min(badge, 99))")
                                 .font(.figtree(10, .semibold))
+                                .contentTransition(.numericText(value: Double(badge)))
                                 .foregroundStyle(.white)
                                 .padding(.horizontal, 4)
                                 .frame(minWidth: 16, minHeight: 16)
                                 .background(Theme.danger, in: Capsule())
                                 .offset(x: 10, y: -6)
+                                .transition(.pop)
                         }
                     }
+                    .animation(Motion.pop, value: badge)
                 Text(name).font(.figtree(11, active ? .semibold : .regular))
             }
             .foregroundStyle(active ? Theme.accentText : hovered ? Theme.text : Theme.muted)
             .frame(width: 60, height: 56)
-            .background(
-                active ? Theme.accentSoft : hovered ? Theme.input : .clear,
-                in: RoundedRectangle(cornerRadius: 8)
-            )
+            .background {
+                if active {
+                    RoundedRectangle(cornerRadius: 8).fill(Theme.accentSoft)
+                        .matchedGeometryEffect(id: "selection", in: selectionSpace)
+                } else if hovered {
+                    RoundedRectangle(cornerRadius: 8).fill(Theme.input)
+                }
+            }
+            .animation(Motion.hover, value: hovered)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain).pointerCursor()
         .onHover { hovered = $0 }
+        .onChange(of: active) { if active && !Motion.reduced { bounces += 1 } }
         .accessibilityLabel(name)
         .accessibilityAddTraits(active ? .isSelected : [])
     }
@@ -274,6 +299,12 @@ struct ContentRouter: View {
     @Environment(Store.self) private var store
     let shell: Shell
     var body: some View {
+        screen
+            .transition(.opacity)
+            .animation(Motion.standard, value: shell.nav)
+            .animation(Motion.standard, value: store.newChat == nil)
+    }
+    @ViewBuilder private var screen: some View {
         if let dialog = store.newChat {
             NewChatScreen(dialog: dialog)
         } else {

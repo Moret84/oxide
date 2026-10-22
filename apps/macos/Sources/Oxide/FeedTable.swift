@@ -101,6 +101,7 @@ struct NewMessagesPill: View {
                     systemImage: "arrow.down"
                 )
                 .font(.figtree(12, .semibold))
+                .contentTransition(.numericText(value: Double(unseen)))
                 .foregroundStyle(unseen == 0 ? Theme.text : .white)
                 .padding(.horizontal, 14)
                 .frame(height: 30)
@@ -112,7 +113,8 @@ struct NewMessagesPill: View {
             .buttonStyle(.plain).pointerCursor()
             .padding(.bottom, 12)
             .help(L("ui.feed_table.jump_to_latest_messages"))
-            .transition(.opacity)
+            .animation(Motion.pop, value: unseen)
+            .transition(.rise)
         }
     }
 }

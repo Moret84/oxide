@@ -14,6 +14,7 @@ struct ConversationScreen: View, Equatable {
     @Environment(Store.self) private var store
     let chrome: ConversationChrome
     let view: ConversationView
+    @Namespace private var tabSpace
 
     static func == (a: ConversationScreen, b: ConversationScreen) -> Bool {
         a.chrome == b.chrome && a.view == b.view
@@ -52,13 +53,18 @@ struct ConversationScreen: View, Equatable {
                         }
                     }
                     if let thread = view.thread {
-                        Divider().overlay(Theme.border)
-                        ThreadPanel(chrome: chrome, thread: thread)
-                            .frame(width: 360)
+                        HStack(spacing: 0) {
+                            Divider().overlay(Theme.border)
+                            ThreadPanel(chrome: chrome, thread: thread)
+                                .frame(width: 360)
+                        }
+                        .transition(.move(edge: .trailing).combined(with: .opacity))
                     }
                 }
+                .animation(Motion.standard, value: view.thread?.post)
             }
         }
+        .animation(Motion.standard, value: chrome.tab)
     }
 
     private var header: some View {
@@ -112,7 +118,13 @@ struct ConversationScreen: View, Equatable {
                     .font(.figtree(13, active ? .semibold : .regular))
                     .foregroundStyle(active ? Theme.text : Theme.muted)
                     .padding(.top, 8)
-                Rectangle().fill(active ? Theme.accent : .clear).frame(height: 2)
+                ZStack {
+                    Rectangle().fill(.clear)
+                    if active {
+                        Capsule().fill(Theme.accent).matchedGeometryEffect(id: "underline", in: tabSpace)
+                    }
+                }
+                .frame(height: 2)
             }
             .fixedSize()
             .contentShape(Rectangle())
@@ -129,7 +141,10 @@ private struct Feed: View {
     @State private var controller = FeedController()
     var body: some View {
         FeedTable(rows: store[keyPath: rows], controller: controller)
-            .overlay(alignment: .bottom) { NewMessagesPill(controller: controller) }
+            .overlay(alignment: .bottom) {
+                NewMessagesPill(controller: controller)
+                    .animation(Motion.standard, value: controller.atBottom)
+            }
     }
 }
 

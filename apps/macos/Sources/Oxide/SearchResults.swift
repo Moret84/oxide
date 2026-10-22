@@ -159,7 +159,7 @@ struct SearchResultsScreen: View {
                     .card()
                 }
                 if view.loading {
-                    HStack { ProgressView().controlSize(.small); Muted(L("ui.search.searching"), size: 12) }.padding()
+                    LoadingLabel(text: L("ui.search.searching")).padding()
                 } else if view.searched && view.hits.isEmpty && view.error == nil {
                     Muted(L("ui.search.no_results"), size: 13).padding()
                 } else if !view.searched {
