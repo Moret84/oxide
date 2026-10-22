@@ -5831,6 +5831,78 @@
     "fr": "Envoyé",
     "en": "Sent"
   },
+  "ui.updater.available_title": {
+    "fr": "Oxide {version} est disponible",
+    "en": "Oxide {version} is available"
+  },
+  "ui.updater.check": {
+    "fr": "Rechercher les mises à jour",
+    "en": "Check for updates"
+  },
+  "ui.updater.check_failed": {
+    "fr": "Impossible de vérifier les mises à jour : {detail}",
+    "en": "Couldn’t check for updates: {detail}"
+  },
+  "ui.updater.checking": {
+    "fr": "Recherche de mises à jour…",
+    "en": "Checking for updates…"
+  },
+  "ui.updater.checksum_mismatch": {
+    "fr": "le fichier téléchargé ne correspond pas à la release",
+    "en": "the downloaded file doesn’t match the release"
+  },
+  "ui.updater.current_version": {
+    "fr": "Vous utilisez la version {version}.",
+    "en": "You have version {version}."
+  },
+  "ui.updater.downloading": {
+    "fr": "Téléchargement…",
+    "en": "Downloading…"
+  },
+  "ui.updater.failed": {
+    "fr": "La mise à jour a échoué : {detail}",
+    "en": "The update failed: {detail}"
+  },
+  "ui.updater.install": {
+    "fr": "Installer et relancer",
+    "en": "Install and relaunch"
+  },
+  "ui.updater.install_version": {
+    "fr": "Installer la {version}",
+    "en": "Install {version}"
+  },
+  "ui.updater.installing": {
+    "fr": "Installation…",
+    "en": "Installing…"
+  },
+  "ui.updater.invalid_archive": {
+    "fr": "l’archive ne contient pas d’Oxide.app valide",
+    "en": "the archive doesn’t contain a valid Oxide.app"
+  },
+  "ui.updater.later": {
+    "fr": "Plus tard",
+    "en": "Later"
+  },
+  "ui.updater.manual_install": {
+    "fr": "Oxide ne peut pas se remplacer à cet emplacement : téléchargez la nouvelle version depuis GitHub.",
+    "en": "Oxide can’t replace itself in this location: download the new version from GitHub."
+  },
+  "ui.updater.no_archive": {
+    "fr": "la release n’a pas d’archive .zip",
+    "en": "the release has no .zip archive"
+  },
+  "ui.updater.open_release_page": {
+    "fr": "Ouvrir la page de la release",
+    "en": "Open the release page"
+  },
+  "ui.updater.release_notes": {
+    "fr": "Nouveautés",
+    "en": "What’s new"
+  },
+  "ui.updater.up_to_date": {
+    "fr": "Oxide est à jour.",
+    "en": "Oxide is up to date."
+  },
   "ui.voicemail_player.couldn_t_play_the_voicemail": {
     "fr": "Lecture du message vocal impossible.",
     "en": "Couldn’t play the voicemail."
