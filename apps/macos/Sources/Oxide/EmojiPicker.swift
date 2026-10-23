@@ -84,7 +84,13 @@ struct EmojiPicker: View {
         let byID = Dictionary(categories.flatMap(\.items).map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
         return ids.compactMap { byID[$0] }
     }
-    private func icon(_ i: Int) -> String { icons.indices.contains(i) ? icons[i] : "•" }
+    /// Drawn with Teams artwork like the grid: the tab's glyph from the catalog, else the category's first emoji.
+    private func icon(_ i: Int) -> ComposerEmoji? {
+        if icons.indices.contains(i), let glyph = icons[i].first, let emoji = TeamsEmojiCatalog.emoji(for: glyph) {
+            return emoji
+        }
+        return categories[i].items.first
+    }
     var body: some View {
         let results = results()
         let recents = search.isEmpty ? recents() : []
@@ -95,7 +101,7 @@ struct EmojiPicker: View {
             HStack(spacing: 1) {
                 ForEach(Array(categories.enumerated()), id: \.element.id) { i, item in
                     Button { category = i; search = "" } label: {
-                        Text(icon(i)).font(.system(size: 20)).frame(width: 34, height: 32)
+                        TeamsEmoji(id: icon(i)?.id, text: icon(i)?.text ?? "•", size: 22).frame(width: 34, height: 32)
                             .background(category == i ? Theme.accent.opacity(0.15) : .clear, in: RoundedRectangle(cornerRadius: 6))
                     }
                     .buttonStyle(.plain).pointerCursor().help(item.name).accessibilityLabel(item.name)
