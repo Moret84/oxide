@@ -2675,6 +2675,10 @@ public struct CardView: Equatable, Hashable {
      * A button's request is out: the card waits for the bot.
      */
     public var busy: Bool
+    /**
+     * `0xRRGGBB` for the bar along the card's top edge (a connector card's `themeColor`).
+     */
+    public var accent: UInt32?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
@@ -2687,7 +2691,10 @@ public struct CardView: Equatable, Hashable {
          */footer: String?, 
         /**
          * A button's request is out: the card waits for the bot.
-         */busy: Bool) {
+         */busy: Bool, 
+        /**
+         * `0xRRGGBB` for the bar along the card's top edge (a connector card's `themeColor`).
+         */accent: UInt32?) {
         self.index = index
         self.title = title
         self.subtitle = subtitle
@@ -2695,6 +2702,7 @@ public struct CardView: Equatable, Hashable {
         self.actions = actions
         self.footer = footer
         self.busy = busy
+        self.accent = accent
     }
 
     
@@ -2719,7 +2727,8 @@ public struct FfiConverterTypeCardView: FfiConverterRustBuffer {
                 items: FfiConverterSequenceTypeCardItemView.read(from: &buf), 
                 actions: FfiConverterSequenceTypeCardActionView.read(from: &buf), 
                 footer: FfiConverterOptionString.read(from: &buf), 
-                busy: FfiConverterBool.read(from: &buf)
+                busy: FfiConverterBool.read(from: &buf), 
+                accent: FfiConverterOptionUInt32.read(from: &buf)
         )
     }
 
@@ -2731,6 +2740,7 @@ public struct FfiConverterTypeCardView: FfiConverterRustBuffer {
         FfiConverterSequenceTypeCardActionView.write(value.actions, into: &buf)
         FfiConverterOptionString.write(value.footer, into: &buf)
         FfiConverterBool.write(value.busy, into: &buf)
+        FfiConverterOptionUInt32.write(value.accent, into: &buf)
     }
 }
 

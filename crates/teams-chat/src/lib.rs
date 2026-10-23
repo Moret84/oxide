@@ -1,5 +1,6 @@
 //! Typed client for the Teams chat service; response types keep unknown fields in `extra`.
 
+mod apps;
 mod client;
 mod csa;
 mod error;
@@ -18,6 +19,7 @@ mod service;
 mod teams_admin;
 pub mod types;
 
+pub use apps::AppDefinition;
 pub use client::{ChatClient, MessagesQuery};
 pub use csa::*;
 pub use error::Error;

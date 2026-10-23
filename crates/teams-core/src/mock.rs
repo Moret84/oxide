@@ -436,6 +436,22 @@ fn seed() -> Db {
             ]}
         }]).to_string()));
     }
+    // A connector card as Workflows posts Uptime Kuma's alerts: a red accent and an activity image.
+    if let Some(message) = chats
+        .iter_mut()
+        .find(|c| c.conversation.id == "19:engineering@thread.tacv2")
+        .and_then(|c| c.messages.get_mut(1))
+    {
+        message.properties.insert("cards".into(), json!(json!([{
+            "contentType": "application/vnd.microsoft.teams.card.o365connector",
+            "content": {"@type": "MessageCard", "themeColor": "#ff0000", "summary": "down", "sections": [
+                {"activityImage": "https://example.invalid/uptime-kuma.png", "activityTitle": "**Uptime Kuma**"},
+                {"activityTitle": "🔴 Application [Volumes Backup] went down"},
+                {"activityTitle": "**Description**", "text": "Request failed with status code 404",
+                 "facts": [{"name": "Monitor", "value": "Volumes Backup"}, {"name": "URL", "value": "1"}]}
+            ]}
+        }]).to_string()));
+    }
     // A real file-shaped fixture exercises rendering without fabricating uploads.
     if let Some(chat) = chats
         .iter_mut()

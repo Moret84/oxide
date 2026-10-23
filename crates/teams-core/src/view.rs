@@ -285,6 +285,8 @@ pub struct CardView {
     pub footer: Option<String>,
     /// A button's request is out: the card waits for the bot.
     pub busy: bool,
+    /// `0xRRGGBB` for the bar along the card's top edge (a connector card's `themeColor`).
+    pub accent: Option<u32>,
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash, uniffi::Enum)]
 pub enum CardItemView {
@@ -809,20 +811,9 @@ impl Snapshot {
         }
     }
 }
-/// The app a bot message comes from, per `properties.fromAppMetadata`: an object or a JSON string `{id, name}`.
+/// The app a bot message comes from, as `fromAppMetadata` names it (English for catalog apps).
 pub(crate) fn app_metadata_name(m: &Message) -> Option<String> {
-    if !m.sender_mri().starts_with("28:") {
-        return None;
-    }
-    let meta = match m.properties.get("fromAppMetadata")? {
-        Value::String(s) => serde_json::from_str(s).ok()?,
-        other => other.clone(),
-    };
-    meta.get("name")
-        .and_then(Value::as_str)
-        .map(str::trim)
-        .filter(|s| !s.is_empty())
-        .map(str::to_owned)
+    super::bot_apps::metadata(m, "name")
 }
 /// When a message was written, else when it reached the server (RFC 3339).
 fn sent_at(m: &Message) -> Option<&str> {
@@ -1251,7 +1242,9 @@ impl App {
     }
     /// Never a raw id: the directory name is fetched when the message has none.
     pub(crate) fn sender_name(&self, m: &Message) -> String {
-        app_metadata_name(m)
+        self.bot_app(m)
+            .map(|app| app.name.clone())
+            .or_else(|| app_metadata_name(m))
             .or_else(|| {
                 m.imdisplayname
                     .as_deref()
@@ -1497,6 +1490,7 @@ impl App {
                         busy: false,
                         title: card.title.clone(),
                         subtitle: card.subtitle.clone(),
+                        accent: card.accent,
                         items: self.card_item_views(&card.items),
                         actions: card
                             .actions
@@ -1912,6 +1906,7 @@ mod sidebar_tests {
             Msg::ShowError(_) => "ShowError",
             Msg::Activity(_) => "Activity",
             Msg::LoadAvatar(..) => "LoadAvatar",
+            Msg::BotAppLoaded { .. } => "BotAppLoaded",
             Msg::AvatarLoaded { .. } => "AvatarLoaded",
             Msg::Calendar(_) => "Calendar",
             Msg::Calls(_) => "Calls",
@@ -2109,6 +2104,11 @@ mod sidebar_tests {
             Msg::Search("bon".into()),
             Msg::Search(String::new()),
             Msg::LoadAvatar("8:orgid:peer".into(), "Peer".into()),
+            Msg::BotAppLoaded {
+                generation: g,
+                id: "app-1".into(),
+                result: Err("réseau".into()),
+            },
             Msg::AvatarLoaded {
                 generation: g,
                 id: "8:orgid:peer".into(),
@@ -2455,6 +2455,7 @@ mod sidebar_tests {
             "ShowError",
             "Activity",
             "LoadAvatar",
+            "BotAppLoaded",
             "AvatarLoaded",
             "Calendar",
             "Calls",

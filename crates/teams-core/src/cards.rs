@@ -12,6 +12,8 @@ pub struct Card {
     pub subtitle: Option<String>,
     pub items: Vec<CardItem>,
     pub actions: Vec<CardAction>,
+    /// A connector card's `themeColor` as `0xRRGGBB`, drawn as a bar along its top edge.
+    pub accent: Option<u32>,
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum CardItem {
@@ -678,6 +680,7 @@ fn hero(card: &Value) -> Card {
 fn connector(card: &Value) -> Card {
     let mut out = Card {
         title: str_at(card, "title").map(plain_text),
+        accent: str_at(card, "themeColor").and_then(theme_color),
         ..Default::default()
     };
     out.items
@@ -689,16 +692,38 @@ fn connector(card: &Value) -> Card {
         .flatten()
         .take(20)
     {
-        for (key, bold, muted) in [
-            ("activityTitle", true, false),
-            ("activitySubtitle", false, true),
-            ("title", true, false),
-            ("activityText", false, false),
-            ("text", false, false),
+        // Teams' order: title, the activity (its image beside its texts), text, facts, images, buttons.
+        out.items
+            .extend(str_at(section, "title").and_then(|t| rich_text(t, true, false)));
+        let mut activity = Card::default();
+        for (key, bold) in [
+            ("activityTitle", true),
+            ("activitySubtitle", false),
+            ("activityText", false),
         ] {
-            out.items
-                .extend(str_at(section, key).and_then(|t| rich_text(t, bold, muted)));
+            activity
+                .items
+                .extend(str_at(section, key).and_then(|t| rich_text(t, bold, false)));
         }
+        let mut icon = Card::default();
+        fixed_image(section, "activityImage", 52, &mut icon);
+        if icon.items.is_empty() || activity.items.is_empty() {
+            out.items.append(&mut icon.items);
+            out.items.append(&mut activity.items);
+        } else {
+            out.items.push(CardItem::Columns(vec![
+                CardColumn {
+                    width: ColumnWidth::Points(52),
+                    items: icon.items,
+                },
+                CardColumn {
+                    width: ColumnWidth::Stretch,
+                    items: activity.items,
+                },
+            ]));
+        }
+        out.items
+            .extend(str_at(section, "text").and_then(|t| rich_text(t, false, false)));
         let facts: Vec<_> = section
             .get("facts")
             .and_then(Value::as_array)
@@ -712,10 +737,42 @@ fn connector(card: &Value) -> Card {
         if !facts.is_empty() {
             out.items.push(CardItem::Facts(facts));
         }
+        for image in section
+            .get("images")
+            .and_then(Value::as_array)
+            .into_iter()
+            .flatten()
+            .take(20)
+        {
+            fixed_image(image, "image", 160, &mut out);
+        }
         actions(section.get("potentialAction"), &mut out.actions);
     }
     actions(card.get("potentialAction"), &mut out.actions);
     out
+}
+/// A connector card's square image, at the size Teams draws it whatever the picture's own.
+fn fixed_image(value: &Value, key: &str, side: u32, out: &mut Card) {
+    let before = out.items.len();
+    image(value, key, None, out);
+    if out.items.len() > before
+        && let Some(CardItem::Image(image)) = out.items.last_mut()
+    {
+        image.width = Some(side);
+        image.height = Some(side);
+    }
+}
+/// The first 6- or 3-digit hex colour in `themeColor` (`"FF0000"`, `"#0076D7"`, `"f00"`), as Teams reads it.
+fn theme_color(text: &str) -> Option<u32> {
+    let word = text
+        .split(|c: char| !c.is_ascii_alphanumeric())
+        .find(|w| (w.len() == 6 || w.len() == 3) && w.chars().all(|c| c.is_ascii_hexdigit()))?;
+    let hex: String = if word.len() == 3 {
+        word.chars().flat_map(|c| [c, c]).collect()
+    } else {
+        word.to_owned()
+    };
+    u32::from_str_radix(&hex, 16).ok()
 }
 /// Markdown paragraphs and `-`/`*`/`+`/`1.` lists as blocks, so bullets are drawn without blank-line gaps.
 fn markdown_item(text: &str, bold: bool, size: u32, muted: bool) -> CardItem {
@@ -1068,6 +1125,43 @@ mod tests {
             cards[1].actions[0].url.as_deref(),
             Some("https://status.test/")
         );
+    }
+    /// Uptime Kuma's MessageCard, as Workflows posts it.
+    #[test]
+    fn connector_sections_follow_teams_layout_and_accent() {
+        let cards = from_message(&message(json!([{
+            "contentType": "application/vnd.microsoft.teams.card.o365connector", "content": {
+                "@type": "MessageCard", "themeColor": "#ff0000", "summary": "down",
+                "sections": [
+                    {"activityImage": "https://example.test/icon.png", "activityTitle": "**Uptime Kuma**"},
+                    {"activityTitle": "🔴 Application [Volumes Backup] went down"},
+                    {"activityTitle": "**Description**", "text": "Request failed with status code 404",
+                     "facts": [{"name": "Monitor", "value": "Volumes Backup"}, {"name": "URL", "value": "1"}],
+                     "images": [{"image": "https://example.test/graph.png"}]}
+                ]}
+        }])));
+        let card = &cards[0];
+        assert_eq!(card.accent, Some(0xFF0000));
+        let CardItem::Columns(activity) = &card.items[0] else {
+            panic!("{card:?}");
+        };
+        assert_eq!(activity[0].width, ColumnWidth::Points(52));
+        assert!(
+            matches!(&activity[0].items[0], CardItem::Image(i) if (i.width, i.height) == (Some(52), Some(52)))
+        );
+        assert!(
+            matches!(&activity[1].items[0], CardItem::Text { runs, .. } if runs[0].text == "Uptime Kuma" && runs[0].bold)
+        );
+        assert!(matches!(&card.items[1], CardItem::Text { .. }));
+        assert!(matches!(&card.items[2], CardItem::Text { runs, .. } if runs[0].text == "Description"));
+        assert!(matches!(&card.items[3], CardItem::Text { runs, .. } if !runs[0].bold));
+        assert!(matches!(&card.items[4], CardItem::Facts(f) if f.len() == 2));
+        assert!(
+            matches!(&card.items[5], CardItem::Image(i) if (i.width, i.height) == (Some(160), Some(160)))
+        );
+        assert_eq!(theme_color("0076D7"), Some(0x0076D7));
+        assert_eq!(theme_color("#f00"), Some(0xFF0000));
+        assert_eq!(theme_color("red"), None);
     }
     #[test]
     fn markdown_lists_become_bullets_without_blank_gaps() {
