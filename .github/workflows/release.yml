@@ -1,28 +1,31 @@
-# Builds Oxide.app and publishes the GitHub release for an existing tag.
-# Run it by hand from the Actions tab, picking the tag (vX.Y.Z) in "Use workflow from":
-# it never creates the tag itself.
+# Cuts a release from main: bumps the version on a release/vX.Y.Z branch, tags it, builds Oxide.app,
+# creates a draft GitHub release, points the Homebrew cask at it and merges the branch into main through a pull request.
+# Run it by hand from the Actions tab on main, giving the new version (e.g. 0.4.0).
 name: Release
 
 on:
   workflow_dispatch:
     inputs:
-      draft:
-        description: Create the release as a draft
-        type: boolean
-        default: false
+      version:
+        description: Version to release, without the v (e.g. 0.4.0)
+        type: string
+        required: true
 
 permissions:
   contents: write
+
+# Two releases at once would race on the version.
+concurrency: release
 
 jobs:
   release:
     # Apple Silicon runner: the release is arm64 only.
     runs-on: macos-26
     steps:
-      - name: Require a tag
-        if: github.ref_type != 'tag'
+      - name: Require main
+        if: github.ref != 'refs/heads/main'
         run: |
-          echo "::error::Run this workflow from a tag (Use workflow from → Tags → vX.Y.Z)."
+          echo "::error::Run this workflow from main."
           exit 1
 
       # Full history: build-app.sh counts commits for the build number, and the changelog needs the previous tag.
@@ -30,15 +33,22 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Check the tag matches Cargo.toml
+      - name: Check the version
         id: version
+        env:
+          INPUT: ${{ inputs.version }}
         run: |
-          VERSION="$(sed -n '/^\[workspace.package\]/,/^\[/s/^version = "\(.*\)"/\1/p' Cargo.toml)"
-          if [ "$GITHUB_REF_NAME" != "v$VERSION" ]; then
-            echo "::error::Tag $GITHUB_REF_NAME does not match the version in Cargo.toml (v$VERSION)."
+          VERSION="${INPUT#v}"
+          if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::Version '$INPUT' is not X.Y.Z."
+            exit 1
+          fi
+          if git rev-parse -q --verify "refs/tags/v$VERSION" >/dev/null; then
+            echo "::error::Tag v$VERSION already exists."
             exit 1
           fi
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
 
       - uses: dtolnay/rust-toolchain@stable
 
@@ -50,6 +60,25 @@ jobs:
           key: swiftpm-${{ runner.os }}-${{ hashFiles('apps/macos/Package.resolved') }}
           restore-keys: swiftpm-${{ runner.os }}-
 
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      # The version lives in Cargo.toml's [workspace.package]; cargo update rewrites the workspace crates in Cargo.lock.
+      - name: Bump the version and tag
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          sed -i '' "/^\[workspace.package\]/,/^\[/s/^version = \".*\"/version = \"$VERSION\"/" Cargo.toml
+          cargo update --workspace
+          git switch -c "release/$TAG"
+          git add Cargo.toml Cargo.lock
+          git commit -m "Bump version to $VERSION"
+          git tag "$TAG"
+          git push --atomic origin "release/$TAG" "refs/tags/$TAG"
+
       # No SIGN_IDENTITY: the app is signed ad hoc.
       - name: Build Oxide.app
         run: ./scripts/build-app.sh
@@ -58,15 +87,47 @@ jobs:
         run: codesign -dvv target/Oxide.app 2>&1 | grep -q '^Signature=adhoc$'
 
       - name: Package
-        run: ditto -c -k --keepParent target/Oxide.app "Oxide-${{ steps.version.outputs.version }}.zip"
+        id: package
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          ditto -c -k --keepParent target/Oxide.app "Oxide-$VERSION.zip"
+          echo "sha256=$(shasum -a 256 "Oxide-$VERSION.zip" | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
 
       # The install notes, then GitHub's changelog since the previous tag (--generate-notes appends it).
-      - name: Publish the release
+      - name: Create the draft release
         env:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ steps.version.outputs.version }}
-          DRAFT: ${{ inputs.draft && '--draft' || '' }}
+          TAG: ${{ steps.version.outputs.tag }}
         run: |
           sed "s/{{VERSION}}/$VERSION/g" .github/release-notes.md > notes.md
-          gh release create "$GITHUB_REF_NAME" "Oxide-$VERSION.zip" \
-            --title "Oxide $VERSION" --notes-file notes.md --generate-notes --verify-tag $DRAFT
+          gh release create "$TAG" "Oxide-$VERSION.zip" \
+            --title "Oxide $VERSION" --notes-file notes.md --generate-notes --verify-tag --draft
+
+      # The cask's URL only resolves once the draft is published.
+      - name: Point the Homebrew cask at the release
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          SHA256: ${{ steps.package.outputs.sha256 }}
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          sed -i '' \
+            -e "s/^  version \".*\"/  version \"$VERSION\"/" \
+            -e "s/^  sha256 \".*\"/  sha256 \"$SHA256\"/" \
+            Casks/oxide.rb
+          git add Casks/oxide.rb
+          git commit -m "Point the Homebrew cask at the $VERSION release"
+          git push origin "release/$TAG"
+
+      # main only takes pull requests. A merge commit, not a rebase, keeps the tag on main's history.
+      - name: Merge into main
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          gh pr create --base main --head "release/$TAG" \
+            --title "Release $VERSION" \
+            --body "Bumps the version to $VERSION (tagged $TAG) and points the Homebrew cask at the draft release."
+          gh pr merge "release/$TAG" --merge --delete-branch
