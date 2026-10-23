@@ -21,61 +21,68 @@ struct Composer: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
         } else {
             VStack(alignment: .leading, spacing: 6) {
-                if formatting { FormattingToolbar(input: input) }
+                // Above the box rather than inside it, so the editor does not move while picking.
                 if input.mention != nil { mentionPicker }
-                if composer.importance != .standard { ImportanceTag(importance: composer.importance) }
-                if isChannel && !replyOpen {
-                    SyncedTextField(
-                        placeholder: L("ui.composer.subject_optional"),
-                        value: composer.subject,
-                        onChange: { store.send(.subjectChanged(value: $0)) }
-                    )
-                    .textFieldStyle(.plain)
-                    .font(.figtree(13))
-                    .padding(.vertical, 3)
-                }
-                DraftEditor(
-                    placeholder: replyOpen ? L("ui.composer.reply_in_thread")
-                        : isChannel ? L("ui.composer.start_a_post") : L("ui.composer.type_a_message"),
-                    draft: composer.draft,
-                    revision: composer.draftRev,
-                    cursor: Int(composer.draftCursor),
-                    mentions: composer.mentionRanges,
-                    formats: composer.draftFormats,
-                    expanded: formatting,
-                    input: input,
-                    height: $height,
-                    onChange: { store.send(.richDraftChanged(value: $0, formats: $1)) },
-                    onSend: { store.send(.send) },
-                    onMentionCommand: mentionCommand,
-                    onEditLast: editLast,
-                    takeFocusRequest: store.takeComposerFocusRequest
-                )
-                .frame(height: min(max(height, 40), 140))
-                if !composer.attachments.isEmpty { AttachmentChips(attachments: composer.attachments) }
-                tools
+                box
             }
-            .onDrop(of: [.fileURL], isTargeted: $dropping) { providers in
-                FilePanels.paths(from: providers) { paths in
-                    if !paths.isEmpty { store.send(.files(action: .attach(paths: paths))) }
-                }
-            }
-            .onReceive(NotificationCenter.default.publisher(for: .focusComposer)) { _ in
-                guard let text = input.textView, let window = text.window else { return }
-                _ = store.takeComposerFocusRequest()
-                window.makeFirstResponder(text)
-                text.setSelectedRange(NSRange(location: (text.string as NSString).length, length: 0))
-            }
-            .onChange(of: input.linkRequested) { _, requested in if requested { formatting = true } }
-            .onChange(of: input.mention) { _, mention in
-                input.highlighted = 0
-                if mention != nil { store.send(.mentionMembers) }
-            }
-            .padding(EdgeInsets(top: 10, leading: 12, bottom: 8, trailing: 12))
-            .background(Theme.surface, in: RoundedRectangle(cornerRadius: 12))
-            .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(dropping ? Theme.accent : Theme.borderStrong, lineWidth: dropping ? 2 : 1))
             .padding(EdgeInsets(top: 0, leading: 20, bottom: 16, trailing: 20))
         }
+    }
+
+    private var box: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            if formatting { FormattingToolbar(input: input) }
+            if composer.importance != .standard { ImportanceTag(importance: composer.importance) }
+            if isChannel && !replyOpen {
+                SyncedTextField(
+                    placeholder: L("ui.composer.subject_optional"),
+                    value: composer.subject,
+                    onChange: { store.send(.subjectChanged(value: $0)) }
+                )
+                .textFieldStyle(.plain)
+                .font(.figtree(13))
+                .padding(.vertical, 3)
+            }
+            DraftEditor(
+                placeholder: replyOpen ? L("ui.composer.reply_in_thread")
+                    : isChannel ? L("ui.composer.start_a_post") : L("ui.composer.type_a_message"),
+                draft: composer.draft,
+                revision: composer.draftRev,
+                cursor: Int(composer.draftCursor),
+                mentions: composer.mentionRanges,
+                formats: composer.draftFormats,
+                expanded: formatting,
+                input: input,
+                height: $height,
+                onChange: { store.send(.richDraftChanged(value: $0, formats: $1)) },
+                onSend: { store.send(.send) },
+                onMentionCommand: mentionCommand,
+                onEditLast: editLast,
+                takeFocusRequest: store.takeComposerFocusRequest
+            )
+            .frame(height: min(max(height, 40), 140))
+            if !composer.attachments.isEmpty { AttachmentChips(attachments: composer.attachments) }
+            tools
+        }
+        .onDrop(of: [.fileURL], isTargeted: $dropping) { providers in
+            FilePanels.paths(from: providers) { paths in
+                if !paths.isEmpty { store.send(.files(action: .attach(paths: paths))) }
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .focusComposer)) { _ in
+            guard let text = input.textView, let window = text.window else { return }
+            _ = store.takeComposerFocusRequest()
+            window.makeFirstResponder(text)
+            text.setSelectedRange(NSRange(location: (text.string as NSString).length, length: 0))
+        }
+        .onChange(of: input.linkRequested) { _, requested in if requested { formatting = true } }
+        .onChange(of: input.mention) { _, mention in
+            input.highlighted = 0
+            if mention != nil { store.send(.mentionMembers) }
+        }
+        .padding(EdgeInsets(top: 10, leading: 12, bottom: 8, trailing: 12))
+        .background(Theme.surface, in: RoundedRectangle(cornerRadius: 12))
+        .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(dropping ? Theme.accent : Theme.borderStrong, lineWidth: dropping ? 2 : 1))
     }
 
     /// Sent with every core update; empty until the first one, which also brings the shell.
@@ -130,8 +137,8 @@ struct Composer: View {
                 Text(L("ui.composer.no_matching_participants")).font(.figtree(12)).foregroundStyle(Theme.muted).padding(6)
             }
         }
-        .padding(4).background(Theme.surface, in: RoundedRectangle(cornerRadius: 8))
-        .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(Theme.border))
+        .padding(4).background(Theme.surface, in: RoundedRectangle(cornerRadius: 12))
+        .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(Theme.borderStrong))
     }
     private func replace(_ text: String, range: NSRange? = nil, mri: String? = nil, emojiID: String? = nil) {
         let selection = range ?? input.selection
