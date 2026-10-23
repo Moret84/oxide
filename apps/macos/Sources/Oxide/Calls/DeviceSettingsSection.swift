@@ -2,6 +2,7 @@ import AVFoundation
 import SwiftUI
 
 /// Settings › Audio et vidéo: default call devices, with a test for each.
+/// One card per device, laid out like System Settings: title on the left, control on the right.
 struct DeviceSettingsSection: View {
     @AppStorage(MediaDevicePreferences.microphoneKey) private var microphone = ""
     @AppStorage(MediaDevicePreferences.speakerKey) private var speaker = ""
@@ -14,20 +15,16 @@ struct DeviceSettingsSection: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            VStack(alignment: .leading, spacing: 16) {
-                microphoneRow
-                Divider()
-                speakerRow
-                Divider()
-                cameraRow
-                Divider()
-                TestCallRow(onStart: {
-                    mic.stop()
-                    previewing = false
-                })
-            }
-            .card(padding: 18)
+            microphoneCard
+            speakerCard
+            cameraCard
+            TestCallRow(onStart: {
+                mic.stop()
+                previewing = false
+            })
+            .card()
             Muted(L("ui.device_settings_section.default_devices_detail"), size: 12)
+                .padding(.horizontal, 4)
         }
         .onDisappear {
             mic.stop()
@@ -37,28 +34,35 @@ struct DeviceSettingsSection: View {
 
     // MARK: Microphone
 
-    private var microphoneRow: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            picker(L("ui.device_settings_section.microphone"), symbol: "mic", selection: $microphone,
-                   options: devices.microphones.map { ($0.uid, $0.name) },
-                   systemName: devices.defaultMicrophone)
-                .onChange(of: microphone) { _, _ in restartMicrophone() }
-            HStack(spacing: 12) {
-                LevelMeter(tester: mic)
-                    .frame(height: 8)
-                Button(mic.running ? L("ui.device_settings_section.stop") : L("ui.device_settings_section.test_mic")) {
-                    if mic.running { mic.stop() } else { Task { await mic.start() } }
+    private var microphoneCard: some View {
+        VStack(spacing: 0) {
+            DeviceRow(L("ui.device_settings_section.microphone"), symbol: "mic") {
+                picker(L("ui.device_settings_section.microphone"), selection: $microphone,
+                       options: devices.microphones.map { ($0.uid, $0.name) },
+                       systemName: devices.defaultMicrophone)
+                    .onChange(of: microphone) { _, _ in restartMicrophone() }
+            }
+            Divider().padding(.leading, DeviceRow<EmptyView>.inset)
+            DeviceRow(L("ui.device_settings_section.input_level")) {
+                HStack(spacing: 8) {
+                    LevelMeter(tester: mic)
+                        .frame(width: 140, height: 6)
+                        .padding(.trailing, 4)
+                    Button(mic.running ? L("ui.device_settings_section.stop") : L("ui.device_settings_section.test_mic")) {
+                        if mic.running { mic.stop() } else { Task { await mic.start() } }
+                    }
+                    .buttonStyle(OutlineButtonStyle())
+                    Button(mic.recording ? L("ui.device_settings_section.recording") : mic.playingBack ? L("ui.device_settings_section.playing") : L("ui.device_settings_section.hear_yourself_5_s")) {
+                        Task { await mic.echo() }
+                    }
+                    .buttonStyle(OutlineButtonStyle())
+                    .disabled(mic.recording || mic.playingBack)
+                    .help(L("ui.device_settings_section.records_5_seconds_then_plays_them"))
                 }
-                .buttonStyle(OutlineButtonStyle())
-                Button(mic.recording ? L("ui.device_settings_section.recording") : mic.playingBack ? L("ui.device_settings_section.playing") : L("ui.device_settings_section.hear_yourself_5_s")) {
-                    Task { await mic.echo() }
-                }
-                .buttonStyle(OutlineButtonStyle())
-                .disabled(mic.recording || mic.playingBack)
-                .help(L("ui.device_settings_section.records_5_seconds_then_plays_them"))
             }
             if let error = mic.error { problem(error, settings: .audio) }
         }
+        .card()
     }
 
     private func restartMicrophone() {
@@ -69,38 +73,43 @@ struct DeviceSettingsSection: View {
 
     // MARK: Speaker
 
-    private var speakerRow: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            picker(L("ui.device_settings_section.speaker"), symbol: "speaker.wave.2", selection: $speaker,
-                   options: devices.speakers.map { ($0.uid, $0.name) },
-                   systemName: devices.defaultSpeaker)
-            HStack(spacing: 12) {
+    private var speakerCard: some View {
+        VStack(spacing: 0) {
+            DeviceRow(L("ui.device_settings_section.speaker"), symbol: "speaker.wave.2") {
+                picker(L("ui.device_settings_section.speaker"), selection: $speaker,
+                       options: devices.speakers.map { ($0.uid, $0.name) },
+                       systemName: devices.defaultSpeaker)
+            }
+            Divider().padding(.leading, DeviceRow<EmptyView>.inset)
+            DeviceRow(L("ui.device_settings_section.test_sound"), detail: sound.error) {
                 Button(sound.playing ? L("ui.device_settings_section.playing") : L("ui.device_settings_section.test_speaker")) { sound.play() }
                     .buttonStyle(OutlineButtonStyle())
                     .disabled(sound.playing)
-                if let error = sound.error { Text(error).font(.figtree(12)).foregroundStyle(Theme.danger) }
             }
         }
+        .card()
     }
 
     // MARK: Camera
 
-    private var cameraRow: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            picker(L("ui.device_settings_section.camera"), symbol: "video", selection: $camera,
-                   options: devices.cameras.map { ($0.uniqueID, $0.name) },
-                   systemName: AVCaptureDevice.default(for: .video)?.localizedName)
-            HStack(alignment: .top, spacing: 12) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 10).fill(Theme.input)
-                    if previewing {
-                        CameraPreview(device: selectedCamera)
-                            .clipShape(RoundedRectangle(cornerRadius: 10))
-                    } else {
-                        Image(systemName: "video.slash").font(.system(size: 22)).foregroundStyle(Theme.subtle)
-                    }
+    private var cameraCard: some View {
+        VStack(spacing: 0) {
+            DeviceRow(L("ui.device_settings_section.camera"), symbol: "video") {
+                picker(L("ui.device_settings_section.camera"), selection: $camera,
+                       options: devices.cameras.map { ($0.uniqueID, $0.name) },
+                       systemName: AVCaptureDevice.default(for: .video)?.localizedName)
+            }
+            ZStack {
+                RoundedRectangle(cornerRadius: 10).fill(Theme.input)
+                if previewing {
+                    CameraPreview(device: selectedCamera)
+                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                } else {
+                    Image(systemName: "video.slash").font(.system(size: 22)).foregroundStyle(Theme.subtle)
                 }
-                .frame(width: 256, height: 144)
+            }
+            .frame(height: 220)
+            .overlay(alignment: .bottomTrailing) {
                 Button(previewing ? L("ui.device_settings_section.stop_preview") : L("ui.device_settings_section.preview")) {
                     if previewing { previewing = false } else {
                         Task {
@@ -110,33 +119,32 @@ struct DeviceSettingsSection: View {
                     }
                 }
                 .buttonStyle(OutlineButtonStyle())
+                .padding(10)
             }
+            .padding([.horizontal, .bottom], 16)
             if cameraDenied {
                 problem(L("ui.device_settings_section.camera_access_is_denied_allow_oxide"),
                         settings: .video)
             }
         }
+        .card()
     }
 
     private var selectedCamera: AVCaptureDevice? { devices.camera(preferred: camera) }
 
     // MARK: Shared
 
-    private func picker(_ title: String, symbol: String, selection: Binding<String>,
+    private func picker(_ title: String, selection: Binding<String>,
                         options: [(id: String, name: String)], systemName: String?) -> some View {
-        HStack(spacing: 10) {
-            Image(systemName: symbol).frame(width: 18).foregroundStyle(Theme.muted)
-            Text(title).font(.figtree(13, .semibold)).frame(width: 96, alignment: .leading)
-            Picker(title, selection: selection) {
-                Text(systemName.map { L("ui.device_settings_section.system_default", ["device": $0]) } ?? L("ui.device_settings_section.system_default_2")).tag("")
-                ForEach(options, id: \.id) { option in Text(option.name).tag(option.id) }
-                if !selection.wrappedValue.isEmpty && !options.contains(where: { $0.id == selection.wrappedValue }) {
-                    Text(L("ui.device_settings_section.device_not_connected")).tag(selection.wrappedValue)
-                }
+        Picker(title, selection: selection) {
+            Text(systemName.map { L("ui.device_settings_section.system_default", ["device": $0]) } ?? L("ui.device_settings_section.system_default_2")).tag("")
+            ForEach(options, id: \.id) { option in Text(option.name).tag(option.id) }
+            if !selection.wrappedValue.isEmpty && !options.contains(where: { $0.id == selection.wrappedValue }) {
+                Text(L("ui.device_settings_section.device_not_connected")).tag(selection.wrappedValue)
             }
-            .labelsHidden()
-            .frame(maxWidth: 360)
         }
+        .labelsHidden()
+        .fixedSize()
     }
 
     private func problem(_ text: String, settings type: AVMediaType) -> some View {
@@ -144,7 +152,54 @@ struct DeviceSettingsSection: View {
             Text(text).font(.figtree(12)).foregroundStyle(Theme.danger)
             Button(L("ui.device_settings_section.open_settings")) { NSWorkspace.shared.open(MediaPermissions.settingsURL(type)) }
                 .buttonStyle(.link)
+            Spacer(minLength: 0)
         }
+        .padding(.leading, DeviceRow<EmptyView>.inset)
+        .padding([.trailing, .bottom], 16)
+    }
+}
+
+/// One line of a device card: icon and title (and an optional detail line) on the left,
+/// the control pushed to the right edge. Lines without an icon keep its slot, so titles align.
+private struct DeviceRow<Trailing: View>: View {
+    /// Where titles start: padding, icon slot, spacing.
+    static var inset: CGFloat { 16 + 18 + 10 }
+
+    let title: String
+    var symbol: String?
+    var detail: String?
+    var detailIsError = true
+    @ViewBuilder let trailing: Trailing
+
+    init(_ title: String, symbol: String? = nil, detail: String? = nil, detailIsError: Bool = true,
+         @ViewBuilder trailing: () -> Trailing) {
+        self.title = title
+        self.symbol = symbol
+        self.detail = detail
+        self.detailIsError = detailIsError
+        self.trailing = trailing()
+    }
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Group {
+                if let symbol { Image(systemName: symbol).foregroundStyle(Theme.muted) } else { Color.clear }
+            }
+            .frame(width: 18)
+            VStack(alignment: .leading, spacing: 3) {
+                Text(title).font(.figtree(13, symbol == nil ? .regular : .semibold))
+                if let detail {
+                    Text(detail)
+                        .font(.figtree(12))
+                        .foregroundStyle(detailIsError ? Theme.danger : Theme.muted)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            Spacer(minLength: 16)
+            trailing
+        }
+        .padding(.horizontal, 16)
+        .frame(minHeight: 52)
     }
 }
 
@@ -162,7 +217,6 @@ private struct LevelMeter: View {
                     .animation(.linear(duration: 0.08), value: level)
             }
         }
-        .frame(minWidth: 120)
         .accessibilityLabel(L("ui.device_settings_section.mic_level"))
         .accessibilityValue(L("ui.device_settings_section.text", ["percent": Int(level * 100)]))
     }
@@ -187,19 +241,16 @@ private struct TestCallRow: View {
     private var busy: Bool { store.inCall }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: 10) {
-                Image(systemName: "phone.badge.waveform").frame(width: 18).foregroundStyle(Theme.muted)
-                Text(L("ui.device_settings_section.test_call")).font(.figtree(13, .semibold)).frame(width: 96, alignment: .leading)
-                Button(L("ui.device_settings_section.make_a_test_call")) {
-                    onStart()
-                    store.send(.call(action: .testCall(botMri: TestCall.botOverride)))
-                }
-                .buttonStyle(OutlineButtonStyle())
-                .disabled(!ready || busy)
+        DeviceRow(L("ui.device_settings_section.test_call"), symbol: "phone.badge.waveform",
+                  detail: hint, detailIsError: false) {
+            Button(L("ui.device_settings_section.make_a_test_call")) {
+                onStart()
+                store.send(.call(action: .testCall(botMri: TestCall.botOverride)))
             }
-            Muted(hint, size: 12)
+            .buttonStyle(OutlineButtonStyle())
+            .disabled(!ready || busy)
         }
+        .padding(.vertical, 12)
     }
 
     private var hint: String {

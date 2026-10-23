@@ -3571,6 +3571,14 @@
     "fr": "Tester le micro",
     "en": "Test mic"
   },
+  "ui.device_settings_section.input_level": {
+    "fr": "Niveau d’entrée",
+    "en": "Input level"
+  },
+  "ui.device_settings_section.test_sound": {
+    "fr": "Son de test",
+    "en": "Test sound"
+  },
   "ui.device_settings_section.test_speaker": {
     "fr": "Tester le son",
     "en": "Test speaker"
