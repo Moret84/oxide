@@ -1337,6 +1337,14 @@ impl App {
                     return self.browse(place);
                 }
                 *self.new_chat = None;
+                // The Files screen and a channel's files tab share the browser: take it back.
+                if nav == Nav::Teams
+                    && *self.tab == Tab::Files
+                    && self.selected.as_ref().is_some_and(Selection::is_channel)
+                    && self.files.browser_place() != files::BrowserPlace::Channel
+                {
+                    return self.open_channel_browser();
+                }
                 let target = match nav {
                     Nav::Teams if !self.selected.as_ref().is_some_and(Selection::is_channel) => {
                         self.last_channel

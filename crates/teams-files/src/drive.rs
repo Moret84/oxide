@@ -22,6 +22,8 @@ pub struct DriveEntry {
     pub web_url: String,
     /// Set for entries of a folder listing on this site.
     pub server_relative_url: Option<String>,
+    /// Folder colour (`_ColorHex`, 1–15), 0 for the default yellow.
+    pub color: u8,
 }
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct DriveList {
@@ -30,6 +32,8 @@ pub struct DriveList {
 
 /// Folders SharePoint keeps at the root of a library.
 const SYSTEM_FOLDERS: [&str; 1] = ["Forms"];
+/// Colours OneDrive offers for a folder, the default yellow included.
+pub const FOLDER_COLORS: u8 = 16;
 
 fn folder_entries(value: &Value, origin: &Url) -> Vec<DriveEntry> {
     let list = |key: &str| -> Vec<Value> {
@@ -50,6 +54,7 @@ fn folder_entries(value: &Value, origin: &Url) -> Vec<DriveEntry> {
             modified_by: str_at(x, &["/ModifiedBy/Title"]).unwrap_or_default().to_owned(),
             web_url: origin.join(&relative).map(|u| u.to_string()).unwrap_or_default(),
             server_relative_url: Some(relative),
+            color: 0,
             name,
         })
     };
@@ -63,6 +68,20 @@ fn folder_entries(value: &Value, origin: &Url) -> Vec<DriveEntry> {
     files.sort_by_key(|e| e.name.to_lowercase());
     folders.extend(files);
     folders
+}
+/// `UniqueId` → colour of the folders that have one.
+fn folder_colors(value: &Value) -> Vec<(String, u8)> {
+    let list = value.get("value").or_else(|| value.pointer("/d/results"));
+    list.and_then(Value::as_array)
+        .into_iter()
+        .flatten()
+        .filter_map(|x| {
+            // REST prefixes field names that start with `_` with `OData_`.
+            let color = u64_at(x, &["/ListItemAllFields/OData__ColorHex"])
+                .filter(|c| (1..FOLDER_COLORS as u64).contains(c))?;
+            Some((str_at(x, &["/UniqueId"])?.to_owned(), color as u8))
+        })
+        .collect()
 }
 fn drive_items(value: &Value) -> Vec<DriveEntry> {
     value
@@ -99,14 +118,36 @@ fn drive_items(value: &Value) -> Vec<DriveEntry> {
                     .unwrap_or_default()
                     .to_owned(),
                 server_relative_url: None,
+                color: 0,
             })
         })
         .collect()
 }
 
 impl<A: Authenticator> FilesClient<A> {
-    /// Folders then files of a server-relative folder.
+    /// Folders then files of a server-relative folder, folders in their OneDrive colour.
     pub async fn list_folder(&self, site: &Url, folder: &str) -> Result<DriveList, Error> {
+        let (listing, colors) = tokio::join!(
+            self.folder_listing(site, folder),
+            self.folder_colors(site, folder)
+        );
+        let mut list = listing?;
+        // Colours are a nicety: a refused request leaves the folders yellow.
+        for (id, color) in colors.unwrap_or_default() {
+            // SharePoint writes the same GUID with or without braces and in either case.
+            let id = id.trim_matches(['{', '}']);
+            if let Some(e) = list
+                .entries
+                .iter_mut()
+                .find(|e| e.folder && e.id.trim_matches(['{', '}']).eq_ignore_ascii_case(id))
+            {
+                e.color = color;
+            }
+        }
+        Ok(list)
+    }
+
+    async fn folder_listing(&self, site: &Url, folder: &str) -> Result<DriveList, Error> {
         let url = api(
             site,
             &format!(
@@ -120,6 +161,21 @@ impl<A: Authenticator> FilesClient<A> {
         Ok(DriveList {
             entries: folder_entries(&value, &origin(site)?),
         })
+    }
+
+    /// `_ColorHex` is hidden: it comes back only when selected by name.
+    async fn folder_colors(&self, site: &Url, folder: &str) -> Result<Vec<(String, u8)>, Error> {
+        let url = api(
+            site,
+            &format!(
+                "_api/web/GetFolderByServerRelativePath(decodedUrl=@a1)/Folders?@a1='{}'&$select=UniqueId,ListItemAllFields/OData__ColorHex&$expand=ListItemAllFields",
+                alias(folder)
+            ),
+        )?;
+        let value = self
+            .json(Auth::Resource, Method::GET, url, &[], Body::Empty)
+            .await?;
+        Ok(folder_colors(&value))
     }
 
     pub async fn recent(&self, site: &Url) -> Result<DriveList, Error> {
@@ -176,6 +232,27 @@ impl<A: Authenticator> FilesClient<A> {
     /// Renames a file or folder of a listing (`FileLeafRef` of its list item).
     pub async fn rename(&self, site: &Url, entry: &DriveEntry, name: &str) -> Result<(), Error> {
         valid_name(name)?;
+        self.update_field(site, entry, "FileLeafRef", name.trim(), "files.drive.rename_refused")
+            .await
+    }
+
+    /// Colours a folder of a listing as OneDrive does (`_ColorHex` of its list item, 0 = default).
+    pub async fn set_color(&self, site: &Url, entry: &DriveEntry, color: u8) -> Result<(), Error> {
+        if !entry.folder || color >= FOLDER_COLORS {
+            return Err(Error::Invalid(t("files.drive.color_refused").to_owned()));
+        }
+        self.update_field(site, entry, "_ColorHex", &color.to_string(), "files.drive.color_refused")
+            .await
+    }
+
+    async fn update_field(
+        &self,
+        site: &Url,
+        entry: &DriveEntry,
+        field: &str,
+        value: &str,
+        refused: &str,
+    ) -> Result<(), Error> {
         let kind = if entry.folder { "GetFolderById" } else { "GetFileById" };
         let url = api(
             site,
@@ -191,7 +268,7 @@ impl<A: Authenticator> FilesClient<A> {
                 url,
                 &[],
                 Body::Json(json!({
-                    "formValues": [{"FieldName": "FileLeafRef", "FieldValue": name.trim()}],
+                    "formValues": [{"FieldName": field, "FieldValue": value}],
                     "bNewDocumentUpdate": false
                 })),
             )
@@ -206,7 +283,7 @@ impl<A: Authenticator> FilesClient<A> {
                 v.get("HasException")
                     .and_then(Value::as_bool)
                     .filter(|e| *e)
-                    .map(|_| str_at(v, &["/ErrorMessage"]).unwrap_or(t("files.drive.rename_refused")).to_owned())
+                    .map(|_| str_at(v, &["/ErrorMessage"]).unwrap_or(t(refused)).to_owned())
             });
         match failed {
             Some(message) => Err(Error::Invalid(message)),
@@ -253,12 +330,24 @@ mod tests {
         let names: Vec<_> = entries.iter().map(|e| e.name.as_str()).collect();
         assert_eq!(names, ["Specs", "A.docx", "b.txt"]);
         assert_eq!(entries[0].child_count, Some(3));
+
         assert_eq!(entries[2].size, Some(12));
         assert_eq!(entries[2].modified_by, "Alice");
         assert_eq!(
             entries[1].web_url,
             "https://c.sharepoint.com/sites/t/Shared%20Documents/General/A.docx"
         );
+    }
+
+    #[test]
+    fn reads_folder_colors_by_unique_id() {
+        let colors = folder_colors(&json!({"value": [
+            {"UniqueId": "a", "ListItemAllFields": {"OData__ColorHex": "13"}},
+            {"UniqueId": "b", "ListItemAllFields": {"OData__ColorHex": null}},
+            {"UniqueId": "c", "ListItemAllFields": {"OData__ColorHex": "0"}},
+            {"UniqueId": "d", "ListItemAllFields": {"OData__ColorHex": 2}}
+        ]}));
+        assert_eq!(colors, [("a".to_owned(), 13), ("d".to_owned(), 2)]);
     }
 
     #[test]

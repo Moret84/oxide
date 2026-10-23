@@ -17,7 +17,7 @@ mod substrate;
 mod upload;
 
 pub use download::{DownloadInfo, Progress, thumbnail_url};
-pub use drive::{DriveEntry, DriveList};
+pub use drive::{DriveEntry, DriveList, FOLDER_COLORS};
 pub use reference::{FileReference, ServiceName, extension, files_property};
 pub use share::Shared;
 pub use site::{PersonalSite, chat_folder_name};

@@ -83,6 +83,11 @@ pub enum FileAction {
     Delete {
         key: String,
     },
+    /// Folder colour, 0 (default yellow) to 15.
+    SetColor {
+        key: String,
+        color: u8,
+    },
     /// Upload local files into the folder shown by the browser.
     UploadHere {
         paths: Vec<String>,
@@ -116,6 +121,8 @@ pub struct EntryView {
     pub can_open_folder: bool,
     /// Folder holding a search result.
     pub location: String,
+    /// Folder colour, 0 for the default.
+    pub color: u8,
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Default, uniffi::Record)]
 pub struct BrowserView {
@@ -669,6 +676,16 @@ impl App {
                     return Task::none();
                 };
                 self.browser_change(async move { client.delete(&site, &entry).await })
+            }
+            FileAction::SetColor { key, color } => {
+                let (Some(client), Some(site), Some(entry)) = (
+                    self.files_client(),
+                    self.files.browser.site.clone(),
+                    self.browser_entry(&key).cloned(),
+                ) else {
+                    return Task::none();
+                };
+                self.browser_change(async move { client.set_color(&site, &entry, color).await })
             }
             FileAction::UploadHere { paths } => {
                 let (Some(client), Some(site), Some((_, folder))) = (
@@ -1470,6 +1487,7 @@ impl App {
                         modified: date_short(&e.modified),
                         modified_by: e.modified_by.clone(),
                         can_open_folder: e.folder,
+                        color: e.color,
                         location: if searching {
                             e.server_relative_url
                                 .as_deref()
@@ -1580,6 +1598,40 @@ mod tests {
         let path = dir.join(name);
         std::fs::write(&path, text).unwrap();
         path.to_string_lossy().into_owned()
+    }
+
+    #[tokio::test]
+    async fn channel_files_tab_comes_back_after_the_files_screen() {
+        let (app, task) = App::boot(true);
+        let (tx, rx) = unbounded_channel();
+        let mut h = Harness {
+            app,
+            tx,
+            rx,
+            effects: vec![],
+        };
+        h.run(task);
+        h.until("workspace", |a| !a.teams.is_empty() && !a.chats.is_empty())
+            .await;
+        let channel = || Msg::Select(Selection::Channel {
+            team: "19:product-team@thread.tacv2".into(),
+            channel: "19:general@thread.tacv2".into(),
+        });
+        h.send(Msg::Navigate(Nav::Teams));
+        h.send(channel());
+        h.send(Msg::SetTab(Tab::Files));
+        h.until("channel", |a| !a.files.browser.loading).await;
+        h.send(Msg::Navigate(Nav::Files));
+        h.file(FileAction::Browse {
+            place: BrowserPlace::MyFiles,
+        });
+        h.until("my files", |a| !a.files.browser.loading).await;
+        // Back to Teams: the channel and its files tab are still selected.
+        h.send(Msg::Navigate(Nav::Teams));
+        h.until("channel again", |a| !a.files.browser.loading).await;
+        let view = h.app.browser_view();
+        assert_eq!(view.place, BrowserPlace::Channel);
+        assert!(view.entries.iter().any(|e| e.name == "Plan produit.txt"));
     }
 
     #[tokio::test]
@@ -1704,6 +1756,7 @@ mod tests {
             .into_iter()
             .find(|e| e.name == "Projets")
             .unwrap();
+        assert_eq!(projets.color, 5);
         h.file(FileAction::OpenFolder { key: projets.key });
         h.until("folder", |a| !a.files.browser.loading).await;
         assert_eq!(h.app.browser_view().crumbs, ["Mes fichiers", "Projets"]);
@@ -1737,6 +1790,15 @@ mod tests {
         })
         .await;
         let archives = key(&h.app, "Archives").unwrap();
+        h.file(FileAction::SetColor {
+            key: archives.clone(),
+            color: 9,
+        });
+        h.until("colour", |a| {
+            a.browser_view().entries.iter().any(|e| e.name == "Archives" && e.color == 9)
+                && !a.files.browser.loading
+        })
+        .await;
         h.file(FileAction::Delete { key: archives });
         h.until("delete", |a| {
             key(a, "Archives").is_none() && !a.files.browser.loading && a.files.browser.busy == 0
