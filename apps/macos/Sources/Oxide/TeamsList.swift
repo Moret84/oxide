@@ -23,8 +23,8 @@ struct TeamsList: View {
                 .menuStyle(.borderlessButton).fixedSize().pointerCursor().help(L("ui.teams_list.sort_teams")).accessibilityLabel(L("ui.teams_list.sort_teams"))
             }.padding(.horizontal, 16)
             ScrollView {
-                LazyVStack(alignment: .leading, spacing: 3) {
-                    ForEach(sidebar.teams.filter { !$0.hidden }, id: \.id) { team in teamSection(team) }
+                LazyVStack(alignment: .leading, spacing: 2) {
+                    ForEach(lines(sidebar.teams.filter { !$0.hidden })) { line($0) }
                     if !searching && controls.shownCount == 0 && controls.hiddenCount > 0 {
                         Muted(L("ui.teams_list.all_your_teams_are_hidden"), size: 12).padding(12)
                     }
@@ -37,7 +37,7 @@ struct TeamsList: View {
                             }.padding(10).contentShape(Rectangle())
                         }.buttonStyle(GhostButtonStyle()).padding(.top, 8)
                     }
-                    ForEach(sidebar.teams.filter(\.hidden), id: \.id) { team in teamSection(team) }
+                    ForEach(lines(sidebar.teams.filter(\.hidden))) { line($0) }
                     if sidebar.teamCount == 0 && loading && !searching {
                         SkeletonList(rows: 6, avatar: 28)
                             .accessibilityElement().accessibilityLabel(L("ui.teams_list.loading_teams"))
@@ -72,29 +72,44 @@ struct TeamsList: View {
             }
         }
     }
-    private func teamSection(_ team: TeamRow) -> some View {
-        VStack(alignment: .leading, spacing: 2) {
-            teamRow(team)
-            if team.showChannels {
-                ForEach(team.channels.filter { !$0.hidden }, id: \.id) { TeamChannelRow(channel: $0) }
-                if team.hiddenChannelCount > 0 && !searching {
-                    more(team.showHiddenChannels
-                         ? L("ui.teams_list.hide_hidden_channels", ["hiddenChannelCount": team.hiddenChannelCount])
-                         : L("ui.teams_list.see_hidden_channels", ["hiddenChannelCount": team.hiddenChannelCount]), indent: 36, context: team.name) {
-                        send(.hiddenChannels(team: team.id, expanded: !team.showHiddenChannels))
-                    }
-                }
-                ForEach(team.channels.filter(\.hidden), id: \.id) { TeamChannelRow(channel: $0) }
-                if team.loading { LoadingLabel(text: L("ui.teams_list.loading_channels"), size: 11).padding(.leading, 36).padding(.vertical, 6) }
-                if team.failed {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Muted(L("ui.teams_list.channels_couldn_t_be_refreshed"), size: 11)
-                        Button(L("ui.teams_list.try_again")) { store.send(.loadChannels(id: team.id)) }.buttonStyle(GhostButtonStyle(accent: true))
-                    }.padding(.leading, 36).padding(.vertical, 6)
-                } else if team.channels.isEmpty && !team.loading && team.hiddenChannelCount == 0 {
-                    Muted(searching ? L("ui.teams_list.no_matching_channels") : L("ui.teams_list.no_channels_available"), size: 11).padding(.leading, 36).padding(.vertical, 6)
-                }
+    /// Each team and its channels as rows of their own, so the lazy stack builds only the rows in sight.
+    private func lines(_ teams: [TeamRow]) -> [TeamLine] {
+        teams.flatMap { team -> [TeamLine] in
+            var lines = [TeamLine.team(team)]
+            guard team.showChannels else { return lines }
+            lines += team.channels.filter { !$0.hidden }.map(TeamLine.channel)
+            if team.hiddenChannelCount > 0 && !searching { lines.append(.hiddenChannels(team)) }
+            lines += team.channels.filter(\.hidden).map(TeamLine.channel)
+            if team.loading { lines.append(.loading(team)) }
+            if team.failed {
+                lines.append(.failed(team))
+            } else if team.channels.isEmpty && !team.loading && team.hiddenChannelCount == 0 {
+                lines.append(.empty(team))
             }
+            return lines
+        }
+    }
+    @ViewBuilder private func line(_ line: TeamLine) -> some View {
+        switch line {
+        case .team(let team):
+            teamRow(team).padding(.top, 1)
+        case .channel(let channel):
+            TeamChannelRow(channel: channel)
+        case .hiddenChannels(let team):
+            more(team.showHiddenChannels
+                 ? L("ui.teams_list.hide_hidden_channels", ["hiddenChannelCount": team.hiddenChannelCount])
+                 : L("ui.teams_list.see_hidden_channels", ["hiddenChannelCount": team.hiddenChannelCount]), indent: 36, context: team.name) {
+                send(.hiddenChannels(team: team.id, expanded: !team.showHiddenChannels))
+            }
+        case .loading:
+            LoadingLabel(text: L("ui.teams_list.loading_channels"), size: 11).padding(.leading, 36).padding(.vertical, 6)
+        case .failed(let team):
+            VStack(alignment: .leading, spacing: 4) {
+                Muted(L("ui.teams_list.channels_couldn_t_be_refreshed"), size: 11)
+                Button(L("ui.teams_list.try_again")) { store.send(.loadChannels(id: team.id)) }.buttonStyle(GhostButtonStyle(accent: true))
+            }.padding(.leading, 36).padding(.vertical, 6)
+        case .empty:
+            Muted(searching ? L("ui.teams_list.no_matching_channels") : L("ui.teams_list.no_channels_available"), size: 11).padding(.leading, 36).padding(.vertical, 6)
         }
     }
     private func teamRow(_ team: TeamRow) -> some View {
@@ -137,6 +152,20 @@ struct TeamsList: View {
     private var canMove: Bool { controls.orderAvailable && !controls.savingOrder && controls.sort == .teams && !searching }
     private func more(_ title: String, indent: CGFloat, context: String? = nil, action: @escaping () -> Void) -> some View {
         Button(title, action: action).accessibilityLabel(context.map { "\(title) · \($0)" } ?? title).font(.figtree(11)).buttonStyle(GhostButtonStyle(accent: true)).padding(.leading, indent).padding(.vertical, 5)
+    }
+}
+
+private enum TeamLine: Identifiable {
+    case team(TeamRow), channel(ChannelRow), hiddenChannels(TeamRow), loading(TeamRow), failed(TeamRow), empty(TeamRow)
+    var id: String {
+        switch self {
+        case .team(let team): "team:\(team.id)"
+        case .channel(let channel): "channel:\(channel.team):\(channel.id)"
+        case .hiddenChannels(let team): "hidden:\(team.id)"
+        case .loading(let team): "loading:\(team.id)"
+        case .failed(let team): "failed:\(team.id)"
+        case .empty(let team): "empty:\(team.id)"
+        }
     }
 }
 

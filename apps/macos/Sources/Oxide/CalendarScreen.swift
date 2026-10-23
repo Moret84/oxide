@@ -238,13 +238,9 @@ struct CalendarScreen: View {
         let layout = CalendarLayout.items(entries: events(on: day).filter { !$0.isBanner(on: day) }, day: day)
         return GeometryReader { geo in
             ZStack(alignment: .topLeading) {
-                VStack(spacing: 0) {
-                    ForEach(0..<48, id: \.self) { slot in
-                        TimeSlot(hourStart: slot % 2 == 0) {
-                            let start = CalendarDates.local.date(bySettingHour: slot / 2, minute: slot % 2 * 30, second: 0, of: day)
-                            createEvent(at: start ?? day)
-                        }
-                    }
+                DaySlots { slot in
+                    let start = CalendarDates.local.date(bySettingHour: slot / 2, minute: slot % 2 * 30, second: 0, of: day)
+                    createEvent(at: start ?? day)
                 }
                 ForEach(layout, id: \.event.id) { item in
                     eventButton(item.event, start: item.startDate, fill: true)
@@ -329,25 +325,50 @@ struct CalendarScreen: View {
     }
 }
 
-/// Half an hour of the day grid: clicking it opens a new event at that time.
-private struct TimeSlot: View {
-    let hourStart: Bool
-    let action: () -> Void
-    @State private var hovered = false
+/// The 48 half hours of a day column as one view, which builds far faster than one view each:
+/// clicking one opens a new event at that time.
+private struct DaySlots: View {
+    let create: (Int) -> Void
+    @State private var hovered: Int?
+    private static let height: CGFloat = 28
 
     var body: some View {
-        Rectangle()
-            .fill(hovered ? Theme.accent.opacity(0.08) : Color.clear)
-            .frame(height: 28)
-            .overlay(alignment: .top) { if hourStart { Rectangle().fill(Theme.border).frame(height: 0.5) } }
-            .contentShape(Rectangle())
-            .onHover { hovered = $0 }
-            .onTapGesture(perform: action)
-            .pointerCursor()
-            .help(L("ui.calendar_screen.new_event"))
-            .accessibilityAddTraits(.isButton)
-            .accessibilityLabel(L("ui.calendar_screen.new_event_at_this_time"))
+        // Read here rather than in the drawing, so a change of appearance redraws the lines.
+        let border = Theme.border
+        Canvas { context, size in
+            for hour in 0..<24 {
+                let line = CGRect(x: 0, y: CGFloat(hour) * Self.height * 2, width: size.width, height: 0.5)
+                context.fill(Path(line), with: .color(border))
+            }
+        }
+        .background(alignment: .top) {
+            if let hovered {
+                Rectangle().fill(Theme.accent.opacity(0.08)).frame(height: Self.height)
+                    .offset(y: CGFloat(hovered) * Self.height)
+            }
+        }
+        .contentShape(Rectangle())
+        .onContinuousHover { phase in
+            switch phase {
+            case .active(let point): hovered = Self.slot(point.y)
+            case .ended: hovered = nil
+            }
+        }
+        .onTapGesture { point in create(Self.slot(point.y)) }
+        .pointerCursor()
+        .help(L("ui.calendar_screen.new_event"))
+        .accessibilityChildren {
+            VStack(spacing: 0) {
+                ForEach(0..<48, id: \.self) { slot in
+                    Rectangle().frame(height: Self.height)
+                        .accessibilityAddTraits(.isButton)
+                        .accessibilityLabel(L("ui.calendar_screen.new_event_at_this_time"))
+                        .accessibilityAction { create(slot) }
+                }
+            }
+        }
     }
+    private static func slot(_ y: CGFloat) -> Int { min(max(Int(y / height), 0), 47) }
 }
 
 /// The current time across today's column (56 points per hour), moved every minute.

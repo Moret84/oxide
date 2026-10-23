@@ -3,7 +3,18 @@ import SwiftUI
 
 /// Cursor rects follow the control and vanish with it, without touching the global cursor stack when a menu closes.
 extension View {
-    func pointerCursor() -> some View { background(PointerCursorArea()) }
+    func pointerCursor() -> some View { modifier(PointerCursor()) }
+}
+/// SwiftUI's own pointer style from macOS 15: an AppKit view per control made long lists slow to build.
+private struct PointerCursor: ViewModifier {
+    @Environment(\.isEnabled) private var enabled
+    func body(content: Content) -> some View {
+        if #available(macOS 15, *) {
+            content.pointerStyle(enabled ? .link : nil)
+        } else {
+            content.background(PointerCursorArea())
+        }
+    }
 }
 private struct PointerCursorArea: NSViewRepresentable {
     @Environment(\.isEnabled) private var enabled

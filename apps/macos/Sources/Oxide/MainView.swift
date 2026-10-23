@@ -6,6 +6,15 @@ struct MainView: View {
     @Environment(Store.self) private var store
     let shell: Shell
     @FocusState private var searchFocused: Bool
+    /// The screen built, which trails `shell.nav` briefly: the click animates over light placeholders
+    /// before the new screen's first build takes the main thread.
+    @State private var built: Nav?
+    private var switching: Bool { built.map { $0 != shell.nav } ?? false }
+    /// Chat and Teams both show a conversation, which updates in place faster than a rebuild.
+    private var replacingContent: Bool {
+        let conversations: [Nav] = [.chat, .teams]
+        return switching && !(built.map(conversations.contains) == true && conversations.contains(shell.nav))
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -19,7 +28,8 @@ struct MainView: View {
                     SidebarView(
                         nav: shell.nav, filter: shell.filter, unread: shell.unread, activityUnread: shell.activityUnread,
                         loading: shell.loadingWorkspace,
-                        searching: !shell.search.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                        searching: !shell.search.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+                        placeholder: switching
                     )
                         .frame(width: 316)
                     Divider().overlay(Theme.border)
@@ -29,6 +39,8 @@ struct MainView: View {
                     Group {
                         if store.search?.open == true {
                             SearchResultsScreen()
+                        } else if replacingContent {
+                            ProgressView().controlSize(.small).frame(maxWidth: .infinity, maxHeight: .infinity)
                         } else {
                             ContentRouter(shell: shell)
                         }
@@ -42,6 +54,15 @@ struct MainView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .background(Theme.conversation)
             }
+        }
+        .task(id: shell.nav) {
+            guard built != nil else {
+                built = shell.nav
+                return
+            }
+            try? await Task.sleep(for: .milliseconds(120))
+            guard !Task.isCancelled else { return }
+            built = shell.nav
         }
         .sheet(isPresented: Binding(
             get: { store.notifications?.editor != nil },

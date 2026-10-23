@@ -10,6 +10,8 @@ struct SidebarView: View {
     let activityUnread: UInt32
     let loading: Bool
     let searching: Bool
+    /// Skeleton rows instead of the lists while the rail switches screens.
+    var placeholder = false
     @Namespace private var chipSpace
 
     private var title: String {
@@ -51,7 +53,10 @@ struct SidebarView: View {
                 }
             }
             .padding(EdgeInsets(top: 16, leading: 16, bottom: 10, trailing: 12))
-            if let sidebar = store.sidebar {
+            if placeholder {
+                SkeletonList(rows: 8).padding(EdgeInsets(top: 8, leading: 8, bottom: 0, trailing: 8))
+                Spacer(minLength: 0)
+            } else if let sidebar = store.sidebar {
                 if nav == .teams {
                     TeamsList(searching: searching, loading: loading, sidebar: sidebar)
                 } else {
@@ -106,6 +111,8 @@ private struct ChatList: View, Equatable {
     let loading: Bool
     /// ↑ and ↓ switch chats while the list has the focus, which a click on a chat gives it.
     @FocusState private var focused: Bool
+    /// One dialog for the list rather than one per row.
+    @State private var leaving: ChatRow?
     static func == (a: ChatList, b: ChatList) -> Bool {
         a.chats == b.chats && a.more == b.more && a.loading == b.loading
     }
@@ -117,11 +124,11 @@ private struct ChatList: View, Equatable {
                     let recent = chats.filter { !$0.pinned }
                     if !pinned.isEmpty {
                         header(L("ui.sidebar_view.favorites"), top: 8)
-                        ForEach(pinned, id: \.id) { ChatRowView(row: $0, focused: focused) { focused = true }.equatable() }
+                        ForEach(pinned, id: \.id) { ChatRowView(row: $0, focused: focused, onSelect: { focused = true }, onLeave: { leaving = $0 }).equatable() }
                     }
                     if !recent.isEmpty {
                         header(L("ui.sidebar_view.recent"), top: pinned.isEmpty ? 8 : 14)
-                        ForEach(recent, id: \.id) { ChatRowView(row: $0, focused: focused) { focused = true }.equatable() }
+                        ForEach(recent, id: \.id) { ChatRowView(row: $0, focused: focused, onSelect: { focused = true }, onLeave: { leaving = $0 }).equatable() }
                     }
                     if chats.isEmpty {
                         if loading {
@@ -152,6 +159,15 @@ private struct ChatList: View, Equatable {
             .accessibilityLabel(L("ui.sidebar_view.chats"))
             .accessibilityHint(L("ui.sidebar_view.up_and_down_arrows_to_switch"))
         }
+        .confirmationDialog(L("ui.chat_admin.leave_question", ["title": leaving?.title ?? ""]),
+                            isPresented: Binding(get: { leaving != nil }, set: { if !$0 { leaving = nil } })) {
+            Button(L("ui.chat_admin.leave"), role: .destructive) {
+                if let row = leaving { store.send(.chatAdmin(action: .leave(chatId: row.id))) }
+                leaving = nil
+            }
+        } message: {
+            Text(L("ui.chat_admin.leave_explanation"))
+        }
     }
     private func move(_ offset: Int) -> KeyPress.Result {
         store.selectAdjacentChat(offset)
@@ -165,18 +181,19 @@ private struct ChatList: View, Equatable {
     }
 }
 
-/// Compared on its data only: the select closure is new on every pass and would defeat diffing.
+/// Compared on its data only: the closures are new on every pass and would defeat diffing.
 private struct ChatRowView: View, Equatable {
     @Environment(Store.self) private var store
     let row: ChatRow
     /// The list has the keyboard focus: the selected row shows it.
     let focused: Bool
     let onSelect: () -> Void
+    /// Asks the list to confirm leaving this chat.
+    let onLeave: (ChatRow) -> Void
     static func == (a: ChatRowView, b: ChatRowView) -> Bool {
         a.row == b.row && a.focused == b.focused
     }
     @State private var hovered = false
-    @State private var confirmLeave = false
     var body: some View {
         Button {
             onSelect()
@@ -247,15 +264,8 @@ private struct ChatRowView: View, Equatable {
             ChatNotificationMenu(id: row.id, muted: row.muted)
             if row.canLeave {
                 Divider()
-                Button(L("ui.chat_admin.leave"), role: .destructive) { confirmLeave = true }
+                Button(L("ui.chat_admin.leave"), role: .destructive) { onLeave(row) }
             }
-        }
-        .confirmationDialog(L("ui.chat_admin.leave_question", ["title": row.title]), isPresented: $confirmLeave) {
-            Button(L("ui.chat_admin.leave"), role: .destructive) {
-                store.send(.chatAdmin(action: .leave(chatId: row.id)))
-            }
-        } message: {
-            Text(L("ui.chat_admin.leave_explanation"))
         }
     }
 }

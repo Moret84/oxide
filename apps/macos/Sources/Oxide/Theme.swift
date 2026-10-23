@@ -4,29 +4,29 @@ import OxideCore
 
 /// "Indigo net" palette, with dark variants.
 enum Theme {
-    static let background = dynamic(0xF4F4F9, 0x1B1B22)
-    static let surface = dynamic(0xFFFFFF, 0x24242C)
-    static let conversation = dynamic(0xF7F7FB, 0x1F1F26)
-    static let border = dynamic(0xE4E4EE, 0x34343F)
-    static let borderStrong = dynamic(0xD6D6E4, 0x44444F)
-    static let bubbleBorder = dynamic(0xE6E6F0, 0x383843)
-    static let text = dynamic(0x1E1E2C, 0xEDEDF4)
-    static let textSoft = dynamic(0x3F3F52, 0xC9C9D6)
-    static let muted = dynamic(0x5C5C70, 0xA4A4B6)
-    static let subtle = dynamic(0x6B6B80, 0x8F8FA3)
-    static let accent = dynamic(0x5B5FC7, 0x8A8DF0)
+    static var background: Color { dynamic(0xF4F4F9, 0x1B1B22) }
+    static var surface: Color { dynamic(0xFFFFFF, 0x24242C) }
+    static var conversation: Color { dynamic(0xF7F7FB, 0x1F1F26) }
+    static var border: Color { dynamic(0xE4E4EE, 0x34343F) }
+    static var borderStrong: Color { dynamic(0xD6D6E4, 0x44444F) }
+    static var bubbleBorder: Color { dynamic(0xE6E6F0, 0x383843) }
+    static var text: Color { dynamic(0x1E1E2C, 0xEDEDF4) }
+    static var textSoft: Color { dynamic(0x3F3F52, 0xC9C9D6) }
+    static var muted: Color { dynamic(0x5C5C70, 0xA4A4B6) }
+    static var subtle: Color { dynamic(0x6B6B80, 0x8F8FA3) }
+    static var accent: Color { dynamic(0x5B5FC7, 0x8A8DF0) }
     /// The app icon's violet gradient, the same in both modes.
     static let brandTop = rgb(0x7B7FE0)
     static let brandBottom = rgb(0x4B4FB8)
-    static let accentSoft = dynamic(0xECECF9, 0x34355C)
-    static let accentText = dynamic(0x4B4FB8, 0xB4B6FA)
-    static let mineBubble = dynamic(0xE5E7FA, 0x34365E)
-    static let input = dynamic(0xF0F0F6, 0x2C2C35)
-    static let danger = dynamic(0xC4314B, 0xF06A80)
-    static let errorBackground = dynamic(0xFCE8EC, 0x4A2029)
-    static let errorText = dynamic(0x8E1F33, 0xFFC2CC)
-    static let pdfBackground = dynamic(0xFCE8EC, 0x4A2029)
-    static let pdfText = dynamic(0xA3243B, 0xFFB0BD)
+    static var accentSoft: Color { dynamic(0xECECF9, 0x34355C) }
+    static var accentText: Color { dynamic(0x4B4FB8, 0xB4B6FA) }
+    static var mineBubble: Color { dynamic(0xE5E7FA, 0x34365E) }
+    static var input: Color { dynamic(0xF0F0F6, 0x2C2C35) }
+    static var danger: Color { dynamic(0xC4314B, 0xF06A80) }
+    static var errorBackground: Color { dynamic(0xFCE8EC, 0x4A2029) }
+    static var errorText: Color { dynamic(0x8E1F33, 0xFFC2CC) }
+    static var pdfBackground: Color { dynamic(0xFCE8EC, 0x4A2029) }
+    static var pdfText: Color { dynamic(0xA3243B, 0xFFB0BD) }
 
     private static let avatars: [Color] = [0x5B5FC7, 0xB4467A, 0x2F7D6D, 0xA35A12, 0x3D6FB6, 0x7A4FB5].map(rgb)
     static func avatar(_ seed: String) -> Color {
@@ -34,21 +34,34 @@ enum Theme {
         return avatars[Int(hash % UInt32(avatars.count))]
     }
 
+    /// SwiftUI's own colours: a dynamic `NSColor` cost a hundred times more each time a view resolved it.
     static func rgb(_ hex: UInt32) -> Color {
-        Color(nsColor: nsColor(hex))
-    }
-    private static func nsColor(_ hex: UInt32) -> NSColor {
-        NSColor(
-            srgbRed: CGFloat((hex >> 16) & 0xFF) / 255,
-            green: CGFloat((hex >> 8) & 0xFF) / 255,
-            blue: CGFloat(hex & 0xFF) / 255,
-            alpha: 1
+        Color(
+            .sRGB,
+            red: Double((hex >> 16) & 0xFF) / 255,
+            green: Double((hex >> 8) & 0xFF) / 255,
+            blue: Double(hex & 0xFF) / 255
         )
     }
+    /// Read in a view's body, so the view redraws when the appearance changes.
     private static func dynamic(_ light: UInt32, _ dark: UInt32) -> Color {
-        Color(nsColor: NSColor(name: nil) { appearance in
-            appearance.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua ? nsColor(dark) : nsColor(light)
-        })
+        rgb(ThemeAppearance.shared.dark ? dark : light)
+    }
+}
+
+/// Whether the app is dark, as its windows are: set by the system or the user's choice in `Appearance`.
+@Observable
+final class ThemeAppearance: @unchecked Sendable {
+    static let shared = ThemeAppearance()
+    /// Written on the main thread only.
+    private(set) var dark = false
+    @ObservationIgnored private var observation: NSKeyValueObservation?
+
+    private init() {
+        observation = NSApplication.shared.observe(\.effectiveAppearance, options: [.initial, .new]) { [weak self] app, _ in
+            let dark = app.effectiveAppearance.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua
+            if self?.dark != dark { self?.dark = dark }
+        }
     }
 }
 
