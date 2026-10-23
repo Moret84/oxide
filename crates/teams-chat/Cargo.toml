@@ -19,7 +19,7 @@ percent-encoding.workspace = true
 reqwest.workspace = true
 chrono.workspace = true
 uuid = { version = "1", features = ["v4"] }
-tokio = { workspace = true, features = ["time"] }
+tokio = { workspace = true, features = ["time", "sync"] }
 
 [dev-dependencies]
 tokio.workspace = true

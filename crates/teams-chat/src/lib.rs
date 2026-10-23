@@ -19,6 +19,7 @@ mod search;
 mod service;
 mod teams_admin;
 pub mod types;
+mod url_preview;
 
 pub use apps::AppDefinition;
 pub use client::{ChatClient, MessagesQuery};
@@ -40,3 +41,4 @@ pub use reactions::Reaction;
 pub use search::{MessageHit, SearchFilters, SearchIn, SearchPage};
 pub use teams_admin::{GalleryPage, GalleryTeam, NewTeam, TeamVisibility};
 pub use types::*;
+pub use url_preview::UrlInfo;

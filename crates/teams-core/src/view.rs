@@ -85,6 +85,8 @@ pub struct ComposerView {
     pub attachments: Vec<PendingFileView>,
     /// Cards from message extensions, sent with the draft.
     pub cards: Vec<super::extensions::ComposerCardView>,
+    /// The preview of the draft's first link, sent with it.
+    pub link_preview: Option<super::link_preview::LinkPreviewView>,
 }
 
 /// Availability shown on a person's avatar, as the web client's presence badge.
@@ -428,6 +430,7 @@ pub struct MessageView {
     pub blocks: Vec<BlockView>,
     pub images: Vec<ImageView>,
     pub files: Vec<FileView>,
+    pub link_preview: Option<super::link_preview::LinkPreviewView>,
     pub reactions: Vec<ReactionView>,
     /// A reaction request for this message is in flight.
     pub pending: bool,
@@ -1075,7 +1078,7 @@ impl App {
             editing: self.conv.editing().cloned(),
         }
     }
-    fn composer_view(&self) -> ComposerView {
+    pub(crate) fn composer_view(&self) -> ComposerView {
         ComposerView {
             sending: self.conv.sending(),
             draft: self.conv.draft().to_owned(),
@@ -1096,6 +1099,7 @@ impl App {
             edit_text: self.conv.edit_text().to_owned(),
             attachments: self.pending_views(),
             cards: self.composer_cards(),
+            link_preview: self.composer_link_preview(),
         }
     }
     pub(crate) fn sidebar(&self) -> Sidebar {
@@ -1365,6 +1369,11 @@ impl App {
             } else {
                 rendered.files.iter().map(|f| self.file_view(f)).collect()
             },
+            link_preview: rendered
+                .link
+                .as_ref()
+                .filter(|_| !deleted)
+                .map(|l| self.link_preview_view(l)),
             reactions,
             pending,
             can_react,
@@ -1372,7 +1381,7 @@ impl App {
             receipt: None,
         }
     }
-    fn image_view(&self, image: &html::InlineImage) -> ImageView {
+    pub(crate) fn image_view(&self, image: &html::InlineImage) -> ImageView {
         ImageView {
             src: image.src.clone(),
             alt: image.alt.clone(),
@@ -1987,6 +1996,7 @@ mod sidebar_tests {
             Msg::TeamsAdmin(_) => "TeamsAdmin",
             Msg::Gifs(_) => "Gifs",
             Msg::Extensions(_) => "Extensions",
+            Msg::LinkPreview(_) => "LinkPreview",
             Msg::Card(_) => "Card",
             Msg::FullSearch(_) => "FullSearch",
         }
@@ -2395,6 +2405,9 @@ mod sidebar_tests {
             Msg::Extensions(super::super::extensions::ExtensionsMsg::Action(
                 super::super::extensions::ExtensionsAction::Back,
             )),
+            Msg::LinkPreview(super::super::link_preview::LinkPreviewMsg::Action(
+                super::super::link_preview::LinkPreviewAction::Dismiss,
+            )),
             Msg::Card(super::super::card_actions::CardMsg::Done(
                 g,
                 ("m1".into(), 0),
@@ -2539,6 +2552,7 @@ mod sidebar_tests {
             "TeamsAdmin",
             "Gifs",
             "Extensions",
+            "LinkPreview",
             "Card",
             "FullSearch",
         ];

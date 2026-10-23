@@ -156,6 +156,8 @@ pub struct Rendered {
     /// Images drawn inside cards: loaded like previews, not listed after the body.
     pub card_images: Vec<InlineImage>,
     pub files: Vec<Attachment>,
+    /// The preview card of the message's first link.
+    pub link: Option<crate::app::link_preview::LinkPreview>,
 }
 fn raw_files(message: &Message) -> Option<&Value> {
     message
@@ -169,6 +171,8 @@ fn source(message: &Message) -> u64 {
     message.content.hash(&mut hasher);
     hash_value(raw_files(message), &mut hasher);
     hash_value(message.properties.get("cards"), &mut hasher);
+    hash_value(message.properties.get("links"), &mut hasher);
+    hash_value(message.properties.get("urlpreviews"), &mut hasher);
     hasher.finish()
 }
 fn hash_value(value: Option<&Value>, hasher: &mut impl Hasher) {
@@ -225,6 +229,7 @@ impl Cache {
             images: with_previews(doc.images, &files),
             card_images,
             files,
+            link: crate::app::link_preview::from_message(message),
         });
         map.insert(message.id.clone(), rendered.clone());
         rendered

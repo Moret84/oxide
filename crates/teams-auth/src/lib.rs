@@ -40,8 +40,10 @@ pub enum Service {
     ProfileImages,
     /// Presence.
     UnifiedPresence,
-    /// Media storage: images, attachments, URL previews.
+    /// Media storage: images, attachments, URL preview images.
     Ams,
+    /// Link previews (`regionGtms.urlpV2`, else `urlp`), with AMS credentials.
+    UrlPreview,
     /// Calling conversation service (NGC): start, join, then hypermedia links.
     CallingConversation,
     /// Regional `api.conv.skype.com` base (meeting role, captcha).
@@ -85,6 +87,7 @@ impl Service {
             Service::ProfileImages => "mtImageService",
             Service::UnifiedPresence => "unifiedPresence",
             Service::Ams => "ams",
+            Service::UrlPreview => "urlpV2",
             Service::CallingConversation => "calling_conversationServiceUrl",
             Service::CallingConversationBase => "calling_conversationServiceBaseUrl",
             Service::Trouter => "calling_trouterUrl",

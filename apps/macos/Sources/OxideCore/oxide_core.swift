@@ -3282,6 +3282,10 @@ public struct ComposerView: Equatable, Hashable {
      * Cards from message extensions, sent with the draft.
      */
     public var cards: [ComposerCardView]
+    /**
+     * The preview of the draft's first link, sent with it.
+     */
+    public var linkPreview: LinkPreviewView?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
@@ -3291,7 +3295,10 @@ public struct ComposerView: Equatable, Hashable {
          */attachments: [PendingFileView], 
         /**
          * Cards from message extensions, sent with the draft.
-         */cards: [ComposerCardView]) {
+         */cards: [ComposerCardView], 
+        /**
+         * The preview of the draft's first link, sent with it.
+         */linkPreview: LinkPreviewView?) {
         self.sending = sending
         self.draft = draft
         self.draftRev = draftRev
@@ -3305,6 +3312,7 @@ public struct ComposerView: Equatable, Hashable {
         self.editText = editText
         self.attachments = attachments
         self.cards = cards
+        self.linkPreview = linkPreview
     }
 
     
@@ -3335,7 +3343,8 @@ public struct FfiConverterTypeComposerView: FfiConverterRustBuffer {
                 importance: FfiConverterTypeImportance.read(from: &buf), 
                 editText: FfiConverterString.read(from: &buf), 
                 attachments: FfiConverterSequenceTypePendingFileView.read(from: &buf), 
-                cards: FfiConverterSequenceTypeComposerCardView.read(from: &buf)
+                cards: FfiConverterSequenceTypeComposerCardView.read(from: &buf), 
+                linkPreview: FfiConverterOptionTypeLinkPreviewView.read(from: &buf)
         )
     }
 
@@ -3353,6 +3362,7 @@ public struct FfiConverterTypeComposerView: FfiConverterRustBuffer {
         FfiConverterString.write(value.editText, into: &buf)
         FfiConverterSequenceTypePendingFileView.write(value.attachments, into: &buf)
         FfiConverterSequenceTypeComposerCardView.write(value.cards, into: &buf)
+        FfiConverterOptionTypeLinkPreviewView.write(value.linkPreview, into: &buf)
     }
 }
 
@@ -5023,6 +5033,88 @@ public func FfiConverterTypeJoinCodeView_lower(_ value: JoinCodeView) -> RustBuf
 }
 
 
+public struct LinkPreviewView: Equatable, Hashable {
+    public var url: String
+    /**
+     * The page's host, without `www.`.
+     */
+    public var site: String
+    public var title: String?
+    public var description: String?
+    public var image: ImageView?
+    /**
+     * The compose box's preview while the service is asked.
+     */
+    public var loading: Bool
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(url: String, 
+        /**
+         * The page's host, without `www.`.
+         */site: String, title: String?, description: String?, image: ImageView?, 
+        /**
+         * The compose box's preview while the service is asked.
+         */loading: Bool) {
+        self.url = url
+        self.site = site
+        self.title = title
+        self.description = description
+        self.image = image
+        self.loading = loading
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension LinkPreviewView: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeLinkPreviewView: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> LinkPreviewView {
+        return
+            try LinkPreviewView(
+                url: FfiConverterString.read(from: &buf), 
+                site: FfiConverterString.read(from: &buf), 
+                title: FfiConverterOptionString.read(from: &buf), 
+                description: FfiConverterOptionString.read(from: &buf), 
+                image: FfiConverterOptionTypeImageView.read(from: &buf), 
+                loading: FfiConverterBool.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: LinkPreviewView, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.url, into: &buf)
+        FfiConverterString.write(value.site, into: &buf)
+        FfiConverterOptionString.write(value.title, into: &buf)
+        FfiConverterOptionString.write(value.description, into: &buf)
+        FfiConverterOptionTypeImageView.write(value.image, into: &buf)
+        FfiConverterBool.write(value.loading, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeLinkPreviewView_lift(_ buf: RustBuffer) throws -> LinkPreviewView {
+    return try FfiConverterTypeLinkPreviewView.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeLinkPreviewView_lower(_ value: LinkPreviewView) -> RustBuffer {
+    return FfiConverterTypeLinkPreviewView.lower(value)
+}
+
+
 public struct ListItemView: Equatable, Hashable {
     public var blocks: [BlockView]
 
@@ -5472,6 +5564,7 @@ public struct MessageView: Equatable, Hashable {
     public var blocks: [BlockView]
     public var images: [ImageView]
     public var files: [FileView]
+    public var linkPreview: LinkPreviewView?
     public var reactions: [ReactionView]
     /**
      * A reaction request for this message is in flight.
@@ -5492,7 +5585,7 @@ public struct MessageView: Equatable, Hashable {
          */importance: Importance, deleted: Bool, editing: Bool, 
         /**
          * The body as flat text runs: for copy and height estimates.
-         */runs: [RunView], blocks: [BlockView], images: [ImageView], files: [FileView], reactions: [ReactionView], 
+         */runs: [RunView], blocks: [BlockView], images: [ImageView], files: [FileView], linkPreview: LinkPreviewView?, reactions: [ReactionView], 
         /**
          * A reaction request for this message is in flight.
          */pending: Bool, canReact: Bool, editable: Bool, 
@@ -5514,6 +5607,7 @@ public struct MessageView: Equatable, Hashable {
         self.blocks = blocks
         self.images = images
         self.files = files
+        self.linkPreview = linkPreview
         self.reactions = reactions
         self.pending = pending
         self.canReact = canReact
@@ -5552,6 +5646,7 @@ public struct FfiConverterTypeMessageView: FfiConverterRustBuffer {
                 blocks: FfiConverterSequenceTypeBlockView.read(from: &buf), 
                 images: FfiConverterSequenceTypeImageView.read(from: &buf), 
                 files: FfiConverterSequenceTypeFileView.read(from: &buf), 
+                linkPreview: FfiConverterOptionTypeLinkPreviewView.read(from: &buf), 
                 reactions: FfiConverterSequenceTypeReactionView.read(from: &buf), 
                 pending: FfiConverterBool.read(from: &buf), 
                 canReact: FfiConverterBool.read(from: &buf), 
@@ -5576,6 +5671,7 @@ public struct FfiConverterTypeMessageView: FfiConverterRustBuffer {
         FfiConverterSequenceTypeBlockView.write(value.blocks, into: &buf)
         FfiConverterSequenceTypeImageView.write(value.images, into: &buf)
         FfiConverterSequenceTypeFileView.write(value.files, into: &buf)
+        FfiConverterOptionTypeLinkPreviewView.write(value.linkPreview, into: &buf)
         FfiConverterSequenceTypeReactionView.write(value.reactions, into: &buf)
         FfiConverterBool.write(value.pending, into: &buf)
         FfiConverterBool.write(value.canReact, into: &buf)
@@ -8449,6 +8545,11 @@ public enum Action: Equatable, Hashable {
      */
     case extensions(action: ExtensionsAction
     )
+    /**
+     * The compose box's link preview.
+     */
+    case linkPreview(action: LinkPreviewAction
+    )
     case fullSearch(action: SearchAction
     )
     /**
@@ -8614,143 +8715,146 @@ public struct FfiConverterTypeAction: FfiConverterRustBuffer {
         case 14: return .extensions(action: try FfiConverterTypeExtensionsAction.read(from: &buf)
         )
         
-        case 15: return .fullSearch(action: try FfiConverterTypeSearchAction.read(from: &buf)
+        case 15: return .linkPreview(action: try FfiConverterTypeLinkPreviewAction.read(from: &buf)
         )
         
-        case 16: return .cardAction(messageId: try FfiConverterString.read(from: &buf), card: try FfiConverterUInt32.read(from: &buf), action: try FfiConverterUInt32.read(from: &buf), inputs: try FfiConverterSequenceTypeCardInputValue.read(from: &buf)
+        case 16: return .fullSearch(action: try FfiConverterTypeSearchAction.read(from: &buf)
         )
         
-        case 17: return .signIn
-        
-        case 18: return .signInBrowser
-        
-        case 19: return .copyLoginUrl
-        
-        case 20: return .callbackChanged(value: try FfiConverterString.read(from: &buf)
+        case 17: return .cardAction(messageId: try FfiConverterString.read(from: &buf), card: try FfiConverterUInt32.read(from: &buf), action: try FfiConverterUInt32.read(from: &buf), inputs: try FfiConverterSequenceTypeCardInputValue.read(from: &buf)
         )
         
-        case 21: return .completeSignIn
+        case 18: return .signIn
         
-        case 22: return .loginReturned(url: try FfiConverterString.read(from: &buf)
+        case 19: return .signInBrowser
+        
+        case 20: return .copyLoginUrl
+        
+        case 21: return .callbackChanged(value: try FfiConverterString.read(from: &buf)
         )
         
-        case 23: return .loginCancelled
+        case 22: return .completeSignIn
         
-        case 24: return .silentLoginFailed
-        
-        case 25: return .signOut
-        
-        case 26: return .refresh
-        
-        case 27: return .setLanguage(language: try FfiConverterTypeLanguage.read(from: &buf)
+        case 23: return .loginReturned(url: try FfiConverterString.read(from: &buf)
         )
         
-        case 28: return .setRefreshMode(mode: try FfiConverterTypeRefreshMode.read(from: &buf)
+        case 24: return .loginCancelled
+        
+        case 25: return .silentLoginFailed
+        
+        case 26: return .signOut
+        
+        case 27: return .refresh
+        
+        case 28: return .setLanguage(language: try FfiConverterTypeLanguage.read(from: &buf)
         )
         
-        case 29: return .navigate(nav: try FfiConverterTypeNav.read(from: &buf)
+        case 29: return .setRefreshMode(mode: try FfiConverterTypeRefreshMode.read(from: &buf)
         )
         
-        case 30: return .setFilter(filter: try FfiConverterTypeFilter.read(from: &buf)
+        case 30: return .navigate(nav: try FfiConverterTypeNav.read(from: &buf)
         )
         
-        case 31: return .setTab(tab: try FfiConverterTypeTab.read(from: &buf)
+        case 31: return .setFilter(filter: try FfiConverterTypeFilter.read(from: &buf)
         )
         
-        case 32: return .search(query: try FfiConverterString.read(from: &buf)
+        case 32: return .setTab(tab: try FfiConverterTypeTab.read(from: &buf)
         )
         
-        case 33: return .dismissError
-        
-        case 34: return .dismissNotice(text: try FfiConverterString.read(from: &buf)
+        case 33: return .search(query: try FfiConverterString.read(from: &buf)
         )
         
-        case 35: return .select(target: try FfiConverterTypeTarget.read(from: &buf)
+        case 34: return .dismissError
+        
+        case 35: return .dismissNotice(text: try FfiConverterString.read(from: &buf)
         )
         
-        case 36: return .toggleTeam(id: try FfiConverterString.read(from: &buf)
+        case 36: return .select(target: try FfiConverterTypeTarget.read(from: &buf)
         )
         
-        case 37: return .loadChannels(id: try FfiConverterString.read(from: &buf)
+        case 37: return .toggleTeam(id: try FfiConverterString.read(from: &buf)
         )
         
-        case 38: return .channelMembers
-        
-        case 39: return .moreFeed
-        
-        case 40: return .moreChats
-        
-        case 41: return .openReply(post: try FfiConverterString.read(from: &buf)
+        case 38: return .loadChannels(id: try FfiConverterString.read(from: &buf)
         )
         
-        case 42: return .closeReply
+        case 39: return .channelMembers
         
-        case 43: return .moreReplies
+        case 40: return .moreFeed
         
-        case 44: return .draftChanged(value: try FfiConverterString.read(from: &buf)
+        case 41: return .moreChats
+        
+        case 42: return .openReply(post: try FfiConverterString.read(from: &buf)
         )
         
-        case 45: return .richDraftChanged(value: try FfiConverterString.read(from: &buf), formats: try FfiConverterSequenceTypeComposerFormat.read(from: &buf)
+        case 43: return .closeReply
+        
+        case 44: return .moreReplies
+        
+        case 45: return .draftChanged(value: try FfiConverterString.read(from: &buf)
         )
         
-        case 46: return .subjectChanged(value: try FfiConverterString.read(from: &buf)
+        case 46: return .richDraftChanged(value: try FfiConverterString.read(from: &buf), formats: try FfiConverterSequenceTypeComposerFormat.read(from: &buf)
         )
         
-        case 47: return .setImportance(importance: try FfiConverterTypeImportance.read(from: &buf)
+        case 47: return .subjectChanged(value: try FfiConverterString.read(from: &buf)
         )
         
-        case 48: return .insertEmoji(emoji: try FfiConverterString.read(from: &buf)
+        case 48: return .setImportance(importance: try FfiConverterTypeImportance.read(from: &buf)
         )
         
-        case 49: return .insertMention
-        
-        case 50: return .mentionMembers
-        
-        case 51: return .replaceDraft(start: try FfiConverterUInt32.read(from: &buf), length: try FfiConverterUInt32.read(from: &buf), text: try FfiConverterString.read(from: &buf), mention: try FfiConverterOptionString.read(from: &buf), emoji: try FfiConverterOptionString.read(from: &buf), style: try FfiConverterOptionTypeComposerFormat.read(from: &buf)
+        case 49: return .insertEmoji(emoji: try FfiConverterString.read(from: &buf)
         )
         
-        case 52: return .send
+        case 50: return .insertMention
         
-        case 53: return .newChat
+        case 51: return .mentionMembers
         
-        case 54: return .cancelNewChat
-        
-        case 55: return .peopleQuery(query: try FfiConverterString.read(from: &buf)
+        case 52: return .replaceDraft(start: try FfiConverterUInt32.read(from: &buf), length: try FfiConverterUInt32.read(from: &buf), text: try FfiConverterString.read(from: &buf), mention: try FfiConverterOptionString.read(from: &buf), emoji: try FfiConverterOptionString.read(from: &buf), style: try FfiConverterOptionTypeComposerFormat.read(from: &buf)
         )
         
-        case 56: return .peopleSearch
+        case 53: return .send
         
-        case 57: return .choosePerson(mri: try FfiConverterString.read(from: &buf)
+        case 54: return .newChat
+        
+        case 55: return .cancelNewChat
+        
+        case 56: return .peopleQuery(query: try FfiConverterString.read(from: &buf)
         )
         
-        case 58: return .removePerson(mri: try FfiConverterString.read(from: &buf)
+        case 57: return .peopleSearch
+        
+        case 58: return .choosePerson(mri: try FfiConverterString.read(from: &buf)
         )
         
-        case 59: return .newTitle(title: try FfiConverterString.read(from: &buf)
+        case 59: return .removePerson(mri: try FfiConverterString.read(from: &buf)
         )
         
-        case 60: return .createChat
-        
-        case 61: return .react(id: try FfiConverterString.read(from: &buf), key: try FfiConverterString.read(from: &buf)
+        case 60: return .newTitle(title: try FfiConverterString.read(from: &buf)
         )
         
-        case 62: return .edit(id: try FfiConverterString.read(from: &buf)
+        case 61: return .createChat
+        
+        case 62: return .react(id: try FfiConverterString.read(from: &buf), key: try FfiConverterString.read(from: &buf)
         )
         
-        case 63: return .editChanged(value: try FfiConverterString.read(from: &buf)
+        case 63: return .edit(id: try FfiConverterString.read(from: &buf)
         )
         
-        case 64: return .cancelEdit
-        
-        case 65: return .saveEdit
-        
-        case 66: return .delete(id: try FfiConverterString.read(from: &buf)
+        case 64: return .editChanged(value: try FfiConverterString.read(from: &buf)
         )
         
-        case 67: return .retryImage(src: try FfiConverterString.read(from: &buf)
+        case 65: return .cancelEdit
+        
+        case 66: return .saveEdit
+        
+        case 67: return .delete(id: try FfiConverterString.read(from: &buf)
         )
         
-        case 68: return .openUrl(url: try FfiConverterString.read(from: &buf)
+        case 68: return .retryImage(src: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 69: return .openUrl(url: try FfiConverterString.read(from: &buf)
         )
         
         default: throw UniffiInternalError.unexpectedEnumCase
@@ -8831,13 +8935,18 @@ public struct FfiConverterTypeAction: FfiConverterRustBuffer {
             FfiConverterTypeExtensionsAction.write(action, into: &buf)
             
         
-        case let .fullSearch(action):
+        case let .linkPreview(action):
             writeInt(&buf, Int32(15))
+            FfiConverterTypeLinkPreviewAction.write(action, into: &buf)
+            
+        
+        case let .fullSearch(action):
+            writeInt(&buf, Int32(16))
             FfiConverterTypeSearchAction.write(action, into: &buf)
             
         
         case let .cardAction(messageId,card,action,inputs):
-            writeInt(&buf, Int32(16))
+            writeInt(&buf, Int32(17))
             FfiConverterString.write(messageId, into: &buf)
             FfiConverterUInt32.write(card, into: &buf)
             FfiConverterUInt32.write(action, into: &buf)
@@ -8845,162 +8954,162 @@ public struct FfiConverterTypeAction: FfiConverterRustBuffer {
             
         
         case .signIn:
-            writeInt(&buf, Int32(17))
-        
-        
-        case .signInBrowser:
             writeInt(&buf, Int32(18))
         
         
-        case .copyLoginUrl:
+        case .signInBrowser:
             writeInt(&buf, Int32(19))
         
         
-        case let .callbackChanged(value):
+        case .copyLoginUrl:
             writeInt(&buf, Int32(20))
+        
+        
+        case let .callbackChanged(value):
+            writeInt(&buf, Int32(21))
             FfiConverterString.write(value, into: &buf)
             
         
         case .completeSignIn:
-            writeInt(&buf, Int32(21))
+            writeInt(&buf, Int32(22))
         
         
         case let .loginReturned(url):
-            writeInt(&buf, Int32(22))
+            writeInt(&buf, Int32(23))
             FfiConverterString.write(url, into: &buf)
             
         
         case .loginCancelled:
-            writeInt(&buf, Int32(23))
-        
-        
-        case .silentLoginFailed:
             writeInt(&buf, Int32(24))
         
         
-        case .signOut:
+        case .silentLoginFailed:
             writeInt(&buf, Int32(25))
         
         
-        case .refresh:
+        case .signOut:
             writeInt(&buf, Int32(26))
         
         
-        case let .setLanguage(language):
+        case .refresh:
             writeInt(&buf, Int32(27))
+        
+        
+        case let .setLanguage(language):
+            writeInt(&buf, Int32(28))
             FfiConverterTypeLanguage.write(language, into: &buf)
             
         
         case let .setRefreshMode(mode):
-            writeInt(&buf, Int32(28))
+            writeInt(&buf, Int32(29))
             FfiConverterTypeRefreshMode.write(mode, into: &buf)
             
         
         case let .navigate(nav):
-            writeInt(&buf, Int32(29))
+            writeInt(&buf, Int32(30))
             FfiConverterTypeNav.write(nav, into: &buf)
             
         
         case let .setFilter(filter):
-            writeInt(&buf, Int32(30))
+            writeInt(&buf, Int32(31))
             FfiConverterTypeFilter.write(filter, into: &buf)
             
         
         case let .setTab(tab):
-            writeInt(&buf, Int32(31))
+            writeInt(&buf, Int32(32))
             FfiConverterTypeTab.write(tab, into: &buf)
             
         
         case let .search(query):
-            writeInt(&buf, Int32(32))
+            writeInt(&buf, Int32(33))
             FfiConverterString.write(query, into: &buf)
             
         
         case .dismissError:
-            writeInt(&buf, Int32(33))
+            writeInt(&buf, Int32(34))
         
         
         case let .dismissNotice(text):
-            writeInt(&buf, Int32(34))
+            writeInt(&buf, Int32(35))
             FfiConverterString.write(text, into: &buf)
             
         
         case let .select(target):
-            writeInt(&buf, Int32(35))
+            writeInt(&buf, Int32(36))
             FfiConverterTypeTarget.write(target, into: &buf)
             
         
         case let .toggleTeam(id):
-            writeInt(&buf, Int32(36))
-            FfiConverterString.write(id, into: &buf)
-            
-        
-        case let .loadChannels(id):
             writeInt(&buf, Int32(37))
             FfiConverterString.write(id, into: &buf)
             
         
-        case .channelMembers:
+        case let .loadChannels(id):
             writeInt(&buf, Int32(38))
+            FfiConverterString.write(id, into: &buf)
+            
         
-        
-        case .moreFeed:
+        case .channelMembers:
             writeInt(&buf, Int32(39))
         
         
-        case .moreChats:
+        case .moreFeed:
             writeInt(&buf, Int32(40))
         
         
-        case let .openReply(post):
+        case .moreChats:
             writeInt(&buf, Int32(41))
+        
+        
+        case let .openReply(post):
+            writeInt(&buf, Int32(42))
             FfiConverterString.write(post, into: &buf)
             
         
         case .closeReply:
-            writeInt(&buf, Int32(42))
-        
-        
-        case .moreReplies:
             writeInt(&buf, Int32(43))
         
         
-        case let .draftChanged(value):
+        case .moreReplies:
             writeInt(&buf, Int32(44))
+        
+        
+        case let .draftChanged(value):
+            writeInt(&buf, Int32(45))
             FfiConverterString.write(value, into: &buf)
             
         
         case let .richDraftChanged(value,formats):
-            writeInt(&buf, Int32(45))
+            writeInt(&buf, Int32(46))
             FfiConverterString.write(value, into: &buf)
             FfiConverterSequenceTypeComposerFormat.write(formats, into: &buf)
             
         
         case let .subjectChanged(value):
-            writeInt(&buf, Int32(46))
+            writeInt(&buf, Int32(47))
             FfiConverterString.write(value, into: &buf)
             
         
         case let .setImportance(importance):
-            writeInt(&buf, Int32(47))
+            writeInt(&buf, Int32(48))
             FfiConverterTypeImportance.write(importance, into: &buf)
             
         
         case let .insertEmoji(emoji):
-            writeInt(&buf, Int32(48))
+            writeInt(&buf, Int32(49))
             FfiConverterString.write(emoji, into: &buf)
             
         
         case .insertMention:
-            writeInt(&buf, Int32(49))
-        
-        
-        case .mentionMembers:
             writeInt(&buf, Int32(50))
         
         
-        case let .replaceDraft(start,length,text,mention,emoji,style):
+        case .mentionMembers:
             writeInt(&buf, Int32(51))
+        
+        
+        case let .replaceDraft(start,length,text,mention,emoji,style):
+            writeInt(&buf, Int32(52))
             FfiConverterUInt32.write(start, into: &buf)
             FfiConverterUInt32.write(length, into: &buf)
             FfiConverterString.write(text, into: &buf)
@@ -9010,81 +9119,81 @@ public struct FfiConverterTypeAction: FfiConverterRustBuffer {
             
         
         case .send:
-            writeInt(&buf, Int32(52))
-        
-        
-        case .newChat:
             writeInt(&buf, Int32(53))
         
         
-        case .cancelNewChat:
+        case .newChat:
             writeInt(&buf, Int32(54))
         
         
-        case let .peopleQuery(query):
+        case .cancelNewChat:
             writeInt(&buf, Int32(55))
+        
+        
+        case let .peopleQuery(query):
+            writeInt(&buf, Int32(56))
             FfiConverterString.write(query, into: &buf)
             
         
         case .peopleSearch:
-            writeInt(&buf, Int32(56))
+            writeInt(&buf, Int32(57))
         
         
         case let .choosePerson(mri):
-            writeInt(&buf, Int32(57))
-            FfiConverterString.write(mri, into: &buf)
-            
-        
-        case let .removePerson(mri):
             writeInt(&buf, Int32(58))
             FfiConverterString.write(mri, into: &buf)
             
         
-        case let .newTitle(title):
+        case let .removePerson(mri):
             writeInt(&buf, Int32(59))
+            FfiConverterString.write(mri, into: &buf)
+            
+        
+        case let .newTitle(title):
+            writeInt(&buf, Int32(60))
             FfiConverterString.write(title, into: &buf)
             
         
         case .createChat:
-            writeInt(&buf, Int32(60))
+            writeInt(&buf, Int32(61))
         
         
         case let .react(id,key):
-            writeInt(&buf, Int32(61))
+            writeInt(&buf, Int32(62))
             FfiConverterString.write(id, into: &buf)
             FfiConverterString.write(key, into: &buf)
             
         
         case let .edit(id):
-            writeInt(&buf, Int32(62))
+            writeInt(&buf, Int32(63))
             FfiConverterString.write(id, into: &buf)
             
         
         case let .editChanged(value):
-            writeInt(&buf, Int32(63))
+            writeInt(&buf, Int32(64))
             FfiConverterString.write(value, into: &buf)
             
         
         case .cancelEdit:
-            writeInt(&buf, Int32(64))
-        
-        
-        case .saveEdit:
             writeInt(&buf, Int32(65))
         
         
-        case let .delete(id):
+        case .saveEdit:
             writeInt(&buf, Int32(66))
+        
+        
+        case let .delete(id):
+            writeInt(&buf, Int32(67))
             FfiConverterString.write(id, into: &buf)
             
         
         case let .retryImage(src):
-            writeInt(&buf, Int32(67))
+            writeInt(&buf, Int32(68))
             FfiConverterString.write(src, into: &buf)
             
         
         case let .openUrl(url):
-            writeInt(&buf, Int32(68))
+            writeInt(&buf, Int32(69))
             FfiConverterString.write(url, into: &buf)
             
         }
@@ -12653,6 +12762,68 @@ public func FfiConverterTypeLanguage_lift(_ buf: RustBuffer) throws -> Language 
 #endif
 public func FfiConverterTypeLanguage_lower(_ value: Language) -> RustBuffer {
     return FfiConverterTypeLanguage.lower(value)
+}
+
+
+
+
+public enum LinkPreviewAction: Equatable, Hashable {
+    
+    /**
+     * Sends the draft without its preview; the same link is not offered again in this draft.
+     */
+    case dismiss
+
+
+
+
+
+}
+
+#if compiler(>=6)
+extension LinkPreviewAction: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeLinkPreviewAction: FfiConverterRustBuffer {
+    typealias SwiftType = LinkPreviewAction
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> LinkPreviewAction {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+        
+        case 1: return .dismiss
+        
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: LinkPreviewAction, into buf: inout [UInt8]) {
+        switch value {
+        
+        
+        case .dismiss:
+            writeInt(&buf, Int32(1))
+        
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeLinkPreviewAction_lift(_ buf: RustBuffer) throws -> LinkPreviewAction {
+    return try FfiConverterTypeLinkPreviewAction.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeLinkPreviewAction_lower(_ value: LinkPreviewAction) -> RustBuffer {
+    return FfiConverterTypeLinkPreviewAction.lower(value)
 }
 
 
@@ -16354,6 +16525,30 @@ fileprivate struct FfiConverterOptionTypeJoinCodeView: FfiConverterRustBuffer {
         switch try readInt(&buf) as Int8 {
         case 0: return nil
         case 1: return try FfiConverterTypeJoinCodeView.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionTypeLinkPreviewView: FfiConverterRustBuffer {
+    typealias SwiftType = LinkPreviewView?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeLinkPreviewView.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeLinkPreviewView.read(from: &buf)
         default: throw UniffiInternalError.unexpectedOptionalTag
         }
     }

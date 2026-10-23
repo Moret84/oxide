@@ -228,6 +228,7 @@ struct MessageRow: View {
             let inline = Set(MessageBlocks.images(message.blocks).map(\.src))
             ForEach(message.images.filter { !inline.contains($0.src) }, id: \.src) { PreviewImage(image: $0) }
             ForEach(message.files, id: \.key) { FileCard(file: $0).frame(width: 340) }
+            if let link = message.linkPreview { LinkPreviewCard(preview: link).frame(width: 340) }
         }
     }
 

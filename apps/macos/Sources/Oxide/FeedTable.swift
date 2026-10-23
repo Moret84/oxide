@@ -408,8 +408,10 @@ struct FeedTable: NSViewRepresentable {
                     }
                 }
                 let images = m.images.reduce(CGFloat(0)) { $0 + PreviewImage.estimatedHeight($1, width: min(width, 640) - 120) + 8 }
+                let link: CGFloat = m.linkPreview.map { $0.image == nil ? 90 : 240 } ?? 0
                 return 56 + CGFloat(lines) * 21 + blocks + images + CGFloat(m.files.count) * 66
                     + CGFloat(m.files.filter { if case .ready = $0.thumbnail?.status { true } else { false } }.count) * 158
+                    + link
                     + (m.reactions.isEmpty ? 0 : 30) + (m.subject == nil ? 0 : 26)
                     + (m.importance == .standard ? 0 : 22)
             }

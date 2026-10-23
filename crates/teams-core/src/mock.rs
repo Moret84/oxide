@@ -93,6 +93,7 @@ fn router(db: Db) -> Router {
         )
         .route("/searchservice/api/v2/query", post(search))
         .route("/v1/objects/demo-image/views/imgo", get(demo_image))
+        .route("/v1/url/info", get(url_info))
         .route("/v1/threads", post(create_chat))
         .route(
             "/v1/users/ME/conversations/{conv}/messages/{id}/properties",
@@ -452,6 +453,24 @@ fn seed() -> Db {
             ]}
         }]).to_string()));
     }
+    // A link sent with its preview, as the web client sends one.
+    if let Some(message) = chats
+        .iter_mut()
+        .find(|c| c.conversation.id == "19:alice_me@unq.gbl.spaces")
+        .and_then(|c| c.messages.first_mut())
+    {
+        message.content = "<p>Salut ! Tu as vu la démo du nouveau client ? <a href=\"https://www.rust-lang.org/\">https://www.rust-lang.org/</a></p>".into();
+        message.properties.insert("links".into(), json!(json!([{
+            "@type": "http://schema.skype.com/HyperLink", "itemid": "0",
+            "url": "https://www.rust-lang.org/", "previewenabled": true,
+            "preview": {
+                "previewurl": "https://eu-api.asm.skype.com/v1/objects/demo-image/views/imgo?n=rust",
+                "previewmeta": {"width": 320, "height": 160},
+                "title": "Rust Programming Language",
+                "description": "A language empowering everyone to build reliable and efficient software."
+            }
+        }]).to_string()));
+    }
     // A real file-shaped fixture exercises rendering without fabricating uploads.
     if let Some(chat) = chats
         .iter_mut()
@@ -770,6 +789,24 @@ async fn search(State(db): State<Db>, Json(body): Json<Value>) -> Json<Value> {
     let total = results.len();
     Json(json!({"EntitySets": [{"ResultSets": [{"Total": total, "MoreResultsAvailable": false,
         "SearchTerms": query.split_whitespace().collect::<Vec<_>>(), "Results": results}]}]}))
+}
+/// The URL preview service: a title from the address, and the demo picture as its image.
+async fn url_info(
+    axum::extract::Query(query): axum::extract::Query<std::collections::HashMap<String, String>>,
+) -> Result<Json<Value>, StatusCode> {
+    let url = query.get("url").ok_or(StatusCode::BAD_REQUEST)?;
+    let host = url::Url::parse(url)
+        .ok()
+        .and_then(|u| u.host_str().map(str::to_owned))
+        .ok_or(StatusCode::BAD_REQUEST)?;
+    let site = host.trim_start_matches("www.");
+    Ok(Json(json!({
+        "url": url,
+        "title": format!("{site} — page de démonstration"),
+        "description": format!("Aperçu servi par le faux service d’aperçus pour {url}."),
+        "thumbnail": format!("https://eu-api.asm.skype.com/v1/objects/demo-image/views/imgo?n={site}"),
+        "thumbnail_meta": {"width": 320, "height": 160},
+    })))
 }
 async fn demo_image() -> (HeaderMap, Vec<u8>) {
     // Generate a deterministic image fixture through the same authenticated AMS route.

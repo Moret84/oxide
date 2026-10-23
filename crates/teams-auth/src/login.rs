@@ -717,6 +717,13 @@ impl Authenticator for TeamsAuthenticator {
         {
             return Ok(url.clone());
         }
+        // `enableUrlPreviewV2Endpoint`: `urlpV2`, else the legacy `urlp`.
+        if service == Service::UrlPreview
+            && let Some(url) = session.services.get("urlp")
+            && !session.services.contains_key("urlpV2")
+        {
+            return Ok(url.clone());
+        }
         // `enableAfdPresenceEndpoint`: requests go through Front Door when it is known.
         if service == Service::UnifiedPresence
             && let Some(url) = session.services.get("presenceUPS")
@@ -813,7 +820,7 @@ impl Authenticator for TeamsAuthenticator {
                 headers.extend(self.session.read().unwrap().region_headers.clone());
                 headers.insert("x-ms-migration", HeaderValue::from_static("True"));
             }
-            Service::Ams => {
+            Service::Ams | Service::UrlPreview => {
                 if !self.insert_ic3(ChatMode::Cae, headers).await? {
                     self.ensure_skype(false).await?;
                     insert_secret(
@@ -875,7 +882,9 @@ impl Authenticator for TeamsAuthenticator {
             Service::TeamsAndChannels | Service::Csa => {
                 self.access_token_locked(CSA, true).await.map(drop)
             }
-            Service::Ams => self.access_token_locked(IC3, true).await.map(drop),
+            Service::Ams | Service::UrlPreview => {
+                self.access_token_locked(IC3, true).await.map(drop)
+            }
             Service::UnifiedPresence => match self.presence_resource() {
                 Ok(resource) => self.access_token_locked(&resource, true).await.map(drop),
                 Err(error) => Err(error),
@@ -1037,6 +1046,8 @@ fn service_urls(table: HashMap<String, String>) -> Result<HashMap<String, Url>, 
                 | "presenceUPS"
                 | "ams"
                 | "amsV2"
+                | "urlp"
+                | "urlpV2"
                 | "calling_conversationServiceUrl"
                 | "calling_conversationServiceBaseUrl"
                 | "calling_callControllerServiceUrl"
