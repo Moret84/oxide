@@ -281,6 +281,12 @@ private struct CardItems: View {
                         ))
                     }
                 }
+            case .emphasis(let items):
+                VStack(alignment: .leading, spacing: 8) { CardItems(items: items, binding: binding) }
+                    .padding(10)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(Theme.input, in: RoundedRectangle(cornerRadius: 8))
+                    .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(Theme.border))
             }
         }
     }
@@ -297,6 +303,7 @@ private struct CardItems: View {
             switch item {
             case .input(let input): [input]
             case .columns(let columns): columns.flatMap { inputs($0.items) }
+            case .emphasis(let items): inputs(items)
             default: []
             }
         }

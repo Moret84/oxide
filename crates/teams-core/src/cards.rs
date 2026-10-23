@@ -31,6 +31,8 @@ pub enum CardItem {
     Input(CardInput),
     /// A `ColumnSet` of two or more visible columns, side by side.
     Columns(Vec<CardColumn>),
+    /// Items on the shaded background of a `Container`, table row or cell with `"style": "emphasis"`.
+    Emphasis(Vec<CardItem>),
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct CardColumn {
@@ -130,10 +132,14 @@ impl Card {
 fn walk<'a>(items: &'a [CardItem], visit: &mut impl FnMut(&'a CardItem)) {
     for item in items {
         visit(item);
-        if let CardItem::Columns(columns) = item {
-            for column in columns {
-                walk(&column.items, visit);
+        match item {
+            CardItem::Columns(columns) => {
+                for column in columns {
+                    walk(&column.items, visit);
+                }
             }
+            CardItem::Emphasis(items) => walk(items, visit),
+            _ => {}
         }
     }
 }
@@ -162,6 +168,7 @@ fn item_texts(items: &[CardItem], parts: &mut Vec<String>) {
                     parts.push(row.join(" "));
                 }
             }
+            CardItem::Emphasis(items) => item_texts(items, parts),
             CardItem::Image(_) | CardItem::Gap { .. } => {}
         }
     }
@@ -457,7 +464,9 @@ fn elements(list: Option<&Value>, out: &mut Card, depth: usize) {
                     image(item, "url", size, out);
                 }
             }
-            "Container" => elements(element.get("items"), out, depth + 1),
+            "Container" => emphasized(element, out, |out| {
+                elements(element.get("items"), out, depth + 1)
+            }),
             "ColumnSet" => column_set(element, out, depth),
             "Table" => {
                 for row in element
@@ -466,14 +475,18 @@ fn elements(list: Option<&Value>, out: &mut Card, depth: usize) {
                     .into_iter()
                     .flatten()
                 {
-                    for cell in row
-                        .get("cells")
-                        .and_then(Value::as_array)
-                        .into_iter()
-                        .flatten()
-                    {
-                        elements(cell.get("items"), out, depth + 1);
-                    }
+                    emphasized(row, out, |out| {
+                        for cell in row
+                            .get("cells")
+                            .and_then(Value::as_array)
+                            .into_iter()
+                            .flatten()
+                        {
+                            emphasized(cell, out, |out| {
+                                elements(cell.get("items"), out, depth + 1)
+                            });
+                        }
+                    });
                 }
             }
             "ActionSet" => actions(element.get("actions"), &mut out.actions),
@@ -492,6 +505,18 @@ fn elements(list: Option<&Value>, out: &mut Card, depth: usize) {
     }
 }
 /// Columns without `isVisible: false`; one alone is drawn as plain items, as before.
+/// What `fill` adds, boxed on the emphasis background when `element` has `"style": "emphasis"`.
+fn emphasized(element: &Value, out: &mut Card, fill: impl FnOnce(&mut Card)) {
+    if !str_at(element, "style").is_some_and(|s| s.eq_ignore_ascii_case("emphasis")) {
+        return fill(out);
+    }
+    let mut inner = Card::default();
+    fill(&mut inner);
+    out.actions.append(&mut inner.actions);
+    if !inner.items.is_empty() {
+        out.items.push(CardItem::Emphasis(inner.items));
+    }
+}
 fn column_set(element: &Value, out: &mut Card, depth: usize) {
     let mut columns = Vec::new();
     for column in element
@@ -939,6 +964,39 @@ mod tests {
         );
         assert_eq!(card.actions[1].url, None);
         assert_eq!(card.actions[2].url, None);
+    }
+    /// GitHub's pull request cards box their status and link in a shaded table row.
+    #[test]
+    fn emphasis_rows_and_containers_are_boxed_and_others_stay_inline() {
+        let text = |t: &str| json!({"type": "TextBlock", "text": t});
+        let cards = from_message(&message(json!([{
+            "contentType": "application/vnd.microsoft.card.adaptive",
+            "content": {"type": "AdaptiveCard", "body": [
+                {"type": "Table", "columns": [{"width": 1}], "rows": [
+                    {"type": "TableRow", "style": "emphasis", "cells": [{"type": "TableCell", "items": [
+                        {"type": "Image", "url": "https://example.test/open.png", "height": "24px"},
+                        text("PR title")
+                    ]}]},
+                    {"type": "TableRow", "cells": [{"type": "TableCell", "items": [text("plain row")]}]}
+                ]},
+                {"type": "Container", "style": "Emphasis", "items": [text("boxed")]},
+                {"type": "Container", "style": "default", "items": [text("inline")]}
+            ]}
+        }])));
+        let card = &cards[0];
+        let CardItem::Emphasis(row) = &card.items[0] else {
+            panic!("{card:?}");
+        };
+        assert!(matches!(row[0], CardItem::Image(_)));
+        assert!(matches!(row[1], CardItem::Text { .. }));
+        assert!(matches!(card.items[1], CardItem::Text { .. }));
+        assert!(matches!(&card.items[2], CardItem::Emphasis(items) if items.len() == 1));
+        assert!(matches!(card.items[3], CardItem::Text { .. }));
+        assert_eq!(card.items.len(), 4);
+        assert_eq!(
+            card.images().next().unwrap().src,
+            "https://example.test/open.png"
+        );
     }
     #[test]
     fn column_sets_stay_side_by_side_without_their_hidden_columns() {
