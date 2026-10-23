@@ -317,14 +317,29 @@ struct PreviewImage: View {
         let scale = min(1, maxSize.width / width, maxSize.height / height)
         return CGSize(width: width * scale, height: height * scale)
     }
+    /// Only a height, as a card's `"height": "24px"` badge: its width follows the picture.
+    static func declaredHeight(_ image: ImageView) -> CGFloat? {
+        guard image.width == nil, let h = image.height, h > 0 else { return nil }
+        return min(CGFloat(h), maxSize.height)
+    }
+    /// An own width, not a flexible one: in an `auto` card column, a flexible image would squeeze its neighbours to nothing.
+    /// Square until the picture loads, then its aspect ratio, capped at `maxSize`.
+    static func width(atHeight height: CGFloat, of picture: NSImage?) -> CGFloat {
+        guard let size = picture?.size, size.width > 0, size.height > 0 else { return height }
+        return min(height * size.width / size.height, maxSize.width)
+    }
     /// Height in a column `width` wide, for the feed's first estimate.
     static func estimatedHeight(_ image: ImageView, width: CGFloat) -> CGFloat {
+        if let height = declaredHeight(image) { return height }
         guard let size = declaredSize(image) else { return 250 }
         return size.height * min(1, width / size.width)
     }
 
     /// A card's avatar or icon: its exact size, and only a glyph if it fails.
-    private var small: Bool { Self.declaredSize(image).map { $0.width <= 160 && $0.height <= 160 } ?? false }
+    private var small: Bool {
+        if let height = Self.declaredHeight(image) { return height <= 160 }
+        return Self.declaredSize(image).map { $0.width <= 160 && $0.height <= 160 } ?? false
+    }
 
     var body: some View {
         if let size = Self.declaredSize(image), small {
@@ -333,6 +348,8 @@ struct PreviewImage: View {
             box
                 .aspectRatio(size.width / size.height, contentMode: .fit)
                 .frame(maxWidth: size.width, alignment: .leading)
+        } else if let height = Self.declaredHeight(image) {
+            box.frame(width: Self.width(atHeight: height, of: store.imageBox(image.src).image), height: height)
         } else {
             box.frame(maxWidth: 420).frame(height: height)
         }
