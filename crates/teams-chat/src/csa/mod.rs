@@ -42,13 +42,14 @@ impl<A: Authenticator> ChatClient<A> {
             "api/v3/teams/users/me?isPrefetch=false&enableMembershipSummary=true&supportsAdditionalSystemGeneratedFolders=true&supportsSliceItems=true", None, HeaderMap::new()).await
     }
     /// Adds a chat to or removes it from a conversation folder, such as Favorites.
+    /// Returns the new hierarchy version the reply carries, which the next change must send.
     pub async fn update_folder_item(
         &self,
         hierarchy_version: i64,
         folder_id: &str,
         conversation_id: &str,
         add: bool,
-    ) -> Result<(), Error> {
+    ) -> Result<Option<i64>, Error> {
         let action = if add { "AddItem" } else { "RemoveItem" };
         let body = json!({
             "folderHierarchyVersion": hierarchy_version,
@@ -64,8 +65,10 @@ impl<A: Authenticator> ChatClient<A> {
             Some(body),
             HeaderMap::new(),
         )
+        .await?
+        .json::<ConversationFolders>()
         .await
-        .map(drop)
+        .map_or(Ok(None), |folders| Ok(folders.folder_hierarchy_version))
     }
     pub async fn chat(&self, id: &str) -> Result<CsaChat, Error> {
         self.service_json(

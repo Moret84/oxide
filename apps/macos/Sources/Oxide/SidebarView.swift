@@ -124,11 +124,11 @@ private struct ChatList: View, Equatable {
                     let recent = chats.filter { !$0.pinned }
                     if !pinned.isEmpty {
                         header(L("ui.sidebar_view.favorites"), top: 8)
-                        ForEach(pinned, id: \.id) { ChatRowView(row: $0, focused: focused, onSelect: { focused = true }, onLeave: { leaving = $0 }).equatable() }
+                        ForEach(pinned, id: \.listId) { ChatRowView(row: $0, focused: focused, onSelect: { focused = true }, onLeave: { leaving = $0 }).equatable() }
                     }
                     if !recent.isEmpty {
                         header(L("ui.sidebar_view.recent"), top: pinned.isEmpty ? 8 : 14)
-                        ForEach(recent, id: \.id) { ChatRowView(row: $0, focused: focused, onSelect: { focused = true }, onLeave: { leaving = $0 }).equatable() }
+                        ForEach(recent, id: \.listId) { ChatRowView(row: $0, focused: focused, onSelect: { focused = true }, onLeave: { leaving = $0 }).equatable() }
                     }
                     if chats.isEmpty {
                         if loading {
@@ -153,7 +153,7 @@ private struct ChatList: View, Equatable {
             .focusEffectDisabled()
             .onKeyPress(.upArrow) { move(-1) }
             .onKeyPress(.downArrow) { move(1) }
-            .onChange(of: chats.first(where: \.selected)?.id) { _, id in
+            .onChange(of: chats.first(where: \.selected)?.listId) { _, id in
                 if focused, let id { proxy.scrollTo(id) }
             }
             .accessibilityLabel(L("ui.sidebar_view.chats"))
@@ -179,6 +179,12 @@ private struct ChatList: View, Equatable {
             .foregroundStyle(Theme.subtle)
             .padding(EdgeInsets(top: top, leading: 8, bottom: 6, trailing: 8))
     }
+}
+
+private extension ChatRow {
+    /// Differs between Favorites and Recent: a row moved by pinning is built anew, else it keeps its
+    /// hover, which loses its exit, and the context menu it was first given.
+    var listId: String { (pinned ? "pinned:" : "recent:") + id }
 }
 
 /// Compared on its data only: the closures are new on every pass and would defeat diffing.
@@ -249,7 +255,7 @@ private struct ChatRowView: View, Equatable {
         .buttonStyle(.plain).pointerCursor()
         .onHover { hovered = $0 }
         .help(row.title)
-        .id(row.id)
+        .id(row.listId)
         .accessibilityAddTraits(row.selected ? .isSelected : [])
         .contextMenu {
             Button(row.pinned ? L("ui.chat_admin.unpin") : L("ui.chat_admin.pin")) {
