@@ -10194,6 +10194,8 @@ public indirect enum CardItemView: Equatable, Hashable {
     )
     case columns(columns: [CardColumnView]
     )
+    case emphasis(items: [CardItemView]
+    )
 
 
 
@@ -10234,6 +10236,9 @@ public struct FfiConverterTypeCardItemView: FfiConverterRustBuffer {
         )
         
         case 7: return .columns(columns: try FfiConverterSequenceTypeCardColumnView.read(from: &buf)
+        )
+        
+        case 8: return .emphasis(items: try FfiConverterSequenceTypeCardItemView.read(from: &buf)
         )
         
         default: throw UniffiInternalError.unexpectedEnumCase
@@ -10279,6 +10284,11 @@ public struct FfiConverterTypeCardItemView: FfiConverterRustBuffer {
         case let .columns(columns):
             writeInt(&buf, Int32(7))
             FfiConverterSequenceTypeCardColumnView.write(columns, into: &buf)
+            
+        
+        case let .emphasis(items):
+            writeInt(&buf, Int32(8))
+            FfiConverterSequenceTypeCardItemView.write(items, into: &buf)
             
         }
     }

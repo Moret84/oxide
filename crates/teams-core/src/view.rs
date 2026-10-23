@@ -295,6 +295,7 @@ pub enum CardItemView {
     Image { image: ImageView },
     Input { input: CardInputView },
     Columns { columns: Vec<CardColumnView> },
+    Emphasis { items: Vec<CardItemView> },
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash, uniffi::Record)]
 pub struct CardColumnView {
@@ -1427,6 +1428,9 @@ impl App {
                             items: self.card_item_views(&column.items),
                         })
                         .collect(),
+                },
+                CardItem::Emphasis(items) => CardItemView::Emphasis {
+                    items: self.card_item_views(items),
                 },
             })
             .collect()
