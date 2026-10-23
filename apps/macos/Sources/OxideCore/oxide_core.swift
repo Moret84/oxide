@@ -6064,64 +6064,6 @@ public func FfiConverterTypePresenceView_lower(_ value: PresenceView) -> RustBuf
 }
 
 
-public struct QuickReaction: Equatable, Hashable {
-    public var key: String
-    public var emoji: String
-    public var name: String
-
-    // Default memberwise initializers are never public by default, so we
-    // declare one manually.
-    public init(key: String, emoji: String, name: String) {
-        self.key = key
-        self.emoji = emoji
-        self.name = name
-    }
-
-    
-
-    
-}
-
-#if compiler(>=6)
-extension QuickReaction: Sendable {}
-#endif
-
-#if swift(>=5.8)
-@_documentation(visibility: private)
-#endif
-public struct FfiConverterTypeQuickReaction: FfiConverterRustBuffer {
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> QuickReaction {
-        return
-            try QuickReaction(
-                key: FfiConverterString.read(from: &buf), 
-                emoji: FfiConverterString.read(from: &buf), 
-                name: FfiConverterString.read(from: &buf)
-        )
-    }
-
-    public static func write(_ value: QuickReaction, into buf: inout [UInt8]) {
-        FfiConverterString.write(value.key, into: &buf)
-        FfiConverterString.write(value.emoji, into: &buf)
-        FfiConverterString.write(value.name, into: &buf)
-    }
-}
-
-
-#if swift(>=5.8)
-@_documentation(visibility: private)
-#endif
-public func FfiConverterTypeQuickReaction_lift(_ buf: RustBuffer) throws -> QuickReaction {
-    return try FfiConverterTypeQuickReaction.lift(buf)
-}
-
-#if swift(>=5.8)
-@_documentation(visibility: private)
-#endif
-public func FfiConverterTypeQuickReaction_lower(_ value: QuickReaction) -> RustBuffer {
-    return FfiConverterTypeQuickReaction.lower(value)
-}
-
-
 public struct ReactionView: Equatable, Hashable {
     public var key: String
     public var emoji: String
@@ -16960,31 +16902,6 @@ fileprivate struct FfiConverterSequenceTypePostView: FfiConverterRustBuffer {
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
-fileprivate struct FfiConverterSequenceTypeQuickReaction: FfiConverterRustBuffer {
-    typealias SwiftType = [QuickReaction]
-
-    public static func write(_ value: [QuickReaction], into buf: inout [UInt8]) {
-        let len = Int32(value.count)
-        writeInt(&buf, len)
-        for item in value {
-            FfiConverterTypeQuickReaction.write(item, into: &buf)
-        }
-    }
-
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [QuickReaction] {
-        let len: Int32 = try readInt(&buf)
-        var seq = [QuickReaction]()
-        seq.reserveCapacity(Int(len))
-        for _ in 0 ..< len {
-            seq.append(try FfiConverterTypeQuickReaction.read(from: &buf))
-        }
-        return seq
-    }
-}
-
-#if swift(>=5.8)
-@_documentation(visibility: private)
-#endif
 fileprivate struct FfiConverterSequenceTypeReactionView: FfiConverterRustBuffer {
     typealias SwiftType = [ReactionView]
 
@@ -17335,16 +17252,6 @@ public func isLoginCallback(url: String) -> Bool  {
 })
 }
 /**
- * Teams' quick bar; empty until the catalog is downloaded, like `composer_emojis`.
- */
-public func quickReactions() -> [QuickReaction]  {
-    return try!  FfiConverterSequenceTypeQuickReaction.lift(try! rustCall() {
-        uniffiCallStatus in
-    uniffi_teams_core_fn_func_quick_reactions(uniffiCallStatus
-    )
-})
-}
-/**
  * Where the core keeps its own downloads (emoticon and sticker catalogs); called before the core boots.
  */
 public func setCacheDirectory(path: String)  {try! rustCall() {
@@ -17420,9 +17327,6 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_teams_core_checksum_func_is_login_callback() != 46075) {
-        return InitializationResult.apiChecksumMismatch
-    }
-    if (uniffi_teams_core_checksum_func_quick_reactions() != 63015) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_teams_core_checksum_func_set_cache_directory() != 21662) {

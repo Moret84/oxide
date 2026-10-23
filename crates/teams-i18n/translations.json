@@ -4255,10 +4255,6 @@
     "fr": "Chargement de l’image",
     "en": "Loading image"
   },
-  "ui.message_row.more_reactions": {
-    "fr": "Autres réactions…",
-    "en": "More reactions…"
-  },
   "ui.message_row.open_link": {
     "fr": "Ouvrir le lien {link}",
     "en": "Open link {link}"
@@ -4270,10 +4266,6 @@
   "ui.message_row.react": {
     "fr": "Réagir",
     "en": "React"
-  },
-  "ui.message_row.react_2": {
-    "fr": "Réagir : {name}",
-    "en": "React: {name}"
   },
   "ui.message_row.reply": {
     "fr": "Répondre",

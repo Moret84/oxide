@@ -5,9 +5,6 @@ use std::path::{Path, PathBuf};
 use std::sync::{Arc, OnceLock, RwLock};
 use std::time::Duration;
 
-/// Teams' quick-bar reactions in its order; glyphs and names come from the catalog.
-const QUICK_KEYS: [&str; 6] = ["like", "heart", "laugh", "surprised", "sad", "angry"];
-
 /// The web client's `staticsPath`.
 pub(crate) const STATICS: &str = "https://statics.teams.cdn.office.net";
 /// `emoticonAssetVersion` and `emojiMetadataCdnPath` when the web client's configuration was never read.
@@ -295,19 +292,6 @@ pub fn reaction(key: &str) -> (String, String) {
         None => (format!(":{fallback}:"), fallback),
     }
 }
-/// The quick bar's reactions as `(key, glyph, name)`; empty until the catalog is downloaded.
-pub fn quick_reactions() -> Vec<(String, String, String)> {
-    let Some(catalog) = current() else {
-        return Vec::new();
-    };
-    QUICK_KEYS
-        .iter()
-        .filter_map(|key| {
-            let (glyph, name) = catalog.keys.get(*key)?.clone();
-            Some(((*key).to_owned(), glyph, name))
-        })
-        .collect()
-}
 /// The catalog emoticon whose artwork shows this reaction, if it has one.
 pub fn artwork(key: &str) -> Option<String> {
     current()
@@ -375,11 +359,6 @@ pub(crate) mod tests {
         );
         assert_eq!(artwork("clap").as_deref(), Some("clap"));
         assert_eq!(artwork("clap-tone2"), None);
-    }
-    #[test]
-    fn quick_bar_keeps_teams_order_and_skips_reactions_missing_from_the_catalog() {
-        let keys: Vec<_> = quick_reactions().into_iter().map(|(k, ..)| k).collect();
-        assert_eq!(keys, ["like", "heart", "laugh"]);
     }
     #[test]
     fn unreadable_or_empty_manifests_are_rejected() {

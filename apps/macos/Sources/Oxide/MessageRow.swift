@@ -72,13 +72,7 @@ struct MessageRow: View {
     @ViewBuilder private var menu: some View {
         if !message.deleted {
             if message.canReact {
-                Menu(L("ui.message_row.react")) {
-                    ForEach(store.reactions, id: \.key) { reaction in
-                        Button("\(reaction.emoji) \(reaction.name)") { react(reaction.key) }
-                    }
-                    Divider()
-                    Button(L("ui.message_row.more_reactions")) { pickerOpen = true }
-                }
+                Button(L("ui.message_row.react")) { pickerOpen = true }
             }
             if let reply { Button(L("ui.message_row.reply"), action: reply) }
             if !text.isEmpty { Button(L("ui.message_row.copy_text")) { copy() } }
@@ -94,9 +88,6 @@ struct MessageRow: View {
     @ViewBuilder private var accessibilityCommands: some View {
         if message.canReact {
             Button(L("ui.message_row.react")) { pickerOpen = true }
-            ForEach(store.reactions.prefix(3), id: \.key) { reaction in
-                Button(L("ui.message_row.react_2", ["name": reaction.name])) { react(reaction.key) }
-            }
         }
         if let reply { Button(L("ui.message_row.reply"), action: reply) }
         Button(L("ui.message_row.copy_text")) { copy() }
@@ -109,9 +100,6 @@ struct MessageRow: View {
         }
     }
 
-    private func react(_ key: String) {
-        store.send(.react(id: message.id, key: key))
-    }
     private func copy() { NSPasteboard.copy(text) }
 
     /// One VoiceOver element per message: who, when, what, and its reactions.
@@ -190,7 +178,7 @@ struct MessageRow: View {
                             let mine = message.reactions.first {
                                 $0.mine && $0.emojiId == item.id
                             }
-                            let key = mine?.key ?? store.reactions.first { $0.emoji == item.text }?.key ?? item.id
+                            let key = mine?.key ?? item.id
                             pickerOpen = false
                             store.send(.react(id: message.id, key: key))
                         }

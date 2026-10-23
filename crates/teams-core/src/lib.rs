@@ -382,13 +382,6 @@ pub struct ImageData {
     pub rgba: Vec<u8>,
 }
 
-#[derive(Debug, Clone, uniffi::Record)]
-pub struct QuickReaction {
-    pub key: String,
-    pub emoji: String,
-    pub name: String,
-}
-
 struct State {
     app: App,
     snapshot: Snapshot,
@@ -758,14 +751,6 @@ pub fn is_login_callback(url: String) -> bool {
 #[uniffi::export]
 pub fn is_login_allowed(url: String) -> bool {
     login::is_allowed(&url)
-}
-/// Teams' quick bar; empty until the catalog is downloaded, like `composer_emojis`.
-#[uniffi::export]
-pub fn quick_reactions() -> Vec<QuickReaction> {
-    emoji::quick_reactions()
-        .into_iter()
-        .map(|(key, emoji, name)| QuickReaction { key, emoji, name })
-        .collect()
 }
 /// The Teams emoticon catalog in the app's language; empty until downloaded, then `Effect::EmojiCatalogChanged`.
 #[uniffi::export]
