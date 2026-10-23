@@ -74,7 +74,6 @@ final class Store {
     private static let decoder = DispatchQueue(label: "teams.images", qos: .userInitiated)
 
     /// From the catalog, in the app's language: fetched again by `reloadEmoji`.
-    private(set) var reactions = quickReactions()
     private(set) var composerEmoji = composerEmojis()
     /// Downloaded with the emoticons; empty until the core has it.
     private(set) var stickers = stickerCategories()
@@ -137,9 +136,8 @@ final class Store {
         stickers = stickerCategories()
     }
 
-    /// The catalog, and the quick bar drawn from it, are empty until the core has downloaded it.
+    /// The catalog is empty until the core has downloaded it.
     private func reloadEmoji() {
-        reactions = quickReactions()
         composerEmoji = composerEmojis()
         TeamsEmojiCatalog.update(composerEmoji)
     }
