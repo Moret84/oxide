@@ -241,6 +241,8 @@ struct Avatar: View {
         .animation(Motion.standard, value: photo == nil)
         .frame(width: size, height: size)
         .clipShape(shape)
+        // A hairline edge, so light photos and app icons don't melt into the background.
+        .overlay(shape.strokeBorder(Color.primary.opacity(0.1), lineWidth: 1))
         // Asks again if the core evicts the photo while it is on screen.
         .task(id: "\(id)|\(name)|\(photo == nil)") {
             if photo == nil { store.requestAvatar(id: id, name: name) }

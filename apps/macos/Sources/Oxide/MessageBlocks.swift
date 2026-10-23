@@ -219,8 +219,14 @@ private struct CardBlock: View {
             }
         }
         .padding(12)
+        .padding(.top, card.accent == nil ? 0 : 3)
         .frame(maxWidth: 440, alignment: .leading)
         .card(radius: 10)
+        // A connector card's `themeColor`, as Teams draws it: a bar along the top edge.
+        .overlay(alignment: .top) {
+            if let accent = card.accent { Theme.rgb(accent).frame(height: 3) }
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 10))
     }
 
     private func binding(_ input: CardInputView) -> Binding<String> {

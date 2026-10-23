@@ -39,6 +39,8 @@ macro_rules! ctx {
 }
 #[path = "activity.rs"]
 pub(crate) mod activity;
+#[path = "bot_apps.rs"]
+pub(crate) mod bot_apps;
 #[path = "calendar.rs"]
 pub(crate) mod calendar;
 #[path = "call.rs"]
@@ -296,6 +298,8 @@ pub(crate) struct App {
     members_errors: Tracked<HashMap<String, String>, { feeds::COMPOSER_MEMBERS }>,
     /// Authors and reactors already looked up in the directory, found or not.
     profiles_requested: HashSet<String>,
+    /// Bots' apps by app id: their catalog name and icon.
+    bot_apps: Tracked<HashMap<String, bot_apps::Lookup>, { feeds::ALL }>,
     /// Reaction lists already scanned for names, by message id and raw `emotions`.
     reactions_scanned: HashSet<u64>,
     /// Wall-clock minute the time-dependent parts were last rebuilt for.
@@ -332,6 +336,11 @@ pub(crate) enum Msg {
     ShowError(String),
     Activity(ActivityMsg),
     LoadAvatar(String, String),
+    BotAppLoaded {
+        generation: u64,
+        id: String,
+        result: Result<Vec<teams_chat::AppDefinition>, String>,
+    },
     AvatarLoaded {
         generation: u64,
         id: String,
@@ -488,6 +497,7 @@ impl App {
             chats: Tracked::new(vec![]),
             favorites: Tracked::new(None),
             profiles: Tracked::new(Arc::default()),
+            bot_apps: Tracked::new(HashMap::new()),
             details: Tracked::new(HashMap::new()),
             resolved_ids: HashSet::new(),
             resolving_chats: false,
@@ -670,6 +680,8 @@ impl App {
     pub(crate) fn relocalize(&mut self) {
         self.conv.relocalize();
         self.calendar.relocalize();
+        // The catalog names apps in the language asked for.
+        self.bot_apps.clear();
         for team in self.teams.iter_mut() {
             let id = team.id.clone();
             for channel in team
@@ -730,6 +742,7 @@ impl App {
             chats,
             favorites,
             profiles,
+            bot_apps,
             details,
             resolved_ids: _,
             resolving_chats: _,
@@ -795,6 +808,7 @@ impl App {
             chats.take_changes(),
             favorites.take_changes(),
             profiles.take_changes(),
+            bot_apps.take_changes(),
             details.take_changes(),
             teams.take_changes(),
             teams_problem.take_changes(),
@@ -1244,6 +1258,7 @@ impl App {
                 Task::none()
             }
             Msg::AvatarLoaded { generation: g, .. }
+            | Msg::BotAppLoaded { generation: g, .. }
             | Msg::ChatsResolved(g, _)
             | Msg::WorkspaceLoaded(g, _)
             | Msg::ChannelsLoaded { generation: g, .. }
@@ -2138,12 +2153,18 @@ impl App {
                 if name == "Participant" || relocalized(&name, &PLACEHOLDERS).is_some() {
                     return Task::none();
                 }
+                if id.starts_with("28:")
+                    && let Some(task) = self.load_bot_avatar(&id, &name)
+                {
+                    return task;
+                }
                 if let Some(mri) = self.avatar_mri(&id) {
                     self.avatars.lock().unwrap().request(id, mri, name);
                     self.mark(Parts::AVATARS);
                 }
                 Task::none()
             }
+            Msg::BotAppLoaded { id, result, .. } => self.bot_app_loaded(id, result),
             Msg::AvatarLoaded { id, result, .. } => {
                 self.avatars.lock().unwrap().finish(id, result);
                 self.mark(Parts::AVATARS);
