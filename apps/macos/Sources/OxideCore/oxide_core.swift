@@ -3034,6 +3034,67 @@ public func FfiConverterTypeChatRow_lower(_ value: ChatRow) -> RustBuffer {
 }
 
 
+/**
+ * A card waiting in the draft, from a message extension.
+ */
+public struct ComposerCardView: Equatable, Hashable {
+    public var index: UInt32
+    public var appName: String
+    public var card: CardView
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(index: UInt32, appName: String, card: CardView) {
+        self.index = index
+        self.appName = appName
+        self.card = card
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension ComposerCardView: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeComposerCardView: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ComposerCardView {
+        return
+            try ComposerCardView(
+                index: FfiConverterUInt32.read(from: &buf), 
+                appName: FfiConverterString.read(from: &buf), 
+                card: FfiConverterTypeCardView.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: ComposerCardView, into buf: inout [UInt8]) {
+        FfiConverterUInt32.write(value.index, into: &buf)
+        FfiConverterString.write(value.appName, into: &buf)
+        FfiConverterTypeCardView.write(value.card, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeComposerCardView_lift(_ buf: RustBuffer) throws -> ComposerCardView {
+    return try FfiConverterTypeComposerCardView.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeComposerCardView_lower(_ value: ComposerCardView) -> RustBuffer {
+    return FfiConverterTypeComposerCardView.lower(value)
+}
+
+
 public struct ComposerEmoji: Equatable, Hashable {
     public var id: String
     public var name: String
@@ -3217,13 +3278,20 @@ public struct ComposerView: Equatable, Hashable {
      * Files attached to the draft, uploading or ready.
      */
     public var attachments: [PendingFileView]
+    /**
+     * Cards from message extensions, sent with the draft.
+     */
+    public var cards: [ComposerCardView]
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
     public init(sending: Bool, draft: String, draftRev: UInt64, draftCursor: UInt32, mentionRanges: [MentionRange], draftFormats: [ComposerFormat], mentionLoading: Bool, mentionError: String?, subject: String, importance: Importance, editText: String, 
         /**
          * Files attached to the draft, uploading or ready.
-         */attachments: [PendingFileView]) {
+         */attachments: [PendingFileView], 
+        /**
+         * Cards from message extensions, sent with the draft.
+         */cards: [ComposerCardView]) {
         self.sending = sending
         self.draft = draft
         self.draftRev = draftRev
@@ -3236,6 +3304,7 @@ public struct ComposerView: Equatable, Hashable {
         self.importance = importance
         self.editText = editText
         self.attachments = attachments
+        self.cards = cards
     }
 
     
@@ -3265,7 +3334,8 @@ public struct FfiConverterTypeComposerView: FfiConverterRustBuffer {
                 subject: FfiConverterString.read(from: &buf), 
                 importance: FfiConverterTypeImportance.read(from: &buf), 
                 editText: FfiConverterString.read(from: &buf), 
-                attachments: FfiConverterSequenceTypePendingFileView.read(from: &buf)
+                attachments: FfiConverterSequenceTypePendingFileView.read(from: &buf), 
+                cards: FfiConverterSequenceTypeComposerCardView.read(from: &buf)
         )
     }
 
@@ -3282,6 +3352,7 @@ public struct FfiConverterTypeComposerView: FfiConverterRustBuffer {
         FfiConverterTypeImportance.write(value.importance, into: &buf)
         FfiConverterString.write(value.editText, into: &buf)
         FfiConverterSequenceTypePendingFileView.write(value.attachments, into: &buf)
+        FfiConverterSequenceTypeComposerCardView.write(value.cards, into: &buf)
     }
 }
 
@@ -3651,6 +3722,466 @@ public func FfiConverterTypeEntryView_lift(_ buf: RustBuffer) throws -> EntryVie
 #endif
 public func FfiConverterTypeEntryView_lower(_ value: EntryView) -> RustBuffer {
     return FfiConverterTypeEntryView.lower(value)
+}
+
+
+public struct ExtensionAppView: Equatable, Hashable {
+    public var id: String
+    public var name: String
+    public var icon: String?
+    public var commands: [ExtensionCommandView]
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(id: String, name: String, icon: String?, commands: [ExtensionCommandView]) {
+        self.id = id
+        self.name = name
+        self.icon = icon
+        self.commands = commands
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension ExtensionAppView: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeExtensionAppView: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ExtensionAppView {
+        return
+            try ExtensionAppView(
+                id: FfiConverterString.read(from: &buf), 
+                name: FfiConverterString.read(from: &buf), 
+                icon: FfiConverterOptionString.read(from: &buf), 
+                commands: FfiConverterSequenceTypeExtensionCommandView.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: ExtensionAppView, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.id, into: &buf)
+        FfiConverterString.write(value.name, into: &buf)
+        FfiConverterOptionString.write(value.icon, into: &buf)
+        FfiConverterSequenceTypeExtensionCommandView.write(value.commands, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeExtensionAppView_lift(_ buf: RustBuffer) throws -> ExtensionAppView {
+    return try FfiConverterTypeExtensionAppView.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeExtensionAppView_lower(_ value: ExtensionAppView) -> RustBuffer {
+    return FfiConverterTypeExtensionAppView.lower(value)
+}
+
+
+public struct ExtensionCommandView: Equatable, Hashable {
+    public var id: String
+    public var title: String
+    public var description: String
+    /**
+     * Opens a form rather than a search.
+     */
+    public var action: Bool
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(id: String, title: String, description: String, 
+        /**
+         * Opens a form rather than a search.
+         */action: Bool) {
+        self.id = id
+        self.title = title
+        self.description = description
+        self.action = action
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension ExtensionCommandView: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeExtensionCommandView: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ExtensionCommandView {
+        return
+            try ExtensionCommandView(
+                id: FfiConverterString.read(from: &buf), 
+                title: FfiConverterString.read(from: &buf), 
+                description: FfiConverterString.read(from: &buf), 
+                action: FfiConverterBool.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: ExtensionCommandView, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.id, into: &buf)
+        FfiConverterString.write(value.title, into: &buf)
+        FfiConverterString.write(value.description, into: &buf)
+        FfiConverterBool.write(value.action, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeExtensionCommandView_lift(_ buf: RustBuffer) throws -> ExtensionCommandView {
+    return try FfiConverterTypeExtensionCommandView.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeExtensionCommandView_lower(_ value: ExtensionCommandView) -> RustBuffer {
+    return FfiConverterTypeExtensionCommandView.lower(value)
+}
+
+
+/**
+ * An action command's form.
+ */
+public struct ExtensionFormView: Equatable, Hashable {
+    public var title: String
+    public var card: CardView?
+    /**
+     * A web form only Teams can host, offered in the browser.
+     */
+    public var url: String?
+    public var busy: Bool
+    public var error: String?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(title: String, card: CardView?, 
+        /**
+         * A web form only Teams can host, offered in the browser.
+         */url: String?, busy: Bool, error: String?) {
+        self.title = title
+        self.card = card
+        self.url = url
+        self.busy = busy
+        self.error = error
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension ExtensionFormView: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeExtensionFormView: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ExtensionFormView {
+        return
+            try ExtensionFormView(
+                title: FfiConverterString.read(from: &buf), 
+                card: FfiConverterOptionTypeCardView.read(from: &buf), 
+                url: FfiConverterOptionString.read(from: &buf), 
+                busy: FfiConverterBool.read(from: &buf), 
+                error: FfiConverterOptionString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: ExtensionFormView, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.title, into: &buf)
+        FfiConverterOptionTypeCardView.write(value.card, into: &buf)
+        FfiConverterOptionString.write(value.url, into: &buf)
+        FfiConverterBool.write(value.busy, into: &buf)
+        FfiConverterOptionString.write(value.error, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeExtensionFormView_lift(_ buf: RustBuffer) throws -> ExtensionFormView {
+    return try FfiConverterTypeExtensionFormView.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeExtensionFormView_lower(_ value: ExtensionFormView) -> RustBuffer {
+    return FfiConverterTypeExtensionFormView.lower(value)
+}
+
+
+/**
+ * A page the bot wants opened: sign-in or settings, which happen in the browser.
+ */
+public struct ExtensionLinkView: Equatable, Hashable {
+    public var url: String
+    public var title: String
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(url: String, title: String) {
+        self.url = url
+        self.title = title
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension ExtensionLinkView: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeExtensionLinkView: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ExtensionLinkView {
+        return
+            try ExtensionLinkView(
+                url: FfiConverterString.read(from: &buf), 
+                title: FfiConverterString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: ExtensionLinkView, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.url, into: &buf)
+        FfiConverterString.write(value.title, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeExtensionLinkView_lift(_ buf: RustBuffer) throws -> ExtensionLinkView {
+    return try FfiConverterTypeExtensionLinkView.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeExtensionLinkView_lower(_ value: ExtensionLinkView) -> RustBuffer {
+    return FfiConverterTypeExtensionLinkView.lower(value)
+}
+
+
+public struct ExtensionResultView: Equatable, Hashable {
+    public var index: UInt32
+    public var title: String
+    public var text: String
+    public var image: String?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(index: UInt32, title: String, text: String, image: String?) {
+        self.index = index
+        self.title = title
+        self.text = text
+        self.image = image
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension ExtensionResultView: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeExtensionResultView: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ExtensionResultView {
+        return
+            try ExtensionResultView(
+                index: FfiConverterUInt32.read(from: &buf), 
+                title: FfiConverterString.read(from: &buf), 
+                text: FfiConverterString.read(from: &buf), 
+                image: FfiConverterOptionString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: ExtensionResultView, into buf: inout [UInt8]) {
+        FfiConverterUInt32.write(value.index, into: &buf)
+        FfiConverterString.write(value.title, into: &buf)
+        FfiConverterString.write(value.text, into: &buf)
+        FfiConverterOptionString.write(value.image, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeExtensionResultView_lift(_ buf: RustBuffer) throws -> ExtensionResultView {
+    return try FfiConverterTypeExtensionResultView.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeExtensionResultView_lower(_ value: ExtensionResultView) -> RustBuffer {
+    return FfiConverterTypeExtensionResultView.lower(value)
+}
+
+
+public struct ExtensionsView: Equatable, Hashable {
+    public var appsLoading: Bool
+    public var apps: [ExtensionAppView]
+    public var appsError: String?
+    /**
+     * Why the list is empty: installed apps counted and the answers' keys, to report.
+     */
+    public var appsNote: String?
+    public var appId: String?
+    public var commandId: String?
+    public var query: String
+    public var loading: Bool
+    public var results: [ExtensionResultView]
+    /**
+     * Results as tiles rather than a list.
+     */
+    public var grid: Bool
+    /**
+     * The bot's text, a hint, or why the search failed.
+     */
+    public var message: String?
+    public var link: ExtensionLinkView?
+    public var form: ExtensionFormView?
+    /**
+     * A picked result or a form is being turned into a card.
+     */
+    public var inserting: Bool
+    /**
+     * Bumped when a card went into the draft, so the flyout closes.
+     */
+    public var inserted: UInt32
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(appsLoading: Bool, apps: [ExtensionAppView], appsError: String?, 
+        /**
+         * Why the list is empty: installed apps counted and the answers' keys, to report.
+         */appsNote: String?, appId: String?, commandId: String?, query: String, loading: Bool, results: [ExtensionResultView], 
+        /**
+         * Results as tiles rather than a list.
+         */grid: Bool, 
+        /**
+         * The bot's text, a hint, or why the search failed.
+         */message: String?, link: ExtensionLinkView?, form: ExtensionFormView?, 
+        /**
+         * A picked result or a form is being turned into a card.
+         */inserting: Bool, 
+        /**
+         * Bumped when a card went into the draft, so the flyout closes.
+         */inserted: UInt32) {
+        self.appsLoading = appsLoading
+        self.apps = apps
+        self.appsError = appsError
+        self.appsNote = appsNote
+        self.appId = appId
+        self.commandId = commandId
+        self.query = query
+        self.loading = loading
+        self.results = results
+        self.grid = grid
+        self.message = message
+        self.link = link
+        self.form = form
+        self.inserting = inserting
+        self.inserted = inserted
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension ExtensionsView: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeExtensionsView: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ExtensionsView {
+        return
+            try ExtensionsView(
+                appsLoading: FfiConverterBool.read(from: &buf), 
+                apps: FfiConverterSequenceTypeExtensionAppView.read(from: &buf), 
+                appsError: FfiConverterOptionString.read(from: &buf), 
+                appsNote: FfiConverterOptionString.read(from: &buf), 
+                appId: FfiConverterOptionString.read(from: &buf), 
+                commandId: FfiConverterOptionString.read(from: &buf), 
+                query: FfiConverterString.read(from: &buf), 
+                loading: FfiConverterBool.read(from: &buf), 
+                results: FfiConverterSequenceTypeExtensionResultView.read(from: &buf), 
+                grid: FfiConverterBool.read(from: &buf), 
+                message: FfiConverterOptionString.read(from: &buf), 
+                link: FfiConverterOptionTypeExtensionLinkView.read(from: &buf), 
+                form: FfiConverterOptionTypeExtensionFormView.read(from: &buf), 
+                inserting: FfiConverterBool.read(from: &buf), 
+                inserted: FfiConverterUInt32.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: ExtensionsView, into buf: inout [UInt8]) {
+        FfiConverterBool.write(value.appsLoading, into: &buf)
+        FfiConverterSequenceTypeExtensionAppView.write(value.apps, into: &buf)
+        FfiConverterOptionString.write(value.appsError, into: &buf)
+        FfiConverterOptionString.write(value.appsNote, into: &buf)
+        FfiConverterOptionString.write(value.appId, into: &buf)
+        FfiConverterOptionString.write(value.commandId, into: &buf)
+        FfiConverterString.write(value.query, into: &buf)
+        FfiConverterBool.write(value.loading, into: &buf)
+        FfiConverterSequenceTypeExtensionResultView.write(value.results, into: &buf)
+        FfiConverterBool.write(value.grid, into: &buf)
+        FfiConverterOptionString.write(value.message, into: &buf)
+        FfiConverterOptionTypeExtensionLinkView.write(value.link, into: &buf)
+        FfiConverterOptionTypeExtensionFormView.write(value.form, into: &buf)
+        FfiConverterBool.write(value.inserting, into: &buf)
+        FfiConverterUInt32.write(value.inserted, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeExtensionsView_lift(_ buf: RustBuffer) throws -> ExtensionsView {
+    return try FfiConverterTypeExtensionsView.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeExtensionsView_lower(_ value: ExtensionsView) -> RustBuffer {
+    return FfiConverterTypeExtensionsView.lower(value)
 }
 
 
@@ -7629,6 +8160,7 @@ public struct Update: Equatable, Hashable {
     public var chatAdmin: ChatAdminView?
     public var teamsAdmin: TeamsAdminView?
     public var gifs: GifsView?
+    public var extensions: ExtensionsView?
     public var search: SearchView?
 
     // Default memberwise initializers are never public by default, so we
@@ -7645,7 +8177,7 @@ public struct Update: Equatable, Hashable {
          */feed: FeedPart?, typing: TypingPart?, members: MembersView?, files: FilesView?, 
         /**
          * The folder browser: global Files view, or a channel's files.
-         */browser: BrowserView?, newChat: NewChatPart?, notifications: NotificationsView?, me: MeView?, chatAdmin: ChatAdminView?, teamsAdmin: TeamsAdminView?, gifs: GifsView?, search: SearchView?) {
+         */browser: BrowserView?, newChat: NewChatPart?, notifications: NotificationsView?, me: MeView?, chatAdmin: ChatAdminView?, teamsAdmin: TeamsAdminView?, gifs: GifsView?, extensions: ExtensionsView?, search: SearchView?) {
         self.avatarIds = avatarIds
         self.imageSrcs = imageSrcs
         self.calendar = calendar
@@ -7667,6 +8199,7 @@ public struct Update: Equatable, Hashable {
         self.chatAdmin = chatAdmin
         self.teamsAdmin = teamsAdmin
         self.gifs = gifs
+        self.extensions = extensions
         self.search = search
     }
 
@@ -7707,6 +8240,7 @@ public struct FfiConverterTypeUpdate: FfiConverterRustBuffer {
                 chatAdmin: FfiConverterOptionTypeChatAdminView.read(from: &buf), 
                 teamsAdmin: FfiConverterOptionTypeTeamsAdminView.read(from: &buf), 
                 gifs: FfiConverterOptionTypeGifsView.read(from: &buf), 
+                extensions: FfiConverterOptionTypeExtensionsView.read(from: &buf), 
                 search: FfiConverterOptionTypeSearchView.read(from: &buf)
         )
     }
@@ -7733,6 +8267,7 @@ public struct FfiConverterTypeUpdate: FfiConverterRustBuffer {
         FfiConverterOptionTypeChatAdminView.write(value.chatAdmin, into: &buf)
         FfiConverterOptionTypeTeamsAdminView.write(value.teamsAdmin, into: &buf)
         FfiConverterOptionTypeGifsView.write(value.gifs, into: &buf)
+        FfiConverterOptionTypeExtensionsView.write(value.extensions, into: &buf)
         FfiConverterOptionTypeSearchView.write(value.search, into: &buf)
     }
 }
@@ -7909,6 +8444,11 @@ public enum Action: Equatable, Hashable {
     )
     case gifs(action: GifsAction
     )
+    /**
+     * The compose box's message extensions.
+     */
+    case extensions(action: ExtensionsAction
+    )
     case fullSearch(action: SearchAction
     )
     /**
@@ -8071,143 +8611,146 @@ public struct FfiConverterTypeAction: FfiConverterRustBuffer {
         case 13: return .gifs(action: try FfiConverterTypeGifsAction.read(from: &buf)
         )
         
-        case 14: return .fullSearch(action: try FfiConverterTypeSearchAction.read(from: &buf)
+        case 14: return .extensions(action: try FfiConverterTypeExtensionsAction.read(from: &buf)
         )
         
-        case 15: return .cardAction(messageId: try FfiConverterString.read(from: &buf), card: try FfiConverterUInt32.read(from: &buf), action: try FfiConverterUInt32.read(from: &buf), inputs: try FfiConverterSequenceTypeCardInputValue.read(from: &buf)
+        case 15: return .fullSearch(action: try FfiConverterTypeSearchAction.read(from: &buf)
         )
         
-        case 16: return .signIn
-        
-        case 17: return .signInBrowser
-        
-        case 18: return .copyLoginUrl
-        
-        case 19: return .callbackChanged(value: try FfiConverterString.read(from: &buf)
+        case 16: return .cardAction(messageId: try FfiConverterString.read(from: &buf), card: try FfiConverterUInt32.read(from: &buf), action: try FfiConverterUInt32.read(from: &buf), inputs: try FfiConverterSequenceTypeCardInputValue.read(from: &buf)
         )
         
-        case 20: return .completeSignIn
+        case 17: return .signIn
         
-        case 21: return .loginReturned(url: try FfiConverterString.read(from: &buf)
+        case 18: return .signInBrowser
+        
+        case 19: return .copyLoginUrl
+        
+        case 20: return .callbackChanged(value: try FfiConverterString.read(from: &buf)
         )
         
-        case 22: return .loginCancelled
+        case 21: return .completeSignIn
         
-        case 23: return .silentLoginFailed
-        
-        case 24: return .signOut
-        
-        case 25: return .refresh
-        
-        case 26: return .setLanguage(language: try FfiConverterTypeLanguage.read(from: &buf)
+        case 22: return .loginReturned(url: try FfiConverterString.read(from: &buf)
         )
         
-        case 27: return .setRefreshMode(mode: try FfiConverterTypeRefreshMode.read(from: &buf)
+        case 23: return .loginCancelled
+        
+        case 24: return .silentLoginFailed
+        
+        case 25: return .signOut
+        
+        case 26: return .refresh
+        
+        case 27: return .setLanguage(language: try FfiConverterTypeLanguage.read(from: &buf)
         )
         
-        case 28: return .navigate(nav: try FfiConverterTypeNav.read(from: &buf)
+        case 28: return .setRefreshMode(mode: try FfiConverterTypeRefreshMode.read(from: &buf)
         )
         
-        case 29: return .setFilter(filter: try FfiConverterTypeFilter.read(from: &buf)
+        case 29: return .navigate(nav: try FfiConverterTypeNav.read(from: &buf)
         )
         
-        case 30: return .setTab(tab: try FfiConverterTypeTab.read(from: &buf)
+        case 30: return .setFilter(filter: try FfiConverterTypeFilter.read(from: &buf)
         )
         
-        case 31: return .search(query: try FfiConverterString.read(from: &buf)
+        case 31: return .setTab(tab: try FfiConverterTypeTab.read(from: &buf)
         )
         
-        case 32: return .dismissError
-        
-        case 33: return .dismissNotice(text: try FfiConverterString.read(from: &buf)
+        case 32: return .search(query: try FfiConverterString.read(from: &buf)
         )
         
-        case 34: return .select(target: try FfiConverterTypeTarget.read(from: &buf)
+        case 33: return .dismissError
+        
+        case 34: return .dismissNotice(text: try FfiConverterString.read(from: &buf)
         )
         
-        case 35: return .toggleTeam(id: try FfiConverterString.read(from: &buf)
+        case 35: return .select(target: try FfiConverterTypeTarget.read(from: &buf)
         )
         
-        case 36: return .loadChannels(id: try FfiConverterString.read(from: &buf)
+        case 36: return .toggleTeam(id: try FfiConverterString.read(from: &buf)
         )
         
-        case 37: return .channelMembers
-        
-        case 38: return .moreFeed
-        
-        case 39: return .moreChats
-        
-        case 40: return .openReply(post: try FfiConverterString.read(from: &buf)
+        case 37: return .loadChannels(id: try FfiConverterString.read(from: &buf)
         )
         
-        case 41: return .closeReply
+        case 38: return .channelMembers
         
-        case 42: return .moreReplies
+        case 39: return .moreFeed
         
-        case 43: return .draftChanged(value: try FfiConverterString.read(from: &buf)
+        case 40: return .moreChats
+        
+        case 41: return .openReply(post: try FfiConverterString.read(from: &buf)
         )
         
-        case 44: return .richDraftChanged(value: try FfiConverterString.read(from: &buf), formats: try FfiConverterSequenceTypeComposerFormat.read(from: &buf)
+        case 42: return .closeReply
+        
+        case 43: return .moreReplies
+        
+        case 44: return .draftChanged(value: try FfiConverterString.read(from: &buf)
         )
         
-        case 45: return .subjectChanged(value: try FfiConverterString.read(from: &buf)
+        case 45: return .richDraftChanged(value: try FfiConverterString.read(from: &buf), formats: try FfiConverterSequenceTypeComposerFormat.read(from: &buf)
         )
         
-        case 46: return .setImportance(importance: try FfiConverterTypeImportance.read(from: &buf)
+        case 46: return .subjectChanged(value: try FfiConverterString.read(from: &buf)
         )
         
-        case 47: return .insertEmoji(emoji: try FfiConverterString.read(from: &buf)
+        case 47: return .setImportance(importance: try FfiConverterTypeImportance.read(from: &buf)
         )
         
-        case 48: return .insertMention
-        
-        case 49: return .mentionMembers
-        
-        case 50: return .replaceDraft(start: try FfiConverterUInt32.read(from: &buf), length: try FfiConverterUInt32.read(from: &buf), text: try FfiConverterString.read(from: &buf), mention: try FfiConverterOptionString.read(from: &buf), emoji: try FfiConverterOptionString.read(from: &buf), style: try FfiConverterOptionTypeComposerFormat.read(from: &buf)
+        case 48: return .insertEmoji(emoji: try FfiConverterString.read(from: &buf)
         )
         
-        case 51: return .send
+        case 49: return .insertMention
         
-        case 52: return .newChat
+        case 50: return .mentionMembers
         
-        case 53: return .cancelNewChat
-        
-        case 54: return .peopleQuery(query: try FfiConverterString.read(from: &buf)
+        case 51: return .replaceDraft(start: try FfiConverterUInt32.read(from: &buf), length: try FfiConverterUInt32.read(from: &buf), text: try FfiConverterString.read(from: &buf), mention: try FfiConverterOptionString.read(from: &buf), emoji: try FfiConverterOptionString.read(from: &buf), style: try FfiConverterOptionTypeComposerFormat.read(from: &buf)
         )
         
-        case 55: return .peopleSearch
+        case 52: return .send
         
-        case 56: return .choosePerson(mri: try FfiConverterString.read(from: &buf)
+        case 53: return .newChat
+        
+        case 54: return .cancelNewChat
+        
+        case 55: return .peopleQuery(query: try FfiConverterString.read(from: &buf)
         )
         
-        case 57: return .removePerson(mri: try FfiConverterString.read(from: &buf)
+        case 56: return .peopleSearch
+        
+        case 57: return .choosePerson(mri: try FfiConverterString.read(from: &buf)
         )
         
-        case 58: return .newTitle(title: try FfiConverterString.read(from: &buf)
+        case 58: return .removePerson(mri: try FfiConverterString.read(from: &buf)
         )
         
-        case 59: return .createChat
-        
-        case 60: return .react(id: try FfiConverterString.read(from: &buf), key: try FfiConverterString.read(from: &buf)
+        case 59: return .newTitle(title: try FfiConverterString.read(from: &buf)
         )
         
-        case 61: return .edit(id: try FfiConverterString.read(from: &buf)
+        case 60: return .createChat
+        
+        case 61: return .react(id: try FfiConverterString.read(from: &buf), key: try FfiConverterString.read(from: &buf)
         )
         
-        case 62: return .editChanged(value: try FfiConverterString.read(from: &buf)
+        case 62: return .edit(id: try FfiConverterString.read(from: &buf)
         )
         
-        case 63: return .cancelEdit
-        
-        case 64: return .saveEdit
-        
-        case 65: return .delete(id: try FfiConverterString.read(from: &buf)
+        case 63: return .editChanged(value: try FfiConverterString.read(from: &buf)
         )
         
-        case 66: return .retryImage(src: try FfiConverterString.read(from: &buf)
+        case 64: return .cancelEdit
+        
+        case 65: return .saveEdit
+        
+        case 66: return .delete(id: try FfiConverterString.read(from: &buf)
         )
         
-        case 67: return .openUrl(url: try FfiConverterString.read(from: &buf)
+        case 67: return .retryImage(src: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 68: return .openUrl(url: try FfiConverterString.read(from: &buf)
         )
         
         default: throw UniffiInternalError.unexpectedEnumCase
@@ -8283,13 +8826,18 @@ public struct FfiConverterTypeAction: FfiConverterRustBuffer {
             FfiConverterTypeGifsAction.write(action, into: &buf)
             
         
-        case let .fullSearch(action):
+        case let .extensions(action):
             writeInt(&buf, Int32(14))
+            FfiConverterTypeExtensionsAction.write(action, into: &buf)
+            
+        
+        case let .fullSearch(action):
+            writeInt(&buf, Int32(15))
             FfiConverterTypeSearchAction.write(action, into: &buf)
             
         
         case let .cardAction(messageId,card,action,inputs):
-            writeInt(&buf, Int32(15))
+            writeInt(&buf, Int32(16))
             FfiConverterString.write(messageId, into: &buf)
             FfiConverterUInt32.write(card, into: &buf)
             FfiConverterUInt32.write(action, into: &buf)
@@ -8297,162 +8845,162 @@ public struct FfiConverterTypeAction: FfiConverterRustBuffer {
             
         
         case .signIn:
-            writeInt(&buf, Int32(16))
-        
-        
-        case .signInBrowser:
             writeInt(&buf, Int32(17))
         
         
-        case .copyLoginUrl:
+        case .signInBrowser:
             writeInt(&buf, Int32(18))
         
         
-        case let .callbackChanged(value):
+        case .copyLoginUrl:
             writeInt(&buf, Int32(19))
+        
+        
+        case let .callbackChanged(value):
+            writeInt(&buf, Int32(20))
             FfiConverterString.write(value, into: &buf)
             
         
         case .completeSignIn:
-            writeInt(&buf, Int32(20))
+            writeInt(&buf, Int32(21))
         
         
         case let .loginReturned(url):
-            writeInt(&buf, Int32(21))
+            writeInt(&buf, Int32(22))
             FfiConverterString.write(url, into: &buf)
             
         
         case .loginCancelled:
-            writeInt(&buf, Int32(22))
-        
-        
-        case .silentLoginFailed:
             writeInt(&buf, Int32(23))
         
         
-        case .signOut:
+        case .silentLoginFailed:
             writeInt(&buf, Int32(24))
         
         
-        case .refresh:
+        case .signOut:
             writeInt(&buf, Int32(25))
         
         
-        case let .setLanguage(language):
+        case .refresh:
             writeInt(&buf, Int32(26))
+        
+        
+        case let .setLanguage(language):
+            writeInt(&buf, Int32(27))
             FfiConverterTypeLanguage.write(language, into: &buf)
             
         
         case let .setRefreshMode(mode):
-            writeInt(&buf, Int32(27))
+            writeInt(&buf, Int32(28))
             FfiConverterTypeRefreshMode.write(mode, into: &buf)
             
         
         case let .navigate(nav):
-            writeInt(&buf, Int32(28))
+            writeInt(&buf, Int32(29))
             FfiConverterTypeNav.write(nav, into: &buf)
             
         
         case let .setFilter(filter):
-            writeInt(&buf, Int32(29))
+            writeInt(&buf, Int32(30))
             FfiConverterTypeFilter.write(filter, into: &buf)
             
         
         case let .setTab(tab):
-            writeInt(&buf, Int32(30))
+            writeInt(&buf, Int32(31))
             FfiConverterTypeTab.write(tab, into: &buf)
             
         
         case let .search(query):
-            writeInt(&buf, Int32(31))
+            writeInt(&buf, Int32(32))
             FfiConverterString.write(query, into: &buf)
             
         
         case .dismissError:
-            writeInt(&buf, Int32(32))
+            writeInt(&buf, Int32(33))
         
         
         case let .dismissNotice(text):
-            writeInt(&buf, Int32(33))
+            writeInt(&buf, Int32(34))
             FfiConverterString.write(text, into: &buf)
             
         
         case let .select(target):
-            writeInt(&buf, Int32(34))
+            writeInt(&buf, Int32(35))
             FfiConverterTypeTarget.write(target, into: &buf)
             
         
         case let .toggleTeam(id):
-            writeInt(&buf, Int32(35))
-            FfiConverterString.write(id, into: &buf)
-            
-        
-        case let .loadChannels(id):
             writeInt(&buf, Int32(36))
             FfiConverterString.write(id, into: &buf)
             
         
-        case .channelMembers:
+        case let .loadChannels(id):
             writeInt(&buf, Int32(37))
+            FfiConverterString.write(id, into: &buf)
+            
         
-        
-        case .moreFeed:
+        case .channelMembers:
             writeInt(&buf, Int32(38))
         
         
-        case .moreChats:
+        case .moreFeed:
             writeInt(&buf, Int32(39))
         
         
-        case let .openReply(post):
+        case .moreChats:
             writeInt(&buf, Int32(40))
+        
+        
+        case let .openReply(post):
+            writeInt(&buf, Int32(41))
             FfiConverterString.write(post, into: &buf)
             
         
         case .closeReply:
-            writeInt(&buf, Int32(41))
-        
-        
-        case .moreReplies:
             writeInt(&buf, Int32(42))
         
         
-        case let .draftChanged(value):
+        case .moreReplies:
             writeInt(&buf, Int32(43))
+        
+        
+        case let .draftChanged(value):
+            writeInt(&buf, Int32(44))
             FfiConverterString.write(value, into: &buf)
             
         
         case let .richDraftChanged(value,formats):
-            writeInt(&buf, Int32(44))
+            writeInt(&buf, Int32(45))
             FfiConverterString.write(value, into: &buf)
             FfiConverterSequenceTypeComposerFormat.write(formats, into: &buf)
             
         
         case let .subjectChanged(value):
-            writeInt(&buf, Int32(45))
+            writeInt(&buf, Int32(46))
             FfiConverterString.write(value, into: &buf)
             
         
         case let .setImportance(importance):
-            writeInt(&buf, Int32(46))
+            writeInt(&buf, Int32(47))
             FfiConverterTypeImportance.write(importance, into: &buf)
             
         
         case let .insertEmoji(emoji):
-            writeInt(&buf, Int32(47))
+            writeInt(&buf, Int32(48))
             FfiConverterString.write(emoji, into: &buf)
             
         
         case .insertMention:
-            writeInt(&buf, Int32(48))
-        
-        
-        case .mentionMembers:
             writeInt(&buf, Int32(49))
         
         
-        case let .replaceDraft(start,length,text,mention,emoji,style):
+        case .mentionMembers:
             writeInt(&buf, Int32(50))
+        
+        
+        case let .replaceDraft(start,length,text,mention,emoji,style):
+            writeInt(&buf, Int32(51))
             FfiConverterUInt32.write(start, into: &buf)
             FfiConverterUInt32.write(length, into: &buf)
             FfiConverterString.write(text, into: &buf)
@@ -8462,81 +9010,81 @@ public struct FfiConverterTypeAction: FfiConverterRustBuffer {
             
         
         case .send:
-            writeInt(&buf, Int32(51))
-        
-        
-        case .newChat:
             writeInt(&buf, Int32(52))
         
         
-        case .cancelNewChat:
+        case .newChat:
             writeInt(&buf, Int32(53))
         
         
-        case let .peopleQuery(query):
+        case .cancelNewChat:
             writeInt(&buf, Int32(54))
+        
+        
+        case let .peopleQuery(query):
+            writeInt(&buf, Int32(55))
             FfiConverterString.write(query, into: &buf)
             
         
         case .peopleSearch:
-            writeInt(&buf, Int32(55))
+            writeInt(&buf, Int32(56))
         
         
         case let .choosePerson(mri):
-            writeInt(&buf, Int32(56))
-            FfiConverterString.write(mri, into: &buf)
-            
-        
-        case let .removePerson(mri):
             writeInt(&buf, Int32(57))
             FfiConverterString.write(mri, into: &buf)
             
         
-        case let .newTitle(title):
+        case let .removePerson(mri):
             writeInt(&buf, Int32(58))
+            FfiConverterString.write(mri, into: &buf)
+            
+        
+        case let .newTitle(title):
+            writeInt(&buf, Int32(59))
             FfiConverterString.write(title, into: &buf)
             
         
         case .createChat:
-            writeInt(&buf, Int32(59))
+            writeInt(&buf, Int32(60))
         
         
         case let .react(id,key):
-            writeInt(&buf, Int32(60))
+            writeInt(&buf, Int32(61))
             FfiConverterString.write(id, into: &buf)
             FfiConverterString.write(key, into: &buf)
             
         
         case let .edit(id):
-            writeInt(&buf, Int32(61))
+            writeInt(&buf, Int32(62))
             FfiConverterString.write(id, into: &buf)
             
         
         case let .editChanged(value):
-            writeInt(&buf, Int32(62))
+            writeInt(&buf, Int32(63))
             FfiConverterString.write(value, into: &buf)
             
         
         case .cancelEdit:
-            writeInt(&buf, Int32(63))
-        
-        
-        case .saveEdit:
             writeInt(&buf, Int32(64))
         
         
-        case let .delete(id):
+        case .saveEdit:
             writeInt(&buf, Int32(65))
+        
+        
+        case let .delete(id):
+            writeInt(&buf, Int32(66))
             FfiConverterString.write(id, into: &buf)
             
         
         case let .retryImage(src):
-            writeInt(&buf, Int32(66))
+            writeInt(&buf, Int32(67))
             FfiConverterString.write(src, into: &buf)
             
         
         case let .openUrl(url):
-            writeInt(&buf, Int32(67))
+            writeInt(&buf, Int32(68))
             FfiConverterString.write(url, into: &buf)
             
         }
@@ -11213,6 +11761,140 @@ public func FfiConverterTypeEmailDelay_lift(_ buf: RustBuffer) throws -> EmailDe
 #endif
 public func FfiConverterTypeEmailDelay_lower(_ value: EmailDelay) -> RustBuffer {
     return FfiConverterTypeEmailDelay.lower(value)
+}
+
+
+
+
+public enum ExtensionsAction: Equatable, Hashable {
+    
+    /**
+     * The flyout opened: list the apps once.
+     */
+    case load
+    case choose(appId: String, commandId: String
+    )
+    case search(query: String
+    )
+    case pick(index: UInt32
+    )
+    /**
+     * A button of the open form, with what was typed in.
+     */
+    case formAction(action: UInt32, inputs: [CardInputValue]
+    )
+    case closeForm
+    /**
+     * Back to the list of apps.
+     */
+    case back
+    case removeCard(index: UInt32
+    )
+
+
+
+
+
+}
+
+#if compiler(>=6)
+extension ExtensionsAction: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeExtensionsAction: FfiConverterRustBuffer {
+    typealias SwiftType = ExtensionsAction
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ExtensionsAction {
+        let variant: Int32 = try readInt(&buf)
+        switch variant {
+        
+        case 1: return .load
+        
+        case 2: return .choose(appId: try FfiConverterString.read(from: &buf), commandId: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 3: return .search(query: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 4: return .pick(index: try FfiConverterUInt32.read(from: &buf)
+        )
+        
+        case 5: return .formAction(action: try FfiConverterUInt32.read(from: &buf), inputs: try FfiConverterSequenceTypeCardInputValue.read(from: &buf)
+        )
+        
+        case 6: return .closeForm
+        
+        case 7: return .back
+        
+        case 8: return .removeCard(index: try FfiConverterUInt32.read(from: &buf)
+        )
+        
+        default: throw UniffiInternalError.unexpectedEnumCase
+        }
+    }
+
+    public static func write(_ value: ExtensionsAction, into buf: inout [UInt8]) {
+        switch value {
+        
+        
+        case .load:
+            writeInt(&buf, Int32(1))
+        
+        
+        case let .choose(appId,commandId):
+            writeInt(&buf, Int32(2))
+            FfiConverterString.write(appId, into: &buf)
+            FfiConverterString.write(commandId, into: &buf)
+            
+        
+        case let .search(query):
+            writeInt(&buf, Int32(3))
+            FfiConverterString.write(query, into: &buf)
+            
+        
+        case let .pick(index):
+            writeInt(&buf, Int32(4))
+            FfiConverterUInt32.write(index, into: &buf)
+            
+        
+        case let .formAction(action,inputs):
+            writeInt(&buf, Int32(5))
+            FfiConverterUInt32.write(action, into: &buf)
+            FfiConverterSequenceTypeCardInputValue.write(inputs, into: &buf)
+            
+        
+        case .closeForm:
+            writeInt(&buf, Int32(6))
+        
+        
+        case .back:
+            writeInt(&buf, Int32(7))
+        
+        
+        case let .removeCard(index):
+            writeInt(&buf, Int32(8))
+            FfiConverterUInt32.write(index, into: &buf)
+            
+        }
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeExtensionsAction_lift(_ buf: RustBuffer) throws -> ExtensionsAction {
+    return try FfiConverterTypeExtensionsAction.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeExtensionsAction_lower(_ value: ExtensionsAction) -> RustBuffer {
+    return FfiConverterTypeExtensionsAction.lower(value)
 }
 
 
@@ -15296,6 +15978,30 @@ fileprivate struct FfiConverterOptionTypeCallsView: FfiConverterRustBuffer {
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterOptionTypeCardView: FfiConverterRustBuffer {
+    typealias SwiftType = CardView?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeCardView.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeCardView.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterOptionTypeChatAdminView: FfiConverterRustBuffer {
     typealias SwiftType = ChatAdminView?
 
@@ -15408,6 +16114,78 @@ fileprivate struct FfiConverterOptionTypeConversationView: FfiConverterRustBuffe
         switch try readInt(&buf) as Int8 {
         case 0: return nil
         case 1: return try FfiConverterTypeConversationView.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionTypeExtensionFormView: FfiConverterRustBuffer {
+    typealias SwiftType = ExtensionFormView?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeExtensionFormView.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeExtensionFormView.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionTypeExtensionLinkView: FfiConverterRustBuffer {
+    typealias SwiftType = ExtensionLinkView?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeExtensionLinkView.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeExtensionLinkView.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterOptionTypeExtensionsView: FfiConverterRustBuffer {
+    typealias SwiftType = ExtensionsView?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeExtensionsView.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeExtensionsView.read(from: &buf)
         default: throw UniffiInternalError.unexpectedOptionalTag
         }
     }
@@ -16486,6 +17264,31 @@ fileprivate struct FfiConverterSequenceTypeChatRow: FfiConverterRustBuffer {
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterSequenceTypeComposerCardView: FfiConverterRustBuffer {
+    typealias SwiftType = [ComposerCardView]
+
+    public static func write(_ value: [ComposerCardView], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeComposerCardView.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [ComposerCardView] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [ComposerCardView]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeComposerCardView.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterSequenceTypeComposerEmoji: FfiConverterRustBuffer {
     typealias SwiftType = [ComposerEmoji]
 
@@ -16578,6 +17381,81 @@ fileprivate struct FfiConverterSequenceTypeEntryView: FfiConverterRustBuffer {
         seq.reserveCapacity(Int(len))
         for _ in 0 ..< len {
             seq.append(try FfiConverterTypeEntryView.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypeExtensionAppView: FfiConverterRustBuffer {
+    typealias SwiftType = [ExtensionAppView]
+
+    public static func write(_ value: [ExtensionAppView], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeExtensionAppView.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [ExtensionAppView] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [ExtensionAppView]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeExtensionAppView.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypeExtensionCommandView: FfiConverterRustBuffer {
+    typealias SwiftType = [ExtensionCommandView]
+
+    public static func write(_ value: [ExtensionCommandView], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeExtensionCommandView.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [ExtensionCommandView] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [ExtensionCommandView]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeExtensionCommandView.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypeExtensionResultView: FfiConverterRustBuffer {
+    typealias SwiftType = [ExtensionResultView]
+
+    public static func write(_ value: [ExtensionResultView], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeExtensionResultView.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [ExtensionResultView] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [ExtensionResultView]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeExtensionResultView.read(from: &buf))
         }
         return seq
     }

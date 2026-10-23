@@ -41,7 +41,7 @@ pub(crate) struct Plan {
 }
 
 /// Inputs merged into `data` as strings, replacing existing keys as the Adaptive Cards SDK does.
-fn merged_data(data: Option<&Value>, inputs: &[CardInputValue]) -> Value {
+pub(crate) fn merged_data(data: Option<&Value>, inputs: &[CardInputValue]) -> Value {
     let mut map = match data {
         Some(Value::Object(o)) => o.clone(),
         _ => Map::new(),

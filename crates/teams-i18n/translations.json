@@ -1235,6 +1235,46 @@
     "fr": "Impossible d’envoyer : {error}",
     "en": "Couldn't send: {error}"
   },
+  "core.extensions.submit": {
+    "fr": "Envoyer",
+    "en": "Submit"
+  },
+  "core.extensions.apps_failed": {
+    "fr": "Impossible de charger les applications : {error}",
+    "en": "Couldn't load the apps: {error}"
+  },
+  "core.extensions.not_in_notes": {
+    "fr": "Les applications ne sont pas disponibles dans vos notes.",
+    "en": "Apps aren't available in your notes."
+  },
+  "core.extensions.invoke_failed": {
+    "fr": "L’application n’a pas répondu : {error}",
+    "en": "The app didn't respond: {error}"
+  },
+  "core.extensions.no_results": {
+    "fr": "Aucun résultat.",
+    "en": "No results."
+  },
+  "core.extensions.no_card": {
+    "fr": "L’application n’a renvoyé aucune carte.",
+    "en": "The app didn't return a card."
+  },
+  "core.extensions.needs_settings": {
+    "fr": "Cette application doit être configurée dans votre navigateur.",
+    "en": "This app needs to be set up in your browser."
+  },
+  "core.extensions.needs_sign_in": {
+    "fr": "Connectez-vous à cette application dans votre navigateur, puis réessayez.",
+    "en": "Sign in to this app in your browser, then try again."
+  },
+  "core.extensions.open": {
+    "fr": "Ouvrir",
+    "en": "Open"
+  },
+  "core.extensions.none_found": {
+    "fr": "{count} application(s) installée(s), aucune avec une extension de messagerie. Réponse du service : {detail}",
+    "en": "{count} installed app(s), none with a messaging extension. Service answer: {detail}"
+  },
   "core.html.m_d_h_m": {
     "fr": "%d/%m %H:%M",
     "en": "%m/%d %H:%M"
@@ -4074,6 +4114,46 @@
   "ui.fun_picker.stickers": {
     "fr": "Autocollants",
     "en": "Stickers"
+  },
+  "ui.extensions.apps": {
+    "fr": "Applications",
+    "en": "Apps"
+  },
+  "ui.extensions.loading_apps": {
+    "fr": "Chargement des applications…",
+    "en": "Loading apps…"
+  },
+  "ui.extensions.no_apps": {
+    "fr": "Aucune de vos applications n’a d’extension de messagerie.",
+    "en": "None of your apps has a messaging extension."
+  },
+  "ui.extensions.back": {
+    "fr": "Retour aux applications",
+    "en": "Back to apps"
+  },
+  "ui.extensions.search": {
+    "fr": "Rechercher",
+    "en": "Search"
+  },
+  "ui.extensions.cancel": {
+    "fr": "Annuler",
+    "en": "Cancel"
+  },
+  "ui.extensions.web_form": {
+    "fr": "Ce formulaire est une page web que seul Teams peut afficher.",
+    "en": "This form is a web page only Teams can show."
+  },
+  "ui.extensions.open_in_browser": {
+    "fr": "Ouvrir dans le navigateur",
+    "en": "Open in browser"
+  },
+  "ui.extensions.via": {
+    "fr": "via {app}",
+    "en": "via {app}"
+  },
+  "ui.extensions.remove_card": {
+    "fr": "Retirer la carte",
+    "en": "Remove card"
   },
   "ui.localization.app_language": {
     "fr": "Langue de l’application",

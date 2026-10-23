@@ -60,6 +60,8 @@ final class Store {
     /// Team creation, gallery and join code dialogs.
     private(set) var teamsAdmin: TeamsAdminView?
     private(set) var gifs: GifsView?
+    /// The compose box's message extensions flyout.
+    private(set) var extensions: ExtensionsView?
     private(set) var search: SearchView?
     /// One observable box per id: a photo arriving redraws only the avatars showing it.
     @ObservationIgnored private var avatars: [String: ImageBox] = [:]
@@ -284,6 +286,7 @@ final class Store {
         if let chatAdmin = update.chatAdmin, self.chatAdmin != chatAdmin { self.chatAdmin = chatAdmin }
         if let teamsAdmin = update.teamsAdmin, self.teamsAdmin != teamsAdmin { self.teamsAdmin = teamsAdmin }
         if let gifs = update.gifs, self.gifs != gifs { self.gifs = gifs }
+        if let extensions = update.extensions, self.extensions != extensions { self.extensions = extensions }
         if let search = update.search, self.search != search { self.search = search }
     }
 

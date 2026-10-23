@@ -50,6 +50,10 @@ pub use app::teams_admin::{
     GalleryJoin, GalleryTeamView, GalleryView, JoinCodeView, NewTeamVisibility, TeamsAdminAction,
     TeamsAdminView,
 };
+pub use app::extensions::{
+    ComposerCardView, ExtensionAppView, ExtensionCommandView, ExtensionFormView, ExtensionLinkView,
+    ExtensionResultView, ExtensionsAction, ExtensionsView,
+};
 pub use app::gifs::{GifView, GifsAction, GifsView, StickerCategory, StickerView};
 pub use app::search::{
     SearchAction, SearchDate, SearchFiltersView, SearchHitView, SearchKind, SearchView,
@@ -127,6 +131,10 @@ pub enum Action {
     },
     Gifs {
         action: GifsAction,
+    },
+    /// The compose box's message extensions.
+    Extensions {
+        action: ExtensionsAction,
     },
     FullSearch {
         action: SearchAction,
@@ -274,6 +282,9 @@ fn message(app: &App, action: Action) -> Option<Msg> {
         }
         Action::Me { action } => Msg::Me(app::me::MeMsg::Action(action)),
         Action::Gifs { action } => Msg::Gifs(app::gifs::GifsMsg::Action(action)),
+        Action::Extensions { action } => {
+            Msg::Extensions(app::extensions::ExtensionsMsg::Action(action))
+        }
         Action::FullSearch { action } => {
             Msg::FullSearch(app::search::SearchMsg::Action(action))
         }

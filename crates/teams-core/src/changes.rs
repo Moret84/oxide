@@ -32,6 +32,8 @@ impl Parts {
     pub(crate) const RESULTS: Self = Self(1 << 18);
     /// The GIF and sticker picker.
     pub(crate) const GIFS: Self = Self(1 << 19);
+    /// The message extensions flyout.
+    pub(crate) const EXTENSIONS: Self = Self(1 << 20);
     pub(crate) const ALL: Self = Self(u32::MAX);
     pub(crate) fn has(self, part: Self) -> bool {
         self.0 & part.0 != 0
@@ -89,6 +91,8 @@ pub(crate) mod feeds {
     pub(crate) const MANAGE: u32 = Parts::MANAGE.0;
     pub(crate) const RESULTS: u32 = Parts::RESULTS.0;
     pub(crate) const GIFS: u32 = Parts::GIFS.0;
+    /// The flyout, and the cards waiting in the composer.
+    pub(crate) const EXTENSIONS: u32 = Parts::EXTENSIONS.0 | Parts::COMPOSER.0;
     pub(crate) const NOTIFICATIONS: u32 =
         Parts::NOTIFICATIONS.0 | Parts::SIDEBAR.0 | Parts::CONVERSATION.0 | Parts::MESSAGES.0;
 }

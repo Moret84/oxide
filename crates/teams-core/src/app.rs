@@ -61,6 +61,8 @@ pub(crate) mod conversation;
 pub(crate) mod files;
 #[path = "formatting.rs"]
 pub(crate) mod formatting;
+#[path = "extensions.rs"]
+pub(crate) mod extensions;
 #[path = "gifs.rs"]
 pub(crate) mod gifs;
 #[path = "me.rs"]
@@ -90,6 +92,7 @@ use conversation::{ConversationMsg, ConversationState};
 use files::{FilesMsg, FilesState};
 use card_actions::{CardMsg, CardState};
 use chat_admin::{ChatAdminMsg, ChatAdminState};
+use extensions::{ExtensionsMsg, ExtensionsState};
 use gifs::{GifsMsg, GifsState};
 use search::{SearchMsg, SearchState};
 use me::{MeMsg, MeState};
@@ -248,6 +251,8 @@ pub(crate) struct App {
     chat_admin: Tracked<ChatAdminState, { feeds::MANAGE }>,
     teams_admin: Tracked<TeamsAdminState, { feeds::MANAGE }>,
     gifs: Tracked<GifsState, { feeds::GIFS }>,
+    /// Message extensions: the flyout, and the cards they put in drafts.
+    extensions: Tracked<ExtensionsState, { feeds::EXTENSIONS }>,
     /// The search results page.
     search_state: Tracked<SearchState, { feeds::RESULTS }>,
     /// Cards whose buttons were used, by message id and card number.
@@ -355,6 +360,7 @@ pub(crate) enum Msg {
     ChatAdmin(ChatAdminMsg),
     TeamsAdmin(TeamsAdminMsg),
     Gifs(GifsMsg),
+    Extensions(ExtensionsMsg),
     Card(CardMsg),
     FullSearch(SearchMsg),
     Receipts(receipts::ReceiptsMsg),
@@ -470,6 +476,7 @@ impl App {
             chat_admin: Default::default(),
             teams_admin: Default::default(),
             gifs: Default::default(),
+            extensions: Default::default(),
             search_state: Default::default(),
             card_states: Default::default(),
             favorites_folder: None,
@@ -636,6 +643,10 @@ impl App {
         self.gifs.view.clone()
     }
     #[cfg(test)]
+    pub(crate) fn extensions_view(&self) -> extensions::ExtensionsView {
+        self.extensions.view.clone()
+    }
+    #[cfg(test)]
     pub(crate) fn teams_admin_view(&self) -> teams_admin::TeamsAdminView {
         self.teams_admin.view.clone()
     }
@@ -646,6 +657,10 @@ impl App {
     #[cfg(test)]
     pub(crate) fn chat_admin_error(&self) -> Option<String> {
         self.chat_admin.view.error.clone()
+    }
+    #[cfg(test)]
+    pub(crate) fn error_text(&self) -> Option<String> {
+        self.error.clone()
     }
     #[cfg(test)]
     pub(crate) fn first_chat_id(&self) -> String {
@@ -715,6 +730,7 @@ impl App {
             chat_admin,
             teams_admin,
             gifs,
+            extensions,
             search_state,
             card_states,
             favorites_folder: _,
@@ -789,6 +805,7 @@ impl App {
             chat_admin.take_changes(),
             teams_admin.take_changes(),
             gifs.take_changes(),
+            extensions.take_changes(),
             search_state.take_changes(),
             card_states.take_changes(),
             hidden_chats.take_changes(),
@@ -1077,6 +1094,7 @@ impl App {
             Msg::ChatAdmin(msg) => self.update_chat_admin(msg),
             Msg::TeamsAdmin(msg) => self.update_teams_admin(msg),
             Msg::Gifs(msg) => self.update_gifs(msg),
+            Msg::Extensions(msg) => self.update_extensions(msg),
             Msg::Card(msg) => self.update_card(msg),
             Msg::FullSearch(msg) => self.update_search(msg),
             Msg::Receipts(msg) => self.update_receipts(msg),
@@ -1807,7 +1825,9 @@ impl App {
                     return Task::none();
                 }
                 if self.conv.sending()
-                    || (self.conv.draft().trim().is_empty() && !self.has_attachments())
+                    || (self.conv.draft().trim().is_empty()
+                        && !self.has_attachments()
+                        && !self.has_extension_cards())
                 {
                     return Task::none();
                 }
@@ -1829,11 +1849,24 @@ impl App {
                 let content = self.conv.draft().to_owned();
                 let reply = self.conv.reply().cloned();
                 let generation = self.generation;
-                let mut message = OutgoingMessage::html(
-                    client_message_id(),
-                    self.composer_html(),
-                    &*self.display_name,
-                );
+                let mut html = if content.trim().is_empty() {
+                    String::new()
+                } else {
+                    self.composer_html()
+                };
+                let cards = self.take_extension_cards();
+                let cards_json = cards.as_ref().map(|(_, list)| {
+                    let (markup, json) = extensions::cards_markup(list);
+                    html.push_str(&markup);
+                    json
+                });
+                // Kept until the answer: a failed send gives them back to the draft.
+                self.extensions.sending = cards;
+                let mut message =
+                    OutgoingMessage::html(client_message_id(), html, &*self.display_name);
+                if let Some(json) = cards_json {
+                    message.properties.cards = json;
+                }
                 message.properties.mentions = self.composer_mentions();
                 message.properties.subject = self.conv.subject().to_owned();
                 message.properties.importance = self.conv.importance().wire().to_owned();
@@ -1871,6 +1904,12 @@ impl App {
                 ..
             } => {
                 self.conv.send_finished();
+                let cards = self.extensions.sending.take();
+                if result.is_err()
+                    && let Some((key, cards)) = cards
+                {
+                    self.restore_extension_cards(key, cards);
+                }
                 match result {
                     Ok(()) => {
                         // Answering means the new messages were read.

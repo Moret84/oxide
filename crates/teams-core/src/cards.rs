@@ -224,7 +224,7 @@ pub fn from_uri_object(element: ElementRef<'_>) -> Vec<Card> {
         .collect()
 }
 /// One `{contentType, content}` attachment, or a bare Adaptive Card.
-fn attachment(value: &Value) -> Option<Card> {
+pub fn attachment(value: &Value) -> Option<Card> {
     let content_type = str_at(value, "contentType").unwrap_or_default();
     let mut content = value
         .get("content")

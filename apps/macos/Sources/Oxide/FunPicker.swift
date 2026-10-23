@@ -95,7 +95,7 @@ struct FunPicker: View {
 }
 
 /// A public CDN image (Giphy, Teams statics), loaded without credentials.
-private struct RemoteThumbnail: View {
+struct RemoteThumbnail: View {
     let url: String
     @State private var loaded: NSImage?
     @State private var failed = false

@@ -10,6 +10,7 @@ struct Composer: View {
     let isChannel: Bool
     @State private var emoji = false
     @State private var fun = false
+    @State private var apps = false
     @State private var formatting = false
     @State private var height: CGFloat = 40
     @State private var input = DraftInput()
@@ -61,6 +62,7 @@ struct Composer: View {
                 takeFocusRequest: store.takeComposerFocusRequest
             )
             .frame(height: min(max(height, 40), 140))
+            if !composer.cards.isEmpty { ComposerCards(cards: composer.cards) }
             if !composer.attachments.isEmpty { AttachmentChips(attachments: composer.attachments) }
             tools
         }
@@ -90,13 +92,13 @@ struct Composer: View {
         store.composer ?? ComposerView(
             sending: false, draft: "", draftRev: 0, draftCursor: 0,
             mentionRanges: [], draftFormats: [], mentionLoading: false, mentionError: nil,
-            subject: "", importance: .standard, editText: "", attachments: []
+            subject: "", importance: .standard, editText: "", attachments: [], cards: []
         )
     }
     /// Text, files, or both; never while a file is still uploading.
     private var canSend: Bool {
         let text = !composer.draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-        return !composer.sending && (text || !composer.attachments.isEmpty)
+        return !composer.sending && (text || !composer.attachments.isEmpty || !composer.cards.isEmpty)
             && composer.attachments.allSatisfy(\.ready)
     }
     private var people: [PersonView] {
@@ -252,6 +254,8 @@ struct Composer: View {
             .help(L("ui.fun_picker.gifs_and_stickers"))
             .accessibilityLabel(L("ui.fun_picker.gifs_and_stickers"))
             .popover(isPresented: $fun, arrowEdge: .top) { FunPicker { fun = false } }
+            IconButton(symbol: "square.grid.2x2", help: L("ui.extensions.apps"), side: 32) { apps.toggle() }
+                .popover(isPresented: $apps, arrowEdge: .top) { ExtensionsFlyout { apps = false } }
             Button {
                 let prefix: String
                 if let range = Range(input.selection, in: composer.draft), let previous = composer.draft[..<range.lowerBound].last,
