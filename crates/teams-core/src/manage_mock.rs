@@ -1,4 +1,4 @@
-//! Demo fakes for status and automatic replies, GIFs, team creation and gallery, and bot card actions; data is fictitious.
+//! Demo fakes for status and automatic replies, GIFs, team creation and gallery, bot card actions and a message extension; data is fictitious.
 use axum::extract::Path;
 use axum::http::StatusCode;
 use axum::routing::{get, post, put};
@@ -123,8 +123,76 @@ async fn join_by_code(Json(code): Json<Value>) -> Result<Json<Value>, StatusCode
         Err(StatusCode::BAD_REQUEST)
     }
 }
-/// `Action.Execute` answers with a replacement card; other invokes are acknowledged.
+/// The demo's message extension: an app to search tickets and to open one.
+const TICKETS_APP: &str = "demo-tickets-app";
+async fn entitlements() -> Json<Value> {
+    Json(json!({"appEntitlements": [{"id": TICKETS_APP, "state": "Installed"}]}))
+}
+fn tickets_definition() -> Value {
+    json!({"id": TICKETS_APP, "name": "Tickets", "shortDescription": "Suivi des demandes",
+            "largeImageUrl": "https://statics.teams.cdn.office.net/evergreen-assets/apps/tasks_largeimage.png",
+            "inputExtensions": [{"botId": "demo-tickets-bot", "commands": [
+                {"id": "searchTickets", "type": "query", "title": "Rechercher", "description": "Trouver une demande par mot-clé",
+                 "initialRun": true, "context": ["compose", "commandBox"],
+                 "parameters": [{"name": "keyword", "title": "Mot-clé", "inputType": "text"}]},
+                {"id": "newTicket", "type": "action", "title": "Nouvelle demande", "fetchTask": true, "context": ["compose"]}
+            ]}]})
+}
+/// As on a real account seen 2026-10-23: the batch answers nothing for the entitled apps.
+async fn app_definitions() -> Json<Value> {
+    Json(json!([]))
+}
+/// `definitionsv2`, where the flyout finds the apps.
+async fn definitions_v2() -> Json<Value> {
+    Json(json!({"value": [tickets_definition()]}))
+}
+fn ticket_card(id: u32, title: &str, state: &str) -> Value {
+    json!({"type": "AdaptiveCard", "version": "1.4", "body": [
+        {"type": "TextBlock", "text": format!("#{id} · {title}"), "weight": "Bolder", "size": "Medium"},
+        {"type": "FactSet", "facts": [{"title": "État", "value": state}, {"title": "Équipe", "value": "Support"}]}
+    ], "actions": [{"type": "Action.OpenUrl", "title": "Ouvrir", "url": format!("https://example.com/tickets/{id}")}]})
+}
+fn compose_extension(body: &Value) -> Value {
+    let value = &body["value"];
+    match body["name"].as_str().unwrap_or_default() {
+        "composeExtension/query" => {
+            let keyword = value["parameters"][0]["value"].as_str().unwrap_or_default();
+            let keyword = if keyword == "true" { "" } else { keyword };
+            let tickets = [(101, "Écran noir au démarrage", "Ouvert"), (102, "Accès VPN refusé", "En cours"),
+                (103, "Commande de clavier", "Résolu")];
+            let attachments: Vec<Value> = tickets.iter()
+                .filter(|(_, t, _)| keyword.is_empty() || t.to_lowercase().contains(&keyword.to_lowercase()))
+                .map(|(id, title, state)| json!({
+                    "contentType": "application/vnd.microsoft.card.adaptive", "content": ticket_card(*id, title, state),
+                    "preview": {"contentType": "application/vnd.microsoft.card.thumbnail", "content": {
+                        "title": format!("#{id} · {title}"), "text": state,
+                        // The last ticket's card comes from the bot when picked.
+                        "tap": if *id == 103 { json!({"type": "invoke", "value": {"ticket": id}}) } else { Value::Null }}}}))
+                .collect();
+            json!({"composeExtension": {"type": "result", "attachmentLayout": "list", "attachments": attachments}})
+        }
+        "composeExtension/selectItem" => json!({"composeExtension": {"type": "result", "attachments": [
+            {"contentType": "application/vnd.microsoft.card.adaptive", "content": ticket_card(103, "Commande de clavier", "Résolu")}]}}),
+        "composeExtension/fetchTask" => json!({"task": {"type": "continue", "value": {"title": "Nouvelle demande",
+            "card": {"contentType": "application/vnd.microsoft.card.adaptive", "content": {"type": "AdaptiveCard", "version": "1.4",
+                "body": [{"type": "Input.Text", "id": "title", "label": "Titre", "isRequired": true},
+                         {"type": "Input.ChoiceSet", "id": "state", "label": "Priorité", "value": "Normale",
+                          "choices": [{"title": "Normale", "value": "Normale"}, {"title": "Haute", "value": "Haute"}]}],
+                "actions": [{"type": "Action.Submit", "title": "Créer"}]}}}}}),
+        "composeExtension/submitAction" => {
+            let title = value["data"]["title"].as_str().unwrap_or("Sans titre");
+            let priority = value["data"]["state"].as_str().unwrap_or("Normale");
+            json!({"composeExtension": {"type": "result", "attachmentLayout": "list", "attachments": [
+                {"contentType": "application/vnd.microsoft.card.adaptive", "content": ticket_card(104, title, priority)}]}})
+        }
+        _ => json!({}),
+    }
+}
+/// `Action.Execute` answers with a replacement card; message extensions answer as the demo app; other invokes are acknowledged.
 async fn invoke(Path(_bot): Path<String>, Json(body): Json<Value>) -> Json<Value> {
+    if body["name"].as_str().is_some_and(|n| n.starts_with("composeExtension/")) {
+        return Json(compose_extension(&body));
+    }
     if body["name"] == "adaptiveCard/action" {
         return Json(
             json!({"statusCode": 200, "type": "application/vnd.microsoft.card.adaptive",
@@ -163,6 +231,9 @@ pub(crate) fn router() -> Router {
         .route("/beta/teams/{team}/setDefaultChannel", put(ok).delete(ok))
         .route("/api/v1/teams/users/me/conversationFolders", post(ok))
         .route("/v1/agents/{bot}/invoke", post(invoke))
+        .route("/beta/users/apps/entitlements", get(entitlements))
+        .route("/beta/users/apps/batchedDefinitions", post(app_definitions))
+        .route("/beta/users/apps/definitionsv2", get(definitions_v2))
 }
 
 #[cfg(test)]
@@ -301,5 +372,68 @@ mod tests {
         .await;
         assert_eq!(app.chat_admin_error(), None);
         assert!(app.is_favorite_id(&chat));
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn the_demo_message_extension_searches_picks_and_sends_cards() {
+        use crate::app::Selection;
+        use crate::app::extensions::{ExtensionsAction, ExtensionsMsg};
+        use crate::app::view::CardInputValue;
+        let action = |a| Msg::Extensions(ExtensionsMsg::Action(a));
+        let (mut app, task) = App::boot(true);
+        run(&mut app, task).await;
+        let chat = app.first_chat_id();
+        send(&mut app, Msg::Select(Selection::Chat(chat))).await;
+
+        send(&mut app, action(ExtensionsAction::Load)).await;
+        let view = app.extensions_view();
+        assert_eq!(view.apps.len(), 1, "{view:?}");
+        let tickets = view.apps[0].clone();
+        assert_eq!(tickets.commands.len(), 2);
+        let choose = |command: &str| {
+            action(ExtensionsAction::Choose {
+                app_id: tickets.id.clone(),
+                command_id: command.into(),
+            })
+        };
+        send(&mut app, choose("searchTickets")).await;
+        assert_eq!(app.extensions_view().results.len(), 3, "initial run");
+        send(&mut app, action(ExtensionsAction::Search { query: "vpn".into() })).await;
+        let results = app.extensions_view().results;
+        assert_eq!(results.len(), 1);
+        assert_eq!(results[0].title, "#102 · Accès VPN refusé");
+        send(&mut app, action(ExtensionsAction::Pick { index: 0 })).await;
+        // A result with a `tap` asks the bot for its card.
+        send(&mut app, action(ExtensionsAction::Search { query: String::new() })).await;
+        send(&mut app, action(ExtensionsAction::Pick { index: 2 })).await;
+        let cards = app.composer_cards();
+        assert_eq!(cards.len(), 2);
+        assert_eq!(cards[1].card.items.len(), 2, "{:?}", cards[1]);
+        assert_eq!(app.extensions_view().inserted, 2);
+
+        send(&mut app, choose("newTicket")).await;
+        let form = app.extensions_view().form.expect("form");
+        assert_eq!(form.title, "Nouvelle demande");
+        let submit = |inputs: Vec<CardInputValue>| {
+            action(ExtensionsAction::FormAction { action: 0, inputs })
+        };
+        send(&mut app, submit(vec![])).await;
+        assert!(app.extensions_view().form.unwrap().error.is_some(), "title is required");
+        send(
+            &mut app,
+            submit(vec![CardInputValue {
+                id: "title".into(),
+                value: "Badge perdu".into(),
+            }]),
+        )
+        .await;
+        assert!(app.extensions_view().form.is_none());
+        assert_eq!(app.composer_cards().len(), 3);
+
+        send(&mut app, action(ExtensionsAction::RemoveCard { index: 0 })).await;
+        assert_eq!(app.composer_cards().len(), 2);
+        send(&mut app, Msg::Send).await;
+        assert!(app.composer_cards().is_empty(), "the cards went out");
+        assert_eq!(app.error_text(), None);
     }
 }

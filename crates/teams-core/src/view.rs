@@ -83,6 +83,8 @@ pub struct ComposerView {
     pub edit_text: String,
     /// Files attached to the draft, uploading or ready.
     pub attachments: Vec<PendingFileView>,
+    /// Cards from message extensions, sent with the draft.
+    pub cards: Vec<super::extensions::ComposerCardView>,
 }
 
 /// Availability shown on a person's avatar, as the web client's presence badge.
@@ -586,6 +588,7 @@ pub struct Update {
     pub chat_admin: Option<super::chat_admin::ChatAdminView>,
     pub teams_admin: Option<super::teams_admin::TeamsAdminView>,
     pub gifs: Option<super::gifs::GifsView>,
+    pub extensions: Option<super::extensions::ExtensionsView>,
     pub search: Option<super::search::SearchView>,
 }
 impl Update {
@@ -611,6 +614,7 @@ impl Update {
             && self.chat_admin.is_none()
             && self.teams_admin.is_none()
             && self.gifs.is_none()
+            && self.extensions.is_none()
             && self.search.is_none()
     }
 }
@@ -641,6 +645,7 @@ pub(crate) struct Snapshot {
     chat_admin: Option<u64>,
     teams_admin: Option<u64>,
     gifs: Option<u64>,
+    extensions: Option<u64>,
     search: Option<u64>,
 }
 fn hash_of<T: Hash + ?Sized>(value: &T) -> u64 {
@@ -780,6 +785,12 @@ impl Snapshot {
                 &app.teams_admin.view,
             ),
             gifs: changed_ref(parts, Parts::GIFS, &mut self.gifs, &app.gifs.view),
+            extensions: changed_ref(
+                parts,
+                Parts::EXTENSIONS,
+                &mut self.extensions,
+                &app.extensions.view,
+            ),
             search: changed_ref(
                 parts,
                 Parts::RESULTS,
@@ -1084,6 +1095,7 @@ impl App {
             importance: self.conv.importance(),
             edit_text: self.conv.edit_text().to_owned(),
             attachments: self.pending_views(),
+            cards: self.composer_cards(),
         }
     }
     pub(crate) fn sidebar(&self) -> Sidebar {
@@ -1974,6 +1986,7 @@ mod sidebar_tests {
             Msg::ChatAdmin(_) => "ChatAdmin",
             Msg::TeamsAdmin(_) => "TeamsAdmin",
             Msg::Gifs(_) => "Gifs",
+            Msg::Extensions(_) => "Extensions",
             Msg::Card(_) => "Card",
             Msg::FullSearch(_) => "FullSearch",
         }
@@ -2379,6 +2392,9 @@ mod sidebar_tests {
                     title: "Chat".into(),
                 }]),
             )),
+            Msg::Extensions(super::super::extensions::ExtensionsMsg::Action(
+                super::super::extensions::ExtensionsAction::Back,
+            )),
             Msg::Card(super::super::card_actions::CardMsg::Done(
                 g,
                 ("m1".into(), 0),
@@ -2522,6 +2538,7 @@ mod sidebar_tests {
             "ChatAdmin",
             "TeamsAdmin",
             "Gifs",
+            "Extensions",
             "Card",
             "FullSearch",
         ];

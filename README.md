@@ -49,6 +49,7 @@ light and dark themes.
 - Chat list: pin, hide, mark as read or unread.
 - Group chats: rename, add people with or without the history, remove people, leave.
 - GIFs (Giphy) and Teams stickers.
+- Message extensions (the compose box's apps): searches, Adaptive Card forms, cards sent "via" the app.
 - Bot cards with inputs and buttons (`Action.Submit`, `Action.Execute`).
 - Images and shared files shown inline in the conversation.
 - Message search on the server, filtered by sender, date, place, attachments and mentions.

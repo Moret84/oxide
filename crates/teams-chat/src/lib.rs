@@ -4,6 +4,7 @@ mod apps;
 mod client;
 mod csa;
 mod error;
+pub mod extensions;
 mod fun;
 mod media;
 mod new_chat;
@@ -23,6 +24,10 @@ pub use apps::AppDefinition;
 pub use client::{ChatClient, MessagesQuery};
 pub use csa::*;
 pub use error::Error;
+pub use extensions::{
+    ExtensionAnswer, ExtensionCommand, ExtensionItem, ExtensionParameter, ExtensionTarget,
+    ExtensionsLookup, MessageExtension, TaskModule,
+};
 pub use fun::{Gif, giphy_rating};
 pub use notifications::{
     ChannelNotificationSettings, ChannelSettingsResult, FollowState, NssChoice,

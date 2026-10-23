@@ -246,7 +246,7 @@ private struct CardBlock: View {
 }
 
 /// A card's items, top to bottom; a ColumnSet's columns side by side.
-private struct CardItems: View {
+struct CardItems: View {
     let items: [CardItemView]
     let binding: (CardInputView) -> Binding<String>
 

@@ -39,7 +39,7 @@ fn field<'a>(item: &'a Value, name: &str) -> Option<&'a str> {
         .as_str()
 }
 /// The shape of an answer, without its content: its keys, nested two levels.
-fn shape(v: &Value) -> String {
+pub(crate) fn shape(v: &Value) -> String {
     match v {
         Value::Object(o) => {
             let keys: Vec<String> = o
