@@ -101,7 +101,8 @@ pub(crate) enum Change {
     Removed(String),
     Left,
     /// The chat list mark that was set: undone locally when the service refuses it.
-    Pinned(bool),
+    /// With the Favorites folder's new hierarchy version, which the next change must send.
+    Pinned(bool, Option<i64>),
     Hidden(Option<i64>),
     Unread(bool),
 }
@@ -171,7 +172,7 @@ impl App {
                             }
                             Change::Removed(_) => tf!("core.chat_admin.remove_failed", error = e),
                             Change::Left => tf!("core.chat_admin.leave_failed", error = e),
-                            Change::Pinned(pinned) => {
+                            Change::Pinned(pinned, _) => {
                                 self.set_favorite(&chat, !pinned);
                                 tf!("core.chat_admin.pin_failed", error = e)
                             }
@@ -203,7 +204,7 @@ impl App {
         };
         let generation = self.generation;
         let open = self.managed_chat().map(|c| c.id.clone());
-        let done = |chat, change| done(generation, chat, change);
+        let done = move |chat, change| done(generation, chat, change);
         match action {
             ChatAdminAction::DismissError => {
                 self.chat_admin.view.error = None;
@@ -382,11 +383,15 @@ impl App {
                                         ),
                                     )
                                     .await
+                                    .map(|()| None)
                             }
                         }
                         .map_err(|e| e.to_string())
                     },
-                    done(chat_id, Change::Pinned(pinned)),
+                    move |r| {
+                        let version = r.as_ref().ok().copied().flatten();
+                        done(chat_id, Change::Pinned(pinned, version))(r.map(drop))
+                    },
                 )
             }
             ChatAdminAction::Hide { chat_id } => self.set_hidden(client, chat_id, true),
@@ -557,7 +562,13 @@ impl App {
                     c.members.retain(|m| !m.id.eq_ignore_ascii_case(&mri));
                 }
             }
-            Change::Pinned(_) | Change::Hidden(_) | Change::Unread(_) => return Task::none(),
+            Change::Pinned(_, version) => {
+                if let (Some((_, current)), Some(version)) = (&mut self.favorites_folder, version) {
+                    *current = version;
+                }
+                return Task::none();
+            }
+            Change::Hidden(_) | Change::Unread(_) => return Task::none(),
             Change::Left => {
                 self.chats.retain(|c| c.id != chat);
                 self.details.remove(chat);
