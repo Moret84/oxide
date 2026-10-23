@@ -1011,13 +1011,17 @@ impl ConversationState {
             },
         )
     }
-    /// Starts the downloads of the previews the loaded messages show, up to the budget.
-    pub(super) fn load_images(&mut self, ctx: &Ctx) -> Task<Msg> {
+    /// Starts the downloads of the previews the loaded messages and the draft's link preview show, up to the budget.
+    pub(super) fn load_images(&mut self, ctx: &Ctx, draft_image: Option<String>) -> Task<Msg> {
         let (Some(client), Some(selection)) = (ctx.client, ctx.selected) else {
             return Task::none();
         };
-        let mut sources = Vec::new();
-        let mut seen = HashSet::new();
+        let mut seen: HashSet<String> = draft_image
+            .iter()
+            .filter(|src| !self.images.contains_key(*src))
+            .cloned()
+            .collect();
+        let mut sources: Vec<String> = seen.iter().cloned().collect();
         // Newest first, open thread before the feed: feeds open at the bottom, where the budget should go.
         for message in self
             .replies
@@ -1034,10 +1038,12 @@ impl ConversationState {
             }
             let rendered = self.rendered.get(message);
             let thumbnails = rendered.files.iter().filter_map(|f| f.thumbnail.as_ref());
+            let link = rendered.link.iter().filter_map(|l| l.thumbnail.as_ref());
             for src in rendered
                 .images
                 .iter()
                 .chain(&rendered.card_images)
+                .chain(link)
                 .map(|i| &i.src)
                 .chain(thumbnails)
             {

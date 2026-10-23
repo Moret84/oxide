@@ -4155,6 +4155,10 @@
     "fr": "Retirer la carte",
     "en": "Remove card"
   },
+  "ui.link_preview.remove_preview": {
+    "fr": "Retirer l’aperçu du lien",
+    "en": "Remove link preview"
+  },
   "ui.localization.app_language": {
     "fr": "Langue de l’application",
     "en": "App language"

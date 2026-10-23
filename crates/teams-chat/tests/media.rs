@@ -145,3 +145,67 @@ async fn profile_pictures_use_authenticated_regional_service_and_bound_downloads
         .await;
     assert!(client.profile_picture("missing", "").await.is_err());
 }
+#[tokio::test]
+async fn legacy_url_preview_thumbnails_are_fetched_from_urlp_v2() {
+    let server = MockServer::start().await;
+    Mock::given(method("GET"))
+        .and(path("/v1/url/content"))
+        .and(header("authorization", "Bearer private"))
+        .and(query_param("url", "https://www.laprovence.com/a.jpg"))
+        .and(query_param("v", "1"))
+        .respond_with(ResponseTemplate::new(200).set_body_bytes(b"thumbnail"))
+        .expect(1)
+        .mount(&server)
+        .await;
+    let client = ChatClient::new(Arc::new(
+        StaticAuthenticator::new()
+            .with_service(Service::UrlPreview, Url::parse(&format!("{}/urlp/", server.uri())).unwrap())
+            .with_header(
+                HeaderName::from_static("authorization"),
+                HeaderValue::from_static("Bearer private"),
+            ),
+    ));
+    let legacy = "https://urlp.asm.skype.com/v1/url/content?url=https%3A%2F%2Fwww.laprovence.com%2Fa.jpg";
+    assert_eq!(client.download_image(legacy).await.unwrap(), b"thumbnail");
+}
+#[tokio::test]
+async fn preview_images_carry_the_ams_cookie_as_the_web_client_s_img_does() {
+    let server = MockServer::start().await;
+    Mock::given(method("POST"))
+        .and(path("/media/v1/aadtokenauth"))
+        .and(header("authorization", "Bearer private"))
+        .respond_with(
+            ResponseTemplate::new(204)
+                .append_header("set-cookie", "authtoken=cookie-value; Path=/; Secure; HttpOnly")
+                .append_header("set-cookie", "other=x; Domain=elsewhere.test"),
+        )
+        .expect(1)
+        .mount(&server)
+        .await;
+    // The proxy refuses a bearer, as the real one did, and takes the cookie alone.
+    Mock::given(method("GET"))
+        .and(path("/v1/url/content"))
+        .and(header("cookie", "authtoken=cookie-value"))
+        .and(wiremock::matchers::header_exists("authorization"))
+        .respond_with(ResponseTemplate::new(401))
+        .mount(&server)
+        .await;
+    Mock::given(method("GET"))
+        .and(path("/v1/url/content"))
+        .and(header("cookie", "authtoken=cookie-value"))
+        .respond_with(ResponseTemplate::new(200).set_body_bytes(b"thumbnail"))
+        .mount(&server)
+        .await;
+    let base = Url::parse(&format!("{}/media/", server.uri())).unwrap();
+    let client = ChatClient::new(Arc::new(
+        StaticAuthenticator::new()
+            .with_service(Service::Ams, base.clone())
+            .with_service(Service::UrlPreview, base)
+            .with_header(
+                HeaderName::from_static("authorization"),
+                HeaderValue::from_static("Bearer private"),
+            ),
+    ));
+    let legacy = "https://urlp.asm.skype.com/v1/url/content?url=https%3A%2F%2Fx.com%2Fa.jpg";
+    assert_eq!(client.download_image(legacy).await.unwrap(), b"thumbnail");
+}

@@ -62,6 +62,9 @@ struct Composer: View {
                 takeFocusRequest: store.takeComposerFocusRequest
             )
             .frame(height: min(max(height, 40), 140))
+            if let link = composer.linkPreview {
+                LinkPreviewCard(preview: link) { store.send(.linkPreview(action: .dismiss)) }
+            }
             if !composer.cards.isEmpty { ComposerCards(cards: composer.cards) }
             if !composer.attachments.isEmpty { AttachmentChips(attachments: composer.attachments) }
             tools
@@ -92,7 +95,7 @@ struct Composer: View {
         store.composer ?? ComposerView(
             sending: false, draft: "", draftRev: 0, draftCursor: 0,
             mentionRanges: [], draftFormats: [], mentionLoading: false, mentionError: nil,
-            subject: "", importance: .standard, editText: "", attachments: [], cards: []
+            subject: "", importance: .standard, editText: "", attachments: [], cards: [], linkPreview: nil
         )
     }
     /// Text, files, or both; never while a file is still uploading.

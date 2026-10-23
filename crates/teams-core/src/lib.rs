@@ -54,6 +54,7 @@ pub use app::extensions::{
     ComposerCardView, ExtensionAppView, ExtensionCommandView, ExtensionFormView, ExtensionLinkView,
     ExtensionResultView, ExtensionsAction, ExtensionsView,
 };
+pub use app::link_preview::{LinkPreviewAction, LinkPreviewView};
 pub use app::gifs::{GifView, GifsAction, GifsView, StickerCategory, StickerView};
 pub use app::search::{
     SearchAction, SearchDate, SearchFiltersView, SearchHitView, SearchKind, SearchView,
@@ -135,6 +136,10 @@ pub enum Action {
     /// The compose box's message extensions.
     Extensions {
         action: ExtensionsAction,
+    },
+    /// The compose box's link preview.
+    LinkPreview {
+        action: LinkPreviewAction,
     },
     FullSearch {
         action: SearchAction,
@@ -284,6 +289,9 @@ fn message(app: &App, action: Action) -> Option<Msg> {
         Action::Gifs { action } => Msg::Gifs(app::gifs::GifsMsg::Action(action)),
         Action::Extensions { action } => {
             Msg::Extensions(app::extensions::ExtensionsMsg::Action(action))
+        }
+        Action::LinkPreview { action } => {
+            Msg::LinkPreview(app::link_preview::LinkPreviewMsg::Action(action))
         }
         Action::FullSearch { action } => {
             Msg::FullSearch(app::search::SearchMsg::Action(action))

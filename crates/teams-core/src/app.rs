@@ -63,6 +63,8 @@ pub(crate) mod files;
 pub(crate) mod formatting;
 #[path = "extensions.rs"]
 pub(crate) mod extensions;
+#[path = "link_preview.rs"]
+pub(crate) mod link_preview;
 #[path = "gifs.rs"]
 pub(crate) mod gifs;
 #[path = "me.rs"]
@@ -93,6 +95,7 @@ use files::{FilesMsg, FilesState};
 use card_actions::{CardMsg, CardState};
 use chat_admin::{ChatAdminMsg, ChatAdminState};
 use extensions::{ExtensionsMsg, ExtensionsState};
+use link_preview::{LinkPreviewMsg, LinkPreviewState};
 use gifs::{GifsMsg, GifsState};
 use search::{SearchMsg, SearchState};
 use me::{MeMsg, MeState};
@@ -253,6 +256,8 @@ pub(crate) struct App {
     gifs: Tracked<GifsState, { feeds::GIFS }>,
     /// Message extensions: the flyout, and the cards they put in drafts.
     extensions: Tracked<ExtensionsState, { feeds::EXTENSIONS }>,
+    /// The preview of the draft's first link.
+    link_preview: Tracked<LinkPreviewState, { feeds::COMPOSER }>,
     /// The search results page.
     search_state: Tracked<SearchState, { feeds::RESULTS }>,
     /// Cards whose buttons were used, by message id and card number.
@@ -361,6 +366,7 @@ pub(crate) enum Msg {
     TeamsAdmin(TeamsAdminMsg),
     Gifs(GifsMsg),
     Extensions(ExtensionsMsg),
+    LinkPreview(LinkPreviewMsg),
     Card(CardMsg),
     FullSearch(SearchMsg),
     Receipts(receipts::ReceiptsMsg),
@@ -477,6 +483,7 @@ impl App {
             teams_admin: Default::default(),
             gifs: Default::default(),
             extensions: Default::default(),
+            link_preview: Default::default(),
             search_state: Default::default(),
             card_states: Default::default(),
             favorites_folder: None,
@@ -574,6 +581,7 @@ impl App {
                         Service::CallingConversation,
                         crate::calls_mock::conversation().url(),
                     )
+                    .with_service(Service::UrlPreview, base.clone())
                     .with_service(Service::Ams, base),
             ));
             *app.client = Some(ChatClient::new(auth));
@@ -731,6 +739,7 @@ impl App {
             teams_admin,
             gifs,
             extensions,
+            link_preview,
             search_state,
             card_states,
             favorites_folder: _,
@@ -806,6 +815,7 @@ impl App {
             teams_admin.take_changes(),
             gifs.take_changes(),
             extensions.take_changes(),
+            link_preview.take_changes(),
             search_state.take_changes(),
             card_states.take_changes(),
             hidden_chats.take_changes(),
@@ -880,6 +890,7 @@ impl App {
         }
         Task::batch([
             Task(jobs),
+            self.refresh_link_preview(),
             self.load_images(),
             self.load_visible_channels(),
             self.resolve_people(),
@@ -1066,8 +1077,9 @@ impl App {
         conv.load_feed(&ctx, append)
     }
     fn load_images(&mut self) -> Task<Msg> {
+        let draft_image = self.draft_link_image();
         let (conv, ctx) = self.conversation();
-        conv.load_images(&ctx)
+        conv.load_images(&ctx, draft_image)
     }
     fn draft_key(&self) -> String {
         self.conv.draft_key(self.selected.as_ref())
@@ -1095,6 +1107,7 @@ impl App {
             Msg::TeamsAdmin(msg) => self.update_teams_admin(msg),
             Msg::Gifs(msg) => self.update_gifs(msg),
             Msg::Extensions(msg) => self.update_extensions(msg),
+            Msg::LinkPreview(msg) => self.update_link_preview(msg),
             Msg::Card(msg) => self.update_card(msg),
             Msg::FullSearch(msg) => self.update_search(msg),
             Msg::Receipts(msg) => self.update_receipts(msg),
@@ -1866,6 +1879,9 @@ impl App {
                     OutgoingMessage::html(client_message_id(), html, &*self.display_name);
                 if let Some(json) = cards_json {
                     message.properties.cards = json;
+                }
+                if let Some(links) = self.draft_links() {
+                    message.properties.links = links;
                 }
                 message.properties.mentions = self.composer_mentions();
                 message.properties.subject = self.conv.subject().to_owned();

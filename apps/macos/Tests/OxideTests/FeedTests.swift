@@ -9,7 +9,7 @@ final class FeedTests: XCTestCase {
             subject: nil, importance: .standard, deleted: false, editing: false,
             runs: [RunView(text: text, link: nil, bold: false, italic: false, code: false, underline: false,
                            strike: false, color: nil, highlight: nil, size: 0, mention: false)],
-            blocks: [], images: [], files: [], reactions: [], pending: false, canReact: true,
+            blocks: [], images: [], files: [], linkPreview: nil, reactions: [], pending: false, canReact: true,
             editable: false, receipt: nil
         )
     }

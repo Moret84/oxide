@@ -52,6 +52,7 @@ light and dark themes.
 - Message extensions (the compose box's apps): searches, Adaptive Card forms, cards sent "via" the app.
 - Bot cards with inputs and buttons (`Action.Submit`, `Action.Execute`).
 - Images and shared files shown inline in the conversation.
+- Link previews: shown under messages, and prepared in the compose box for the draft's first link.
 - Message search on the server, filtered by sender, date, place, attachments and mentions.
 
 **Calls and meetings**

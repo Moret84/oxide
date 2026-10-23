@@ -45,6 +45,8 @@ pub struct ChatClient<A> {
     pub(crate) regional_base: Arc<RwLock<Option<Url>>>,
     /// Presence base learnt from a Front Door redirect.
     pub(crate) presence_base: Arc<RwLock<Option<Url>>>,
+    /// AMS image cookies (`aadtokenauth`), asked for at the first preview image.
+    pub(crate) media_cookies: Arc<tokio::sync::Mutex<Option<Vec<crate::media::MediaCookie>>>>,
     backoffs: net::Backoff<Service>,
 }
 
@@ -56,6 +58,7 @@ impl<A> Clone for ChatClient<A> {
             session_id: self.session_id.clone(),
             regional_base: self.regional_base.clone(),
             presence_base: self.presence_base.clone(),
+            media_cookies: self.media_cookies.clone(),
             backoffs: self.backoffs.clone(),
         }
     }
@@ -74,6 +77,7 @@ impl<A: Authenticator> ChatClient<A> {
             session_id: uuid::Uuid::new_v4().to_string(),
             regional_base: Arc::new(RwLock::new(None)),
             presence_base: Arc::new(RwLock::new(None)),
+            media_cookies: Arc::default(),
             backoffs: net::Backoff::default(),
         }
     }
