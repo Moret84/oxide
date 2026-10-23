@@ -1727,6 +1727,10 @@
     "fr": "Lien de fichier invalide.",
     "en": "Invalid file link."
   },
+  "files.drive.color_refused": {
+    "fr": "Changement de couleur refusé.",
+    "en": "Colour change refused."
+  },
   "files.drive.rename_refused": {
     "fr": "Renommage refusé.",
     "en": "Rename refused."
@@ -5874,5 +5878,73 @@
   "ui.voicemail_player.couldn_t_play_the_voicemail": {
     "fr": "Lecture du message vocal impossible.",
     "en": "Couldn’t play the voicemail."
+  },
+  "ui.files_screens.folder_color": {
+    "fr": "Couleur",
+    "en": "Colour"
+  },
+  "ui.files_screens.folder_color_0": {
+    "fr": "Par défaut",
+    "en": "Default"
+  },
+  "ui.files_screens.folder_color_1": {
+    "fr": "Rouge foncé",
+    "en": "Dark red"
+  },
+  "ui.files_screens.folder_color_2": {
+    "fr": "Orange foncé",
+    "en": "Dark orange"
+  },
+  "ui.files_screens.folder_color_3": {
+    "fr": "Vert foncé",
+    "en": "Dark green"
+  },
+  "ui.files_screens.folder_color_4": {
+    "fr": "Bleu-vert foncé",
+    "en": "Dark teal"
+  },
+  "ui.files_screens.folder_color_5": {
+    "fr": "Bleu foncé",
+    "en": "Dark blue"
+  },
+  "ui.files_screens.folder_color_6": {
+    "fr": "Violet foncé",
+    "en": "Dark purple"
+  },
+  "ui.files_screens.folder_color_7": {
+    "fr": "Rose foncé",
+    "en": "Dark pink"
+  },
+  "ui.files_screens.folder_color_8": {
+    "fr": "Gris",
+    "en": "Grey"
+  },
+  "ui.files_screens.folder_color_9": {
+    "fr": "Rouge clair",
+    "en": "Light red"
+  },
+  "ui.files_screens.folder_color_10": {
+    "fr": "Orange clair",
+    "en": "Light orange"
+  },
+  "ui.files_screens.folder_color_11": {
+    "fr": "Vert clair",
+    "en": "Light green"
+  },
+  "ui.files_screens.folder_color_12": {
+    "fr": "Bleu-vert clair",
+    "en": "Light teal"
+  },
+  "ui.files_screens.folder_color_13": {
+    "fr": "Bleu clair",
+    "en": "Light blue"
+  },
+  "ui.files_screens.folder_color_14": {
+    "fr": "Violet clair",
+    "en": "Light purple"
+  },
+  "ui.files_screens.folder_color_15": {
+    "fr": "Rose clair",
+    "en": "Light pink"
   }
 }

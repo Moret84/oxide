@@ -75,10 +75,35 @@ final class QuickLook: NSObject, QLPreviewPanelDataSource {
     }
 }
 
+/// OneDrive's folder colours, indexed by `_ColorHex`; 0 keeps the app's own look.
+enum FolderColors {
+    static let count: UInt8 = 16
+    private static let hex: [UInt32] = [
+        0x000000, 0xA4262C, 0xCA5010, 0x0B6A0B, 0x038387, 0x004E8C, 0x5C2E91, 0xBF0077,
+        0x7A7574, 0xF1707B, 0xFFAA44, 0x6BB700, 0x00B7C3, 0x73B3EB, 0x8764B8, 0xEE5FB7,
+    ]
+    static func color(_ index: UInt8) -> Color {
+        index == 0 || index >= count ? Theme.accentText : Theme.rgb(hex[Int(index)])
+    }
+    static func name(_ index: UInt8) -> String { L("ui.files_screens.folder_color_\(index)") }
+    /// Menus draw SF Symbols in one colour, so the swatch is a plain image.
+    static func swatch(_ index: UInt8) -> Image {
+        let fill = NSColor(color(index))
+        let image = NSImage(size: NSSize(width: 12, height: 12), flipped: false) { rect in
+            fill.setFill()
+            NSBezierPath(ovalIn: rect.insetBy(dx: 0.5, dy: 0.5)).fill()
+            return true
+        }
+        image.isTemplate = false
+        return Image(nsImage: image)
+    }
+}
+
 /// Extension badge, PDF in its own colors like Teams.
 struct FileBadge: View {
     let ext: String
     var folder = false
+    var folderColor: UInt8 = 0
     var side: CGFloat = 36
     var body: some View {
         Group {
@@ -90,11 +115,15 @@ struct FileBadge: View {
                 Text(ext).font(.figtree(side * 0.28, .semibold))
             }
         }
-        .foregroundStyle(ext == "PDF" ? Theme.pdfText : Theme.accentText)
+        .foregroundStyle(ext == "PDF" ? Theme.pdfText : tinted ? FolderColors.color(folderColor) : Theme.accentText)
         .frame(width: side, height: side)
-        .background(ext == "PDF" ? Theme.pdfBackground : Theme.accentSoft, in: RoundedRectangle(cornerRadius: side * 0.22))
+        .background(
+            ext == "PDF" ? Theme.pdfBackground : tinted ? FolderColors.color(folderColor).opacity(0.16) : Theme.accentSoft,
+            in: RoundedRectangle(cornerRadius: side * 0.22)
+        )
         .accessibilityHidden(true)
     }
+    private var tinted: Bool { folder && folderColor != 0 }
 }
 
 /// A file attached to a message, or listed in a "Partagé" tab.
@@ -516,7 +545,7 @@ struct FileBrowserScreen: View {
 
     private func row(_ entry: EntryView) -> some View {
         HStack(spacing: 10) {
-            FileBadge(ext: entry.ext, folder: entry.folder, side: 28)
+            FileBadge(ext: entry.ext, folder: entry.folder, folderColor: entry.color, side: 28)
             VStack(alignment: .leading, spacing: 1) {
                 Text(entry.name).font(.figtree(13)).lineLimit(1)
                 if !entry.location.isEmpty {
@@ -568,6 +597,16 @@ struct FileBrowserScreen: View {
         if store.browser?.canWrite == true {
             Divider()
             Button(L("ui.files_screens.rename_2")) { naming = .rename(entry) }
+            if entry.folder {
+                Picker(L("ui.files_screens.folder_color"), selection: Binding(
+                    get: { entry.color },
+                    set: { store.send(.files(action: .setColor(key: entry.key, color: $0))) }
+                )) {
+                    ForEach(0..<FolderColors.count, id: \.self) { index in
+                        Label { Text(FolderColors.name(index)) } icon: { FolderColors.swatch(index) }.tag(index)
+                    }
+                }
+            }
             Button(L("ui.files_screens.delete_2"), role: .destructive) { deleting = entry }
         }
     }

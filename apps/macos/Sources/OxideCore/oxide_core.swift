@@ -3566,13 +3566,20 @@ public struct EntryView: Equatable, Hashable {
      * Folder holding a search result.
      */
     public var location: String
+    /**
+     * Folder colour, 0 for the default.
+     */
+    public var color: UInt8
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
     public init(key: String, name: String, ext: String, folder: Bool, size: String, modified: String, modifiedBy: String, progress: UInt8?, canOpenFolder: Bool, 
         /**
          * Folder holding a search result.
-         */location: String) {
+         */location: String, 
+        /**
+         * Folder colour, 0 for the default.
+         */color: UInt8) {
         self.key = key
         self.name = name
         self.ext = ext
@@ -3583,6 +3590,7 @@ public struct EntryView: Equatable, Hashable {
         self.progress = progress
         self.canOpenFolder = canOpenFolder
         self.location = location
+        self.color = color
     }
 
     
@@ -3610,7 +3618,8 @@ public struct FfiConverterTypeEntryView: FfiConverterRustBuffer {
                 modifiedBy: FfiConverterString.read(from: &buf), 
                 progress: FfiConverterOptionUInt8.read(from: &buf), 
                 canOpenFolder: FfiConverterBool.read(from: &buf), 
-                location: FfiConverterString.read(from: &buf)
+                location: FfiConverterString.read(from: &buf), 
+                color: FfiConverterUInt8.read(from: &buf)
         )
     }
 
@@ -3625,6 +3634,7 @@ public struct FfiConverterTypeEntryView: FfiConverterRustBuffer {
         FfiConverterOptionUInt8.write(value.progress, into: &buf)
         FfiConverterBool.write(value.canOpenFolder, into: &buf)
         FfiConverterString.write(value.location, into: &buf)
+        FfiConverterUInt8.write(value.color, into: &buf)
     }
 }
 
@@ -11260,6 +11270,11 @@ public enum FileAction: Equatable, Hashable {
     case delete(key: String
     )
     /**
+     * Folder colour, 0 (default yellow) to 15.
+     */
+    case setColor(key: String, color: UInt8
+    )
+    /**
      * Upload local files into the folder shown by the browser.
      */
     case uploadHere(paths: [String]
@@ -11338,12 +11353,15 @@ public struct FfiConverterTypeFileAction: FfiConverterRustBuffer {
         case 16: return .delete(key: try FfiConverterString.read(from: &buf)
         )
         
-        case 17: return .uploadHere(paths: try FfiConverterSequenceString.read(from: &buf)
+        case 17: return .setColor(key: try FfiConverterString.read(from: &buf), color: try FfiConverterUInt8.read(from: &buf)
         )
         
-        case 18: return .refreshBrowser
+        case 18: return .uploadHere(paths: try FfiConverterSequenceString.read(from: &buf)
+        )
         
-        case 19: return .searchFiles(query: try FfiConverterString.read(from: &buf)
+        case 19: return .refreshBrowser
+        
+        case 20: return .searchFiles(query: try FfiConverterString.read(from: &buf)
         )
         
         default: throw UniffiInternalError.unexpectedEnumCase
@@ -11435,17 +11453,23 @@ public struct FfiConverterTypeFileAction: FfiConverterRustBuffer {
             FfiConverterString.write(key, into: &buf)
             
         
-        case let .uploadHere(paths):
+        case let .setColor(key,color):
             writeInt(&buf, Int32(17))
+            FfiConverterString.write(key, into: &buf)
+            FfiConverterUInt8.write(color, into: &buf)
+            
+        
+        case let .uploadHere(paths):
+            writeInt(&buf, Int32(18))
             FfiConverterSequenceString.write(paths, into: &buf)
             
         
         case .refreshBrowser:
-            writeInt(&buf, Int32(18))
+            writeInt(&buf, Int32(19))
         
         
         case let .searchFiles(query):
-            writeInt(&buf, Int32(19))
+            writeInt(&buf, Int32(20))
             FfiConverterString.write(query, into: &buf)
             
         }

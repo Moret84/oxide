@@ -376,6 +376,17 @@ async fn folders_list_create_rename_and_recycle() {
         .expect(1)
         .mount(&server)
         .await;
+    Mock::given(method("GET"))
+        .and(path("/sites/t/_api/web/GetFolderByServerRelativePath(decodedUrl=@a1)/Folders"))
+        .and(query_param("@a1", "'/sites/t/Shared Documents/General'"))
+        .and(query_param("$select", "UniqueId,ListItemAllFields/OData__ColorHex"))
+        .and(query_param("$expand", "ListItemAllFields"))
+        .respond_with(ResponseTemplate::new(200).set_body_json(json!({
+            "value": [{"UniqueId": GUID, "ListItemAllFields": {"OData__ColorHex": "3"}}]
+        })))
+        .expect(1)
+        .mount(&server)
+        .await;
     Mock::given(method("POST"))
         .and(path("/sites/t/_api/web/folders/AddUsingPath(DecodedUrl=@a1,overwrite=@a2)"))
         .and(query_param("@a1", "'/sites/t/Shared Documents/General/Nouveau dossier'"))
@@ -391,6 +402,13 @@ async fn folders_list_create_rename_and_recycle() {
         .mount(&server)
         .await;
     Mock::given(method("POST"))
+        .and(path(format!("/sites/t/_api/web/GetFolderById('{GUID}')/ListItemAllFields/validateUpdateListItem")))
+        .and(body_json(json!({"formValues": [{"FieldName": "_ColorHex", "FieldValue": "12"}], "bNewDocumentUpdate": false})))
+        .respond_with(ResponseTemplate::new(200).set_body_json(json!({"value": [{"FieldName": "_ColorHex", "HasException": false}]})))
+        .expect(1)
+        .mount(&server)
+        .await;
+    Mock::given(method("POST"))
         .and(path(format!("/sites/t/_api/web/GetFolderById('{GUID}')/recycle")))
         .respond_with(ResponseTemplate::new(200))
         .expect(1)
@@ -401,8 +419,11 @@ async fn folders_list_create_rename_and_recycle() {
     let list = client.list_folder(&site, "/sites/t/Shared Documents/General").await.unwrap();
     let folder: &DriveEntry = &list.entries[0];
     assert!(folder.folder);
+    assert_eq!(folder.color, 3);
     client.create_folder(&site, "/sites/t/Shared Documents/General/", "Nouveau dossier").await.unwrap();
     client.rename(&site, folder, "Plans").await.unwrap();
+    client.set_color(&site, folder, 12).await.unwrap();
+    assert!(matches!(client.set_color(&site, folder, 16).await, Err(Error::Invalid(_))));
     client.delete(&site, folder).await.unwrap();
     assert!(matches!(
         client.rename(&site, folder, "a/b").await,

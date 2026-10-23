@@ -26,6 +26,7 @@ struct Node {
     bytes: Vec<u8>,
     modified: String,
     by: String,
+    color: u8,
 }
 type Store = Arc<Mutex<Vec<Node>>>;
 
@@ -43,6 +44,7 @@ fn folder(path: &str) -> Node {
         bytes: vec![],
         modified: "2026-10-01T09:00:00Z".into(),
         by: "Vous".into(),
+        color: 0,
     }
 }
 fn file(path: &str, text: &str, by: &str, modified: &str) -> Node {
@@ -53,6 +55,7 @@ fn file(path: &str, text: &str, by: &str, modified: &str) -> Node {
         bytes: text.as_bytes().to_vec(),
         modified: modified.into(),
         by: by.into(),
+        color: 0,
     }
 }
 fn seed() -> Vec<Node> {
@@ -65,7 +68,10 @@ fn seed() -> Vec<Node> {
             "Vous",
             "2026-10-14T16:20:00Z",
         ),
-        folder(&format!("{LIBRARY}/Projets")),
+        Node {
+            color: 5,
+            ..folder(&format!("{LIBRARY}/Projets"))
+        },
         file(
             &format!("{LIBRARY}/Projets/Spécifications.md"),
             "# Spécifications\n\nFichiers joints, onglet Partagé, navigateur OneDrive.\n",
@@ -233,6 +239,19 @@ async fn sharepoint(
     let mut store = store.lock().unwrap();
     let by_id = |store: &[Node], id: &str| store.iter().position(|n| n.id == id);
 
+    if path.contains("/_api/web/GetFolderByServerRelativePath(")
+        && path.ends_with("/Folders")
+        && method == Method::GET
+    {
+        let folder = alias(&url, "@a1").unwrap_or_default();
+        let folder = folder.trim_end_matches('/');
+        let colors: Vec<Value> = store
+            .iter()
+            .filter(|n| n.folder && parent(&n.path) == folder)
+            .map(|n| json!({"UniqueId": n.id, "ListItemAllFields": {"OData__ColorHex": n.color.to_string()}}))
+            .collect();
+        return axum::Json(json!({ "value": colors })).into_response();
+    }
     if path.contains("/_api/web/GetFolderByServerRelativePath(") && method == Method::GET {
         let folder = alias(&url, "@a1").unwrap_or_default();
         let folder = folder.trim_end_matches('/');
@@ -287,6 +306,7 @@ async fn sharepoint(
             bytes: body.to_vec(),
             modified: now(),
             by: "Vous".into(),
+            color: 0,
         };
         let value = item(&base, &node);
         store.push(node);
@@ -315,6 +335,7 @@ async fn sharepoint(
             bytes: vec![],
             modified: now(),
             by: "Vous".into(),
+            color: 0,
         };
         let id = node.id.clone();
         store.push(node);
@@ -453,15 +474,20 @@ fn folder_node(path: &str) -> Node {
         ..folder(path)
     }
 }
+/// `validateUpdateListItem`: a rename (`FileLeafRef`) or a folder colour (`_ColorHex`).
 fn rename(store: &mut [Node], i: usize, body: &[u8]) -> Response {
-    let wanted = serde_json::from_slice::<Value>(body)
-        .ok()
-        .and_then(|v| {
-            v.pointer("/formValues/0/FieldValue")?
-                .as_str()
-                .map(str::to_owned)
-        })
-        .unwrap_or_default();
+    let body = serde_json::from_slice::<Value>(body).unwrap_or_default();
+    let field = body.pointer("/formValues/0/FieldName").and_then(Value::as_str);
+    let wanted = body
+        .pointer("/formValues/0/FieldValue")
+        .and_then(Value::as_str)
+        .unwrap_or_default()
+        .to_owned();
+    if field == Some("_ColorHex") {
+        store[i].color = wanted.parse().unwrap_or_default();
+        return axum::Json(json!({"value": [{"FieldName": "_ColorHex", "HasException": false}]}))
+            .into_response();
+    }
     let old = store[i].path.clone();
     let new = format!("{}/{wanted}", parent(&old));
     if wanted.is_empty() || store.iter().any(|n| n.path == new) {
