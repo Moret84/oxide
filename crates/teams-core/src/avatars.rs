@@ -1,5 +1,6 @@
-//! Small session-only photo cache; Swift takes each decoded image once.
+//! Small photo cache; Swift takes each file once, the disk cache keeps them between launches.
 use crate::app::*;
+use crate::disk_cache;
 use crate::media::{self, LoadedImage};
 #[derive(Debug)]
 enum State {
@@ -16,7 +17,7 @@ enum Source {
 }
 /// Requests waiting for a download; more are ignored until the queue drains.
 const MAX_QUEUED: usize = 256;
-/// Photos Swift may hold (64 KiB each); the least recently asked for are evicted.
+/// Photos Swift may hold (64 KiB each once decoded); the least recently asked for are evicted.
 const MAX_READY: usize = 256;
 #[derive(Default)]
 pub(crate) struct Cache {
@@ -83,12 +84,32 @@ impl Cache {
             let client = client.clone();
             Task::perform(
                 async move {
-                    let bytes = match source {
-                        Source::Profile { mri, name } => client.profile_picture(&mri, &name).await,
-                        Source::Url(url) => client.download_image(&url).await,
-                    }
-                    .map_err(|_| ())?;
-                    tokio::task::spawn_blocking(move || media::decode_avatar(&bytes))
+                    let key = match &source {
+                        Source::Profile { mri, name } => format!("{mri}\n{name}"),
+                        Source::Url(url) => url.clone(),
+                    };
+                    let cached = disk_cache::photo(&key).await;
+                    let bytes = match cached {
+                        Some((bytes, true)) => bytes,
+                        stale => {
+                            let downloaded = match &source {
+                                Source::Profile { mri, name } => {
+                                    client.profile_picture(mri, name).await
+                                }
+                                Source::Url(url) => client.download_image(url).await,
+                            };
+                            match (downloaded, stale) {
+                                (Ok(bytes), _) => {
+                                    disk_cache::store(disk_cache::Kind::Photo, &key, &bytes).await;
+                                    bytes
+                                }
+                                // Offline: last week's photo beats initials.
+                                (Err(_), Some((bytes, _))) => bytes,
+                                (Err(_), None) => return Err(()),
+                            }
+                        }
+                    };
+                    tokio::task::spawn_blocking(move || media::inspect_avatar(bytes))
                         .await
                         .map_err(|_| ())?
                         .map_err(|_| ())
@@ -137,14 +158,14 @@ impl Cache {
         let State::Ready(image) = self.entries.get_mut(id)? else {
             return None;
         };
-        let rgba = std::mem::take(&mut image.rgba);
-        if rgba.is_empty() {
+        let data = std::mem::take(&mut image.data);
+        if data.is_empty() {
             return None;
         }
         Some((
             image.width,
             image.height,
-            Arc::try_unwrap(rgba).unwrap_or_else(|v| v.as_ref().clone()),
+            Arc::try_unwrap(data).unwrap_or_else(|v| v.as_ref().clone()),
         ))
     }
 }
@@ -153,7 +174,7 @@ impl Cache {
 mod tests {
     use super::*;
     #[test]
-    fn session_cache_is_bounded_deduplicates_and_hands_pixels_over_once() {
+    fn session_cache_is_bounded_deduplicates_and_hands_files_over_once() {
         let mut cache = Cache::default();
         cache.request("alice".into(), "8:orgid:alice".into(), "Alice".into());
         cache.request("alice".into(), "8:orgid:alice".into(), "Alice".into());
@@ -165,7 +186,7 @@ mod tests {
                 image::ImageFormat::Png,
             )
             .unwrap();
-        let photo = media::decode_avatar(&bytes).unwrap();
+        let photo = media::inspect_avatar(bytes).unwrap();
         assert_eq!((photo.width, photo.height), (128, 128));
         cache.finish("alice".into(), Ok(photo));
         assert_eq!(cache.ready_ids(), vec!["alice"]);
@@ -185,7 +206,7 @@ mod tests {
         let photo = || LoadedImage {
             width: 1,
             height: 1,
-            rgba: Arc::default(),
+            data: Arc::default(),
             bytes: 4,
         };
         let mut cache = Cache::default();
@@ -208,7 +229,7 @@ mod tests {
         let photo = || LoadedImage {
             width: 1,
             height: 1,
-            rgba: Arc::default(),
+            data: Arc::default(),
             bytes: 4,
         };
         let mut cache = Cache::default();

@@ -2080,7 +2080,7 @@ mod sidebar_tests {
             Ok(media::LoadedImage {
                 width: 2,
                 height: 2,
-                rgba: Arc::new(vec![0; 16]),
+                data: Arc::new(vec![0; 16]),
                 bytes,
             })
         };
@@ -2757,7 +2757,7 @@ mod sidebar_tests {
         let loaded = Ok(media::LoadedImage {
             width: 2,
             height: 2,
-            rgba: Arc::new(vec![0; 16]),
+            data: Arc::new(vec![0; 16]),
             bytes: 16,
         });
         let update = step(

@@ -2553,6 +2553,7 @@ dependencies = [
  "scraper",
  "serde",
  "serde_json",
+ "sha2",
  "teams-auth",
  "teams-calendar",
  "teams-calling",
