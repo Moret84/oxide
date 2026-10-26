@@ -164,6 +164,12 @@ impl App {
                     .unwrap_or(true)
             })
     }
+    /// A shown channel has unread posts: bolds the team's row and dots the rail's Teams item.
+    pub(super) fn team_unread(&self, team: &Team) -> bool {
+        team.channels
+            .iter()
+            .any(|c| self.channel_shown(team, c) && c.is_unread(&self.me))
+    }
     pub(super) fn channel_shown(&self, team: &Team, channel: &Channel) -> bool {
         self.team_list
             .shown
@@ -262,10 +268,7 @@ impl App {
                     .contains(&Self::visibility_key(&team.id, None)),
                 expanded,
                 show_channels: expanded || searching,
-                unread: team
-                    .channels
-                    .iter()
-                    .any(|c| self.channel_shown(team, c) && c.is_unread(&self.me)),
+                unread: self.team_unread(team),
                 channels,
                 loading: self.channels_loading.contains(&team.id),
                 failed: self.channel_errors.contains_key(&team.id),
@@ -560,7 +563,6 @@ mod tests {
         );
         assert!(rows[2].unread, "marked as unread");
         assert!(!rows[3].unread);
-
         let selection = Selection::Channel {
             team: "team-00".into(),
             channel: id,

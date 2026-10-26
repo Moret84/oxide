@@ -7390,6 +7390,7 @@ public struct Shell: Equatable, Hashable {
     public var notices: [String]
     public var unread: UInt32
     public var activityUnread: UInt32
+    public var teamsUnread: Bool
     public var loadingWorkspace: Bool
     public var selected: Target?
     public var replyOpen: Bool
@@ -7401,7 +7402,7 @@ public struct Shell: Equatable, Hashable {
     public init(signedIn: Bool, signingIn: Bool, me: String, displayName: String, accountEmail: String, 
         /**
          * External-browser sign-in is waiting for the pasted return URL.
-         */browserLogin: Bool, callback: String, nav: Nav, filter: Filter, tab: Tab, search: String, error: String?, notices: [String], unread: UInt32, activityUnread: UInt32, loadingWorkspace: Bool, selected: Target?, replyOpen: Bool, readOnly: Bool, editing: String?) {
+         */browserLogin: Bool, callback: String, nav: Nav, filter: Filter, tab: Tab, search: String, error: String?, notices: [String], unread: UInt32, activityUnread: UInt32, teamsUnread: Bool, loadingWorkspace: Bool, selected: Target?, replyOpen: Bool, readOnly: Bool, editing: String?) {
         self.signedIn = signedIn
         self.signingIn = signingIn
         self.me = me
@@ -7417,6 +7418,7 @@ public struct Shell: Equatable, Hashable {
         self.notices = notices
         self.unread = unread
         self.activityUnread = activityUnread
+        self.teamsUnread = teamsUnread
         self.loadingWorkspace = loadingWorkspace
         self.selected = selected
         self.replyOpen = replyOpen
@@ -7455,6 +7457,7 @@ public struct FfiConverterTypeShell: FfiConverterRustBuffer {
                 notices: FfiConverterSequenceString.read(from: &buf), 
                 unread: FfiConverterUInt32.read(from: &buf), 
                 activityUnread: FfiConverterUInt32.read(from: &buf), 
+                teamsUnread: FfiConverterBool.read(from: &buf), 
                 loadingWorkspace: FfiConverterBool.read(from: &buf), 
                 selected: FfiConverterOptionTypeTarget.read(from: &buf), 
                 replyOpen: FfiConverterBool.read(from: &buf), 
@@ -7479,6 +7482,7 @@ public struct FfiConverterTypeShell: FfiConverterRustBuffer {
         FfiConverterSequenceString.write(value.notices, into: &buf)
         FfiConverterUInt32.write(value.unread, into: &buf)
         FfiConverterUInt32.write(value.activityUnread, into: &buf)
+        FfiConverterBool.write(value.teamsUnread, into: &buf)
         FfiConverterBool.write(value.loadingWorkspace, into: &buf)
         FfiConverterOptionTypeTarget.write(value.selected, into: &buf)
         FfiConverterBool.write(value.replyOpen, into: &buf)

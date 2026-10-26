@@ -60,6 +60,7 @@ pub struct Shell {
     pub notices: Vec<String>,
     pub unread: u32,
     pub activity_unread: u32,
+    pub teams_unread: bool,
     pub loading_workspace: bool,
     pub selected: Option<Target>,
     pub reply_open: bool,
@@ -1069,6 +1070,7 @@ impl App {
                 .filter(|c| c.is_unread() && !self.is_hidden(c))
                 .count() as u32,
             activity_unread: self.activity_unread_count(),
+            teams_unread: self.teams.iter().any(|t| self.team_unread(t)),
             // Toggled every 30 s by background refreshes; only matters while a list is empty or can grow, so skip redrawing the window.
             loading_workspace: *self.loading_workspace
                 && (self.chats.is_empty() || self.teams.is_empty() || *self.more_chats),

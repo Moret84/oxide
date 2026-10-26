@@ -21,7 +21,7 @@ struct MainView: View {
             topBar
             Divider().overlay(Theme.border)
             HStack(spacing: 0) {
-                Rail(nav: shell.nav, activityUnread: shell.activityUnread).equatable()
+                Rail(nav: shell.nav, unread: shell.unread, activityUnread: shell.activityUnread, teamsUnread: shell.teamsUnread).equatable()
                 Divider().overlay(Theme.border)
                 // These screens bring their own navigation column.
                 if ![.calendar, .calls, .files, .settings].contains(shell.nav) {
@@ -226,13 +226,16 @@ private struct OfflineBanner: View {
 struct Rail: View, Equatable {
     @Environment(Store.self) private var store
     let nav: Nav
+    let unread: UInt32
     let activityUnread: UInt32
+    let teamsUnread: Bool
     /// Highlighted from the click until the core confirms, which may take a full rebuild.
     @State private var pending: Nav?
     @Namespace private var selectionSpace
     private let items = RailCommands.items
     static func == (a: Rail, b: Rail) -> Bool {
-        a.nav == b.nav && a.activityUnread == b.activityUnread
+        a.nav == b.nav && a.unread == b.unread && a.activityUnread == b.activityUnread
+            && a.teamsUnread == b.teamsUnread
     }
     var body: some View {
         VStack(spacing: 4) {
@@ -240,7 +243,8 @@ struct Rail: View, Equatable {
                 RailItem(
                     symbol: symbol, name: name,
                     active: (pending ?? nav) == item,
-                    badge: item == .activity ? activityUnread : 0,
+                    badge: item == .activity ? activityUnread : item == .chat ? unread : 0,
+                    dot: item == .teams && teamsUnread,
                     selectionSpace: selectionSpace
                 ) { go(item) }
             }
@@ -266,6 +270,8 @@ private struct RailItem: View {
     let name: String
     let active: Bool
     let badge: UInt32
+    /// Unread without a count, as Teams shows for channels.
+    let dot: Bool
     let selectionSpace: Namespace.ID
     let action: () -> Void
     @State private var hovered = false
@@ -290,9 +296,15 @@ private struct RailItem: View {
                                 .background(Theme.danger, in: Capsule())
                                 .offset(x: 10, y: -6)
                                 .transition(.pop)
+                        } else if dot {
+                            Circle().fill(Theme.danger)
+                                .frame(width: 8, height: 8)
+                                .offset(x: 6, y: -2)
+                                .transition(.pop)
                         }
                     }
                     .animation(Motion.pop, value: badge)
+                    .animation(Motion.pop, value: dot)
                 Text(name).font(.figtree(11, active ? .semibold : .regular))
             }
             .foregroundStyle(active ? Theme.accentText : hovered ? Theme.text : Theme.muted)
@@ -312,6 +324,7 @@ private struct RailItem: View {
         .onHover { hovered = $0 }
         .onChange(of: active) { if active && !Motion.reduced { bounces += 1 } }
         .accessibilityLabel(name)
+        .accessibilityValue(badge > 0 ? L("ui.sidebar_view.unread") + " · \(badge)" : dot ? L("ui.sidebar_view.unread") : "")
         .accessibilityAddTraits(active ? .isSelected : [])
     }
 }
