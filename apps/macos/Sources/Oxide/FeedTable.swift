@@ -187,6 +187,8 @@ struct FeedTable: NSViewRepresentable {
         private var resizeWork: DispatchWorkItem?
         private let sizer = NSHostingController(rootView: FeedRow(store: nil, item: nil))
         private var observers: [NSObjectProtocol] = []
+        /// Messages and posts last reported on screen, whose previews the core loads first.
+        private var shown: [String] = []
         private var wheelMonitor: Any?
         /// Whether the current scroll gesture goes to the feed rather than a scroll view inside a row.
         private var wheelToFeed = false
@@ -381,6 +383,7 @@ struct FeedTable: NSViewRepresentable {
             let rows = table.rows(in: around)
             guard rows.location != NSNotFound else { return }
             let all = rows.location..<min(rows.location + rows.length, items.count)
+            reportShown(all)
             let shown = table.rows(in: clip.bounds)
             let visible = shown.location == NSNotFound
                 ? all.lowerBound..<all.lowerBound
@@ -415,6 +418,19 @@ struct FeedTable: NSViewRepresentable {
                 withoutAnimation { table.noteHeightOfRows(withIndexesChanged: changed) }
                 updateInset()
             }
+        }
+
+        private func reportShown(_ rows: Range<Int>) {
+            let ids = rows.compactMap { row -> String? in
+                switch items[row] {
+                case .message(let message, _, _): message.id
+                case .post(let post, _): post.id
+                default: nil
+                }
+            }
+            guard ids != shown else { return }
+            shown = ids
+            store?.send(.showMessages(ids: ids))
         }
 
         /// Rough height from the content, replaced by the real one before the row is seen.

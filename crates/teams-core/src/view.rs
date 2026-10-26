@@ -373,8 +373,6 @@ pub enum ImageStatus {
     Failed {
         reason: String,
     },
-    /// The per-conversation preview budget is exhausted.
-    Limit,
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash, uniffi::Record)]
 pub struct ImageView {
@@ -1393,7 +1391,6 @@ impl App {
                     height: i.height,
                 },
                 Some(media::ImageState::Failed(e)) => ImageStatus::Failed { reason: e.clone() },
-                None if self.conv.images().len() >= media::MAX_IMAGES => ImageStatus::Limit,
                 _ => ImageStatus::Loading,
             },
             width: image.width,
@@ -1924,6 +1921,7 @@ mod sidebar_tests {
                 C::Mutated { .. } => "Mutated",
                 C::ImageLoaded { .. } => "ImageLoaded",
                 C::RetryImage(_) => "RetryImage",
+                C::Shown(_) => "Shown",
             },
             Msg::FeedMerged(_) => "FeedMerged",
             Msg::ShowError(_) => "ShowError",
@@ -2147,6 +2145,7 @@ mod sidebar_tests {
             }
             .into(),
             C::RetryImage(image.into()).into(),
+            C::Shown(vec!["m2".into()]).into(),
             C::ImageLoaded {
                 generation: g,
                 selection: chat_a.clone(),
@@ -2482,6 +2481,7 @@ mod sidebar_tests {
             "Mutated",
             "ImageLoaded",
             "RetryImage",
+            "Shown",
             "FeedMerged",
             "ShowError",
             "Activity",
@@ -2762,6 +2762,10 @@ mod sidebar_tests {
             data: Arc::new(vec![0; 16]),
             bytes: 16,
         });
+        // As `load_images` leaves it when the download starts.
+        app.conv
+            .test_images()
+            .insert(image.into(), media::ImageState::Loading);
         let update = step(
             &mut app,
             Msg::from(ConversationMsg::ImageLoaded {

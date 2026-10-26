@@ -8720,6 +8720,11 @@ public enum Action: Equatable, Hashable {
     )
     case retryImage(src: String
     )
+    /**
+     * Ids of the messages and posts on screen and about a screen around it, whose previews load first.
+     */
+    case showMessages(ids: [String]
+    )
     case openUrl(url: String
     )
 
@@ -8923,7 +8928,10 @@ public struct FfiConverterTypeAction: FfiConverterRustBuffer {
         case 68: return .retryImage(src: try FfiConverterString.read(from: &buf)
         )
         
-        case 69: return .openUrl(url: try FfiConverterString.read(from: &buf)
+        case 69: return .showMessages(ids: try FfiConverterSequenceString.read(from: &buf)
+        )
+        
+        case 70: return .openUrl(url: try FfiConverterString.read(from: &buf)
         )
         
         default: throw UniffiInternalError.unexpectedEnumCase
@@ -9261,8 +9269,13 @@ public struct FfiConverterTypeAction: FfiConverterRustBuffer {
             FfiConverterString.write(src, into: &buf)
             
         
-        case let .openUrl(url):
+        case let .showMessages(ids):
             writeInt(&buf, Int32(69))
+            FfiConverterSequenceString.write(ids, into: &buf)
+            
+        
+        case let .openUrl(url):
+            writeInt(&buf, Int32(70))
             FfiConverterString.write(url, into: &buf)
             
         }
@@ -12602,10 +12615,6 @@ public enum ImageStatus: Equatable, Hashable {
     )
     case failed(reason: String
     )
-    /**
-     * The per-conversation preview budget is exhausted.
-     */
-    case limit
 
 
 
@@ -12635,8 +12644,6 @@ public struct FfiConverterTypeImageStatus: FfiConverterRustBuffer {
         case 3: return .failed(reason: try FfiConverterString.read(from: &buf)
         )
         
-        case 4: return .limit
-        
         default: throw UniffiInternalError.unexpectedEnumCase
         }
     }
@@ -12659,10 +12666,6 @@ public struct FfiConverterTypeImageStatus: FfiConverterRustBuffer {
             writeInt(&buf, Int32(3))
             FfiConverterString.write(reason, into: &buf)
             
-        
-        case .limit:
-            writeInt(&buf, Int32(4))
-        
         }
     }
 }

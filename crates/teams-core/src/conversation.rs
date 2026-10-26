@@ -110,6 +110,8 @@ pub(crate) enum ConversationMsg {
         result: Result<media::LoadedImage, String>,
     },
     RetryImage(String),
+    /// Ids of the messages and posts on screen and about a screen around it.
+    Shown(Vec<String>),
 }
 impl From<ConversationMsg> for Msg {
     fn from(msg: ConversationMsg) -> Self {
@@ -151,6 +153,8 @@ pub(crate) struct ConversationState {
     images: Tracked<HashMap<String, media::ImageState>, { feeds::IMAGES }>,
     /// Previews of earlier conversations still held by Swift.
     retained_images: Tracked<media::Retained, { feeds::IMAGES }>,
+    /// Messages and posts on screen: their previews load first and are never dropped for others.
+    shown: HashSet<String>,
     /// Derived from the messages, so never a change of its own.
     rendered: attachments::Cache,
     /// Read horizon (epoch ms) when the chat opened: later messages sit under « Nouveaux messages ».
@@ -187,6 +191,7 @@ impl ConversationState {
             next_reaction,
             images,
             retained_images,
+            shown: _,
             rendered: _,
             read_horizon,
         } = self;
@@ -386,6 +391,7 @@ impl ConversationState {
         }
         drop(handoff);
         self.retained_images.evict_to(media::RETAINED_BYTES);
+        self.shown.clear();
         self.paged = false;
         self.rendered.clear();
         self.messages.clear();
@@ -764,7 +770,9 @@ impl ConversationState {
                 src,
                 result,
             } => {
-                if generation == ctx.generation && ctx.is_open(&selection) {
+                // Dropped meanwhile to make room for previews on screen.
+                let wanted = matches!(self.images.get(&src), Some(media::ImageState::Loading));
+                if generation == ctx.generation && ctx.is_open(&selection) && wanted {
                     let state = match result {
                         Ok(image) => self.admit_image(ctx, &src, image),
                         Err(e) => media::ImageState::Failed(e),
@@ -777,6 +785,10 @@ impl ConversationState {
                 if matches!(self.images.get(&src), Some(media::ImageState::Failed(_))) {
                     self.images.remove(&src);
                 }
+                Task::none()
+            }
+            M::Shown(ids) => {
+                self.shown = ids.into_iter().collect();
                 Task::none()
             }
         }
@@ -875,21 +887,29 @@ impl ConversationState {
             },
         )
     }
-    /// A downloaded preview, within the memory budget: earlier conversations' previews make room first.
+    /// A downloaded preview, within the memory budget: earlier conversations' previews make room first, then those off screen.
     fn admit_image(
         &mut self,
         ctx: &Ctx,
         src: &str,
         image: media::LoadedImage,
     ) -> media::ImageState {
-        let used: usize = self
-            .images
-            .values()
-            .map(|i| match i {
-                media::ImageState::Ready(image) => image.bytes,
-                _ => 0,
-            })
-            .sum();
+        let used = |images: &HashMap<String, media::ImageState>| -> usize {
+            images
+                .values()
+                .map(|i| match i {
+                    media::ImageState::Ready(image) => image.bytes,
+                    _ => 0,
+                })
+                .sum()
+        };
+        if used(&self.images) + image.bytes > media::MAX_IMAGE_BYTES {
+            let (order, keep) = self.image_sources(None);
+            while used(&self.images) + image.bytes > media::MAX_IMAGE_BYTES
+                && self.drop_image(ctx, &order, &keep, true)
+            {}
+        }
+        let used = used(&self.images);
         self.retained_images
             .evict_to(media::MAX_IMAGE_BYTES.saturating_sub(used + image.bytes));
         if used + self.retained_images.bytes() + image.bytes > media::MAX_IMAGE_BYTES {
@@ -1011,80 +1031,124 @@ impl ConversationState {
             },
         )
     }
+    /// Every preview of the loaded messages and the draft, in the order they load: the draft's, those on screen,
+    /// then the others newest first, open thread before the feed (feeds open at the bottom). Also returns those that stay.
+    fn image_sources(&self, draft_image: Option<String>) -> (Vec<String>, HashSet<String>) {
+        let messages = || {
+            self.replies
+                .iter()
+                .rev()
+                .chain(self.messages.iter().rev())
+                .chain(self.posts.iter().rev().flat_map(|p| p.messages.iter()))
+        };
+        let post_shown: HashSet<&str> = self
+            .posts
+            .iter()
+            .filter(|p| self.shown.contains(&p.id))
+            .flat_map(|p| p.messages.iter().map(|m| m.id.as_str()))
+            .collect();
+        let mut order: Vec<String> = draft_image.into_iter().collect();
+        let mut seen: HashSet<String> = order.iter().cloned().collect();
+        let mut keep = seen.clone();
+        for on_screen in [true, false] {
+            for message in messages() {
+                let shown =
+                    self.shown.contains(&message.id) || post_shown.contains(message.id.as_str());
+                if shown != on_screen || message.is_deleted() {
+                    continue;
+                }
+                let rendered = self.rendered.get(message);
+                let thumbnails = rendered.files.iter().filter_map(|f| f.thumbnail.as_ref());
+                let link = rendered.link.iter().filter_map(|l| l.thumbnail.as_ref());
+                for src in rendered
+                    .images
+                    .iter()
+                    .chain(&rendered.card_images)
+                    .chain(link)
+                    .map(|i| &i.src)
+                    .chain(thumbnails)
+                {
+                    if seen.insert(src.clone()) {
+                        order.push(src.clone());
+                        if on_screen {
+                            keep.insert(src.clone());
+                        }
+                    }
+                }
+            }
+        }
+        (order, keep)
+    }
+    /// Drops the preview furthest down `order` that is not kept (nor downloading, unless `loading`), so another fits.
+    fn drop_image(
+        &mut self,
+        ctx: &Ctx,
+        order: &[String],
+        keep: &HashSet<String>,
+        loading: bool,
+    ) -> bool {
+        let rank: HashMap<&str, usize> = order
+            .iter()
+            .enumerate()
+            .map(|(i, src)| (src.as_str(), i))
+            .collect();
+        let Some(src) = self
+            .images
+            .iter()
+            .filter(|(src, state)| {
+                !keep.contains(*src) && (loading || !matches!(state, media::ImageState::Loading))
+            })
+            .max_by_key(|(src, _)| rank.get(src.as_str()).copied().unwrap_or(usize::MAX))
+            .map(|(src, _)| src.clone())
+        else {
+            return false;
+        };
+        self.images.remove(&src);
+        ctx.handoff().withdraw(&src);
+        true
+    }
     /// Starts the downloads of the previews the loaded messages and the draft's link preview show, up to the budget.
+    /// Previews on screen always get a place, taken from those furthest from it.
     pub(super) fn load_images(&mut self, ctx: &Ctx, draft_image: Option<String>) -> Task<Msg> {
         let (Some(client), Some(selection)) = (ctx.client, ctx.selected) else {
             return Task::none();
         };
-        let mut seen: HashSet<String> = draft_image
-            .iter()
-            .filter(|src| !self.images.contains_key(*src))
-            .cloned()
-            .collect();
-        let mut sources: Vec<String> = seen.iter().cloned().collect();
-        // Newest first, open thread before the feed: feeds open at the bottom, where the budget should go.
-        for message in self
-            .replies
-            .iter()
-            .rev()
-            .chain(self.messages.iter().rev())
-            .chain(self.posts.iter().rev().flat_map(|p| p.messages.iter()))
-        {
-            if message.properties.get("deletetime").is_some_and(|v| {
-                v.as_str().is_some_and(|s| !s.is_empty() && s != "0")
-                    || v.as_u64().is_some_and(|n| n > 0)
-            }) {
-                continue;
-            }
-            let rendered = self.rendered.get(message);
-            let thumbnails = rendered.files.iter().filter_map(|f| f.thumbnail.as_ref());
-            let link = rendered.link.iter().filter_map(|l| l.thumbnail.as_ref());
-            for src in rendered
-                .images
-                .iter()
-                .chain(&rendered.card_images)
-                .chain(link)
-                .map(|i| &i.src)
-                .chain(thumbnails)
-            {
-                if !self.images.contains_key(src) && !seen.contains(src) {
-                    seen.insert(src.clone());
-                    sources.push(src.clone());
-                }
-            }
-        }
-        // Previews kept from an earlier visit come back without a download.
-        for src in &sources {
-            if self.images.len() >= media::MAX_IMAGES {
-                break;
-            }
-            // Looked up first: taking from the kept previews counts as a change.
-            if self.retained_images.srcs().any(|kept| kept == src)
-                && let Some(image) = self.retained_images.take(src)
-            {
-                self.images
-                    .insert(src.clone(), media::ImageState::Ready(image));
-            }
-        }
-        sources.retain(|src| !self.images.contains_key(src));
-        let in_flight = self
+        let (order, keep) = self.image_sources(draft_image);
+        let mut in_flight = self
             .images
             .values()
             .filter(|v| matches!(v, media::ImageState::Loading))
             .count();
-        let slots = 4usize
-            .saturating_sub(in_flight)
-            .min(media::MAX_IMAGES.saturating_sub(self.images.len()));
-        if slots == 0 {
-            return Task::none();
+        let mut downloads = Vec::new();
+        for src in &order {
+            if self.images.contains_key(src) {
+                continue;
+            }
+            // Previews kept from an earlier visit come back without a download.
+            let retained = self.retained_images.srcs().any(|kept| kept == src);
+            if !retained && in_flight >= 4 {
+                continue;
+            }
+            if self.images.len() >= media::MAX_IMAGES
+                && !(keep.contains(src) && self.drop_image(ctx, &order, &keep, true))
+            {
+                break;
+            }
+            // Looked up first: taking from the kept previews counts as a change.
+            if retained && let Some(image) = self.retained_images.take(src) {
+                self.images
+                    .insert(src.clone(), media::ImageState::Ready(image));
+            } else {
+                self.images.insert(src.clone(), media::ImageState::Loading);
+                in_flight += 1;
+                downloads.push(src.clone());
+            }
         }
         let generation = ctx.generation;
         Task::batch(
-            sources
+            downloads
                 .into_iter()
-                .take(slots)
                 .map(|src| {
-                    self.images.insert(src.clone(), media::ImageState::Loading);
                     let selection = selection.clone();
                     let loaded = src.clone();
                     Task::perform(media::load(client.clone(), src), move |result| {

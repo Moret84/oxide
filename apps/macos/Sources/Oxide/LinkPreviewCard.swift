@@ -88,8 +88,6 @@ struct LinkPreviewCard: View {
                             .font(.figtree(12))
                     }
                     .padding(10)
-                case .limit:
-                    Muted(L("ui.message_row.preview_limit_reached_in_this_conversation"), size: 11).padding(10)
                 case .ready:
                     EmptyView()
                 }
