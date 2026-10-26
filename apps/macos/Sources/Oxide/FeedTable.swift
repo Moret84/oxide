@@ -187,6 +187,9 @@ struct FeedTable: NSViewRepresentable {
         private var resizeWork: DispatchWorkItem?
         private let sizer = NSHostingController(rootView: FeedRow(store: nil, item: nil))
         private var observers: [NSObjectProtocol] = []
+        private var wheelMonitor: Any?
+        /// Whether the current scroll gesture goes to the feed rather than a scroll view inside a row.
+        private var wheelToFeed = false
         private weak var controller: FeedController?
 
         func attach(_ controller: FeedController?) {
@@ -198,6 +201,8 @@ struct FeedTable: NSViewRepresentable {
         func stop() {
             observers.forEach(NotificationCenter.default.removeObserver)
             observers.removeAll()
+            if let wheelMonitor { NSEvent.removeMonitor(wheelMonitor) }
+            wheelMonitor = nil
             resizeWork?.cancel()
         }
 
@@ -218,6 +223,27 @@ struct FeedTable: NSViewRepresentable {
                     self?.reportPosition()
                 }
             })
+            wheelMonitor = NSEvent.addLocalMonitorForEvents(matching: .scrollWheel) { [weak self, weak scroll] event in
+                let routed = MainActor.assumeIsolated {
+                    guard let self, let scroll else { return false }
+                    return self.routeWheel(event, to: scroll)
+                }
+                return routed ? nil : event
+            }
+        }
+
+        /// A sideways scroll view inside a row (a code block) would otherwise swallow vertical scrolling while under the pointer.
+        /// Each gesture is routed as a whole, from the direction it starts in.
+        private func routeWheel(_ event: NSEvent, to scroll: NSScrollView) -> Bool {
+            guard event.window === scroll.window else { return false }
+            if event.phase.contains(.began) || (event.phase.isEmpty && event.momentumPhase.isEmpty) {
+                let hit = scroll.window?.contentView?.hitTest(event.locationInWindow)
+                let inRow = hit?.enclosingScrollView.map { $0 !== scroll && $0.isDescendant(of: scroll) } ?? false
+                wheelToFeed = inRow && abs(event.scrollingDeltaY) > abs(event.scrollingDeltaX)
+            }
+            guard wheelToFeed else { return false }
+            scroll.scrollWheel(with: event)
+            return true
         }
 
         func apply(_ rows: FeedRows) {
