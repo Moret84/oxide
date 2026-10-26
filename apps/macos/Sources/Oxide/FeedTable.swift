@@ -187,6 +187,11 @@ struct FeedTable: NSViewRepresentable {
         private var resizeWork: DispatchWorkItem?
         private let sizer = NSHostingController(rootView: FeedRow(store: nil, item: nil))
         private var observers: [NSObjectProtocol] = []
+        /// Messages and posts last reported on screen, whose previews the core loads first.
+        private var shown: [String] = []
+        private var wheelMonitor: Any?
+        /// Whether the current scroll gesture goes to the feed rather than a scroll view inside a row.
+        private var wheelToFeed = false
         private weak var controller: FeedController?
 
         func attach(_ controller: FeedController?) {
@@ -198,6 +203,8 @@ struct FeedTable: NSViewRepresentable {
         func stop() {
             observers.forEach(NotificationCenter.default.removeObserver)
             observers.removeAll()
+            if let wheelMonitor { NSEvent.removeMonitor(wheelMonitor) }
+            wheelMonitor = nil
             resizeWork?.cancel()
         }
 
@@ -218,6 +225,27 @@ struct FeedTable: NSViewRepresentable {
                     self?.reportPosition()
                 }
             })
+            wheelMonitor = NSEvent.addLocalMonitorForEvents(matching: .scrollWheel) { [weak self, weak scroll] event in
+                let routed = MainActor.assumeIsolated {
+                    guard let self, let scroll else { return false }
+                    return self.routeWheel(event, to: scroll)
+                }
+                return routed ? nil : event
+            }
+        }
+
+        /// A sideways scroll view inside a row (a code block) would otherwise swallow vertical scrolling while under the pointer.
+        /// Each gesture is routed as a whole, from the direction it starts in.
+        private func routeWheel(_ event: NSEvent, to scroll: NSScrollView) -> Bool {
+            guard event.window === scroll.window else { return false }
+            if event.phase.contains(.began) || (event.phase.isEmpty && event.momentumPhase.isEmpty) {
+                let hit = scroll.window?.contentView?.hitTest(event.locationInWindow)
+                let inRow = hit?.enclosingScrollView.map { $0 !== scroll && $0.isDescendant(of: scroll) } ?? false
+                wheelToFeed = inRow && abs(event.scrollingDeltaY) > abs(event.scrollingDeltaX)
+            }
+            guard wheelToFeed else { return false }
+            scroll.scrollWheel(with: event)
+            return true
         }
 
         func apply(_ rows: FeedRows) {
@@ -355,6 +383,7 @@ struct FeedTable: NSViewRepresentable {
             let rows = table.rows(in: around)
             guard rows.location != NSNotFound else { return }
             let all = rows.location..<min(rows.location + rows.length, items.count)
+            reportShown(all)
             let shown = table.rows(in: clip.bounds)
             let visible = shown.location == NSNotFound
                 ? all.lowerBound..<all.lowerBound
@@ -389,6 +418,19 @@ struct FeedTable: NSViewRepresentable {
                 withoutAnimation { table.noteHeightOfRows(withIndexesChanged: changed) }
                 updateInset()
             }
+        }
+
+        private func reportShown(_ rows: Range<Int>) {
+            let ids = rows.compactMap { row -> String? in
+                switch items[row] {
+                case .message(let message, _, _): message.id
+                case .post(let post, _): post.id
+                default: nil
+                }
+            }
+            guard ids != shown else { return }
+            shown = ids
+            store?.send(.showMessages(ids: ids))
         }
 
         /// Rough height from the content, replaced by the real one before the row is seen.

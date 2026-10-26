@@ -271,6 +271,10 @@ pub enum Action {
     RetryImage {
         src: String,
     },
+    /// Ids of the messages and posts on screen and about a screen around it, whose previews load first.
+    ShowMessages {
+        ids: Vec<String>,
+    },
     OpenUrl {
         url: String,
     },
@@ -390,6 +394,7 @@ fn message(app: &App, action: Action) -> Option<Msg> {
         Action::SaveEdit => ConversationMsg::SaveEdit.into(),
         Action::Delete { id } => ConversationMsg::Delete(id).into(),
         Action::RetryImage { src } => ConversationMsg::RetryImage(src).into(),
+        Action::ShowMessages { ids } => ConversationMsg::Shown(ids).into(),
         Action::OpenUrl { url } => Msg::OpenUrl(url),
     })
 }

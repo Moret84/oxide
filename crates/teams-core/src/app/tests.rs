@@ -600,6 +600,95 @@ fn unnamed_authors_never_show_their_id_and_take_the_directory_name() {
     assert_eq!(app.message_view(&bot).sender, "Application");
 }
 #[test]
+fn previews_on_screen_load_past_the_budget_in_place_of_those_furthest_away() {
+    let mut app = App::empty();
+    *app.client = Some(ChatClient::new(Arc::new(AppAuthenticator::Demo(
+        StaticAuthenticator::new(),
+    ))));
+    let src = |i: usize| format!("https://example.com/{i}.png");
+    let count = media::MAX_IMAGES + 12;
+    let messages = (0..count)
+        .map(|i| {
+            serde_json::from_value(serde_json::json!({
+                "id": format!("m{i}"), "originalarrivaltime": format!("2026-10-15T10:{:02}:00Z", i),
+                "content": format!("<p><img src=\"{}\"></p>", src(i)),
+            }))
+            .unwrap()
+        })
+        .collect();
+    let _ = app.update(Msg::Select(selection("a")));
+    let _ = app.update(Msg::from(ConversationMsg::FeedLoaded {
+        generation: 0,
+        selection: selection("a"),
+        append: false,
+        result: Ok(MessagesPage {
+            messages,
+            ..Default::default()
+        }),
+    }));
+    let finish = |app: &mut App| loop {
+        let loading: Vec<String> = app
+            .conv
+            .images()
+            .iter()
+            .filter(|(_, s)| matches!(s, media::ImageState::Loading))
+            .map(|(src, _)| src.clone())
+            .collect();
+        if loading.is_empty() {
+            break;
+        }
+        for src in loading {
+            let _ = app.update(Msg::from(ConversationMsg::ImageLoaded {
+                generation: 0,
+                selection: selection("a"),
+                src,
+                result: Ok(media::LoadedImage {
+                    width: 1,
+                    height: 1,
+                    data: Arc::new(vec![1]),
+                    bytes: 1,
+                }),
+            }));
+        }
+    };
+    finish(&mut app);
+    // The newest fill the budget; the oldest wait, shown as loading rather than refused.
+    assert_eq!(app.conv.images().len(), media::MAX_IMAGES);
+    assert!(app.conv.images().contains_key(&src(count - 1)));
+    assert!(!app.conv.images().contains_key(&src(0)));
+    let html = crate::html::InlineImage {
+        src: src(1),
+        alt: String::new(),
+        width: None,
+        height: None,
+    };
+    assert!(matches!(
+        app.image_view(&html).status,
+        crate::ImageStatus::Loading
+    ));
+
+    // Scrolled to the top: its previews take the places of those furthest from it.
+    let _ = app.update(Msg::from(ConversationMsg::Shown(vec![
+        "m0".into(),
+        "m1".into(),
+    ])));
+    finish(&mut app);
+    let images = app.conv.images();
+    assert_eq!(images.len(), media::MAX_IMAGES);
+    assert!(matches!(
+        images.get(&src(0)),
+        Some(media::ImageState::Ready(_))
+    ));
+    assert!(matches!(
+        images.get(&src(1)),
+        Some(media::ImageState::Ready(_))
+    ));
+    let oldest_newest = count - media::MAX_IMAGES;
+    assert!(!images.contains_key(&src(oldest_newest)));
+    assert!(!images.contains_key(&src(oldest_newest + 1)));
+    assert!(images.contains_key(&src(count - 1)));
+}
+#[test]
 fn previews_survive_switching_conversations_until_the_budget_needs_them() {
     let mut app = App::empty();
     *app.client = Some(ChatClient::new(Arc::new(AppAuthenticator::Demo(
