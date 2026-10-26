@@ -1,4 +1,5 @@
 import AppKit
+import ImageIO
 import Observation
 import OxideCore
 
@@ -460,20 +461,19 @@ final class Store {
         }
     }
 
+    /// Decodes the downloaded file straight at the core's size, so the full-size picture is never held.
     nonisolated private static func image(_ data: ImageData) -> NSImage? {
-        let width = Int(data.width)
-        let height = Int(data.height)
-        guard let provider = CGDataProvider(data: data.rgba as CFData),
-              let cg = CGImage(
-                width: width, height: height, bitsPerComponent: 8, bitsPerPixel: 32,
-                bytesPerRow: width * 4, space: CGColorSpace(name: CGColorSpace.sRGB)!,
-                // The core premultiplies, so drawing needs no conversion.
-                bitmapInfo: CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedLast.rawValue),
-                provider: provider, decode: nil, shouldInterpolate: true, intent: .defaultIntent
-              )
+        let options: [CFString: Any] = [
+            kCGImageSourceCreateThumbnailFromImageAlways: true,
+            kCGImageSourceCreateThumbnailWithTransform: true,
+            kCGImageSourceShouldCacheImmediately: true,
+            kCGImageSourceThumbnailMaxPixelSize: max(data.width, data.height),
+        ]
+        guard let source = CGImageSourceCreateWithData(data.data as CFData, nil),
+              let cg = CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary)
         else { return nil }
         // Pixels are 2× the 420×250 preview box: show them at Retina density.
-        return NSImage(cgImage: cg, size: NSSize(width: width / 2, height: height / 2))
+        return NSImage(cgImage: cg, size: NSSize(width: cg.width / 2, height: cg.height / 2))
     }
 }
 

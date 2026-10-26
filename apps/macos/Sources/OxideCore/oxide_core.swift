@@ -893,7 +893,7 @@ public protocol OxideCoreProtocol: AnyObject, Sendable {
     func takeAvatar(id: String)  -> ImageData?
     
     /**
-     * Pixels of a ready preview, handed over once: Swift keeps the only copy.
+     * File of a ready preview, handed over once: Swift keeps the only decoded copy.
      */
     func takeImage(src: String)  -> ImageData?
     
@@ -1004,7 +1004,7 @@ open func takeAvatar(id: String) -> ImageData?  {
 }
     
     /**
-     * Pixels of a ready preview, handed over once: Swift keeps the only copy.
+     * File of a ready preview, handed over once: Swift keeps the only decoded copy.
      */
 open func takeImage(src: String) -> ImageData?  {
     return try!  FfiConverterOptionTypeImageData.lift(try! rustCall() {
@@ -4839,19 +4839,19 @@ public struct ImageData: Equatable, Hashable {
     public var width: UInt32
     public var height: UInt32
     /**
-     * Straight RGBA, 8 bits per channel, `width * 4` bytes per row.
+     * The picture file as downloaded (PNG, JPEG, GIF or WebP), to decode at `width` × `height`.
      */
-    public var rgba: Data
+    public var data: Data
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
     public init(width: UInt32, height: UInt32, 
         /**
-         * Straight RGBA, 8 bits per channel, `width * 4` bytes per row.
-         */rgba: Data) {
+         * The picture file as downloaded (PNG, JPEG, GIF or WebP), to decode at `width` × `height`.
+         */data: Data) {
         self.width = width
         self.height = height
-        self.rgba = rgba
+        self.data = data
     }
 
     
@@ -4872,14 +4872,14 @@ public struct FfiConverterTypeImageData: FfiConverterRustBuffer {
             try ImageData(
                 width: FfiConverterUInt32.read(from: &buf), 
                 height: FfiConverterUInt32.read(from: &buf), 
-                rgba: FfiConverterData.read(from: &buf)
+                data: FfiConverterData.read(from: &buf)
         )
     }
 
     public static func write(_ value: ImageData, into buf: inout [UInt8]) {
         FfiConverterUInt32.write(value.width, into: &buf)
         FfiConverterUInt32.write(value.height, into: &buf)
-        FfiConverterData.write(value.rgba, into: &buf)
+        FfiConverterData.write(value.data, into: &buf)
     }
 }
 
@@ -6463,6 +6463,71 @@ public func FfiConverterTypePersonView_lift(_ buf: RustBuffer) throws -> PersonV
 #endif
 public func FfiConverterTypePersonView_lower(_ value: PersonView) -> RustBuffer {
     return FfiConverterTypePersonView.lower(value)
+}
+
+
+/**
+ * Pictures kept on disk between launches, for Settings › Debug.
+ */
+public struct PictureCache: Equatable, Hashable {
+    public var previewFiles: UInt64
+    public var previewBytes: UInt64
+    public var photoFiles: UInt64
+    public var photoBytes: UInt64
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(previewFiles: UInt64, previewBytes: UInt64, photoFiles: UInt64, photoBytes: UInt64) {
+        self.previewFiles = previewFiles
+        self.previewBytes = previewBytes
+        self.photoFiles = photoFiles
+        self.photoBytes = photoBytes
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension PictureCache: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypePictureCache: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> PictureCache {
+        return
+            try PictureCache(
+                previewFiles: FfiConverterUInt64.read(from: &buf), 
+                previewBytes: FfiConverterUInt64.read(from: &buf), 
+                photoFiles: FfiConverterUInt64.read(from: &buf), 
+                photoBytes: FfiConverterUInt64.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: PictureCache, into buf: inout [UInt8]) {
+        FfiConverterUInt64.write(value.previewFiles, into: &buf)
+        FfiConverterUInt64.write(value.previewBytes, into: &buf)
+        FfiConverterUInt64.write(value.photoFiles, into: &buf)
+        FfiConverterUInt64.write(value.photoBytes, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypePictureCache_lift(_ buf: RustBuffer) throws -> PictureCache {
+    return try FfiConverterTypePictureCache.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypePictureCache_lower(_ value: PictureCache) -> RustBuffer {
+    return FfiConverterTypePictureCache.lower(value)
 }
 
 
@@ -18317,6 +18382,15 @@ public func appVersion() -> String  {
 })
 }
 /**
+ * Deletes the pictures kept on disk; the next ones shown are downloaded again.
+ */
+public func clearPictureCache()  {try! rustCall() {
+        uniffiCallStatus in
+    uniffi_teams_core_fn_func_clear_picture_cache(uniffiCallStatus
+    )
+}
+}
+/**
  * The Teams emoticon catalog in the app's language; empty until downloaded, then `Effect::EmojiCatalogChanged`.
  */
 public func composerEmojis() -> [EmojiCategory]  {
@@ -18359,7 +18433,17 @@ public func isLoginCallback(url: String) -> Bool  {
 })
 }
 /**
- * Where the core keeps its own downloads (emoticon and sticker catalogs); called before the core boots.
+ * Walks the picture folders: call it off the main thread.
+ */
+public func pictureCache() -> PictureCache  {
+    return try!  FfiConverterTypePictureCache_lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_teams_core_fn_func_picture_cache(uniffiCallStatus
+    )
+})
+}
+/**
+ * Where the core keeps its own downloads (emoticon and sticker catalogs, pictures); called before the core boots.
  */
 public func setCacheDirectory(path: String)  {try! rustCall() {
         uniffiCallStatus in
@@ -18424,6 +18508,9 @@ private let initializationResult: InitializationResult = {
     if (uniffi_teams_core_checksum_func_app_version() != 31466) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_teams_core_checksum_func_clear_picture_cache() != 63643) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_teams_core_checksum_func_composer_emojis() != 60167) {
         return InitializationResult.apiChecksumMismatch
     }
@@ -18436,7 +18523,10 @@ private let initializationResult: InitializationResult = {
     if (uniffi_teams_core_checksum_func_is_login_callback() != 46075) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_teams_core_checksum_func_set_cache_directory() != 21662) {
+    if (uniffi_teams_core_checksum_func_picture_cache() != 26815) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_teams_core_checksum_func_set_cache_directory() != 12953) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_teams_core_checksum_func_set_language() != 47377) {
@@ -18466,7 +18556,7 @@ private let initializationResult: InitializationResult = {
     if (uniffi_teams_core_checksum_method_oxidecore_take_avatar() != 53920) {
         return InitializationResult.apiChecksumMismatch
     }
-    if (uniffi_teams_core_checksum_method_oxidecore_take_image() != 1278) {
+    if (uniffi_teams_core_checksum_method_oxidecore_take_image() != 7577) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_teams_core_checksum_method_oxidecore_take_voicemail_audio() != 49343) {

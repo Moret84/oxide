@@ -3435,9 +3435,33 @@
     "fr": "Pages modifiées et compressées de chaque zone mémoire, classées d’après l’étiquette que leur donne le système. Approximatif.",
     "en": "Dirty and compressed pages of each memory region, sorted by the tag the system gives them. Approximate."
   },
+  "ui.debug.cache_photos": {
+    "fr": "Photos de profil et icônes",
+    "en": "Profile photos and icons"
+  },
+  "ui.debug.cache_previews": {
+    "fr": "Aperçus d’images",
+    "en": "Image previews"
+  },
+  "ui.debug.clear_cache": {
+    "fr": "Vider le cache",
+    "en": "Clear cache"
+  },
   "ui.debug.copy_report": {
     "fr": "Copier le rapport",
     "en": "Copy report"
+  },
+  "ui.debug.disk_cache": {
+    "fr": "Cache sur disque",
+    "en": "Disk cache"
+  },
+  "ui.debug.disk_cache_detail": {
+    "fr": "Images gardées entre deux lancements pour ne pas les retélécharger. Vidé à la déconnexion.",
+    "en": "Pictures kept between launches so they are not downloaded again. Cleared on sign-out."
+  },
+  "ui.debug.file_count": {
+    "fr": "{n} fichiers",
+    "en": "{n} files"
   },
   "ui.debug.footprint": {
     "fr": "Mémoire utilisée",

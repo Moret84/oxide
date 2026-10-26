@@ -1245,6 +1245,7 @@ impl App {
                     })
                     .unwrap_or_else(Task::none);
                 self.reset();
+                crate::disk_cache::clear();
                 let generation = self.generation;
                 let forget = Task::batch([Task::effect(Effect::ForgetLogin), endpoint]);
                 if let Some(auth) = auth {

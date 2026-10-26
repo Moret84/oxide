@@ -627,7 +627,7 @@ fn previews_survive_switching_conversations_until_the_budget_needs_them() {
         Ok(media::LoadedImage {
             width: 1,
             height: 1,
-            rgba: Arc::new(vec![1; bytes]),
+            data: Arc::new(vec![1; bytes]),
             bytes,
         })
     };
@@ -656,7 +656,7 @@ fn previews_survive_switching_conversations_until_the_budget_needs_them() {
         app.conv.images().get(src),
         Some(media::ImageState::Ready(_))
     ));
-    assert_eq!(app.take_image(src), None, "Swift already holds the pixels");
+    assert_eq!(app.take_image(src), None, "Swift already holds the picture");
 
     // A new preview elsewhere that needs the whole budget evicts the retained one.
     let _ = app.update(Msg::Select(selection("b")));
@@ -677,14 +677,14 @@ fn previews_survive_switching_conversations_until_the_budget_needs_them() {
     assert_eq!(app.kept_image_srcs(), [other]);
 }
 #[test]
-fn preview_pixels_are_handed_over_once_and_stay_in_the_budget() {
+fn preview_files_are_handed_over_once_and_stay_in_the_budget() {
     let mut app = App::empty();
     app.image_ready(
         "a".into(),
         media::LoadedImage {
             width: 2,
             height: 1,
-            rgba: Arc::new(vec![7; 8]),
+            data: Arc::new(vec![7; 8]),
             bytes: 8,
         },
     );

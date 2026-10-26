@@ -385,7 +385,7 @@ impl ConversationState {
             }
         }
         drop(handoff);
-        self.retained_images.evict_to(media::MAX_IMAGE_BYTES);
+        self.retained_images.evict_to(media::RETAINED_BYTES);
         self.paged = false;
         self.rendered.clear();
         self.messages.clear();

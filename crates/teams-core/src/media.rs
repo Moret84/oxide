@@ -1,12 +1,16 @@
-//! Bounded in-memory image decoding. The renderer receives pixels, not network URLs.
+//! Bounded preview images. The renderer receives the downloaded file, not its network URL, and decodes it at the size given here.
 use crate::app::*;
+use crate::disk_cache;
 use base64::Engine;
 use teams_i18n::t;
 /// Previews render in a 420×250 box; keep 2× for Retina and drop the rest.
 const PREVIEW_W: u32 = 840;
 const PREVIEW_H: u32 = 500;
 pub const MAX_IMAGES: usize = 48;
+/// Decoded pixels Swift may hold for the open conversation and earlier ones together.
 pub const MAX_IMAGE_BYTES: usize = 64 * 1024 * 1024;
+/// Of those, earlier conversations' previews: the disk cache brings back the others quickly.
+pub const RETAINED_BYTES: usize = 16 * 1024 * 1024;
 #[derive(Debug, Clone)]
 pub enum ImageState {
     Loading,
@@ -15,13 +19,15 @@ pub enum ImageState {
 }
 #[derive(Debug, Clone)]
 pub struct LoadedImage {
+    /// Size to decode at: the file's, fitted in the display box.
     pub width: u32,
     pub height: u32,
-    /// Empty once handed to [`Handoff`]: the state only keeps the size.
-    pub rgba: Arc<Vec<u8>>,
+    /// The file as downloaded; empty once handed to [`Handoff`]: the state only keeps the size.
+    pub data: Arc<Vec<u8>>,
+    /// Pixels once decoded, counted against [`MAX_IMAGE_BYTES`].
     pub bytes: usize,
 }
-/// Ready preview pixels and voicemail audio awaiting Swift, behind their own lock so taking them never waits on an update.
+/// Ready preview files and voicemail audio awaiting Swift, behind their own lock so taking them never waits on an update.
 #[derive(Debug, Default)]
 pub struct Handoff {
     images: HashMap<String, (u32, u32, Arc<Vec<u8>>)>,
@@ -29,10 +35,10 @@ pub struct Handoff {
     voicemail: Option<(String, String, Vec<u8>)>,
 }
 impl Handoff {
-    /// Moves the pixels of a ready preview here; the state keeps its size for the budget.
+    /// Moves the file of a ready preview here; the state keeps its size for the budget.
     pub fn offer(&mut self, src: String, image: &mut LoadedImage) {
-        let rgba = std::mem::take(&mut image.rgba);
-        self.images.insert(src, (image.width, image.height, rgba));
+        let data = std::mem::take(&mut image.data);
+        self.images.insert(src, (image.width, image.height, data));
     }
     /// Swift has not taken this preview yet.
     pub fn waiting(&self, src: &str) -> bool {
@@ -42,9 +48,9 @@ impl Handoff {
         self.images.remove(src);
     }
     pub fn take_image(&mut self, src: &str) -> Option<(u32, u32, Vec<u8>)> {
-        let (width, height, rgba) = self.images.remove(src)?;
-        let pixels = Arc::try_unwrap(rgba).unwrap_or_else(|shared| shared.as_ref().clone());
-        Some((width, height, pixels))
+        let (width, height, data) = self.images.remove(src)?;
+        let data = Arc::try_unwrap(data).unwrap_or_else(|shared| shared.as_ref().clone());
+        Some((width, height, data))
     }
     pub fn offer_voicemail(&mut self, id: String, kind: String, data: Vec<u8>) {
         self.voicemail = Some((id, kind, data));
@@ -104,24 +110,26 @@ pub async fn load(client: Client, src: String) -> Result<LoadedImage, String> {
         base64::engine::general_purpose::STANDARD
             .decode(data)
             .map_err(|_| t("core.media.invalid_image_data"))?
+    } else if let Some(bytes) = disk_cache::preview(&src).await {
+        bytes
     } else {
-        client
+        let bytes = client
             .download_image(&src)
             .await
-            .map_err(|e| e.to_string())?
+            .map_err(|e| e.to_string())?;
+        disk_cache::store(disk_cache::Kind::Preview, &src, &bytes).await;
+        bytes
     };
-    tokio::task::spawn_blocking(move || decode(&bytes))
+    tokio::task::spawn_blocking(move || inspect(bytes, PREVIEW_W, PREVIEW_H))
         .await
         .map_err(|_| t("core.media.image_decoding_interrupted").to_owned())?
 }
-fn decode(bytes: &[u8]) -> Result<LoadedImage, String> {
-    decode_sized(bytes, PREVIEW_W, PREVIEW_H)
+pub(crate) fn inspect_avatar(bytes: Vec<u8>) -> Result<LoadedImage, String> {
+    inspect(bytes, 128, 128)
 }
-pub(crate) fn decode_avatar(bytes: &[u8]) -> Result<LoadedImage, String> {
-    decode_sized(bytes, 128, 128)
-}
-fn decode_sized(bytes: &[u8], max_width: u32, max_height: u32) -> Result<LoadedImage, String> {
-    let reader = image::ImageReader::new(std::io::Cursor::new(bytes))
+/// Reads only the header: Swift decodes the file straight at the fitted size, so no full-size pixels exist here.
+fn inspect(bytes: Vec<u8>, max_width: u32, max_height: u32) -> Result<LoadedImage, String> {
+    let reader = image::ImageReader::new(std::io::Cursor::new(&bytes))
         .with_guessed_format()
         .map_err(|_| t("core.media.unknown_image_format"))?;
     let (width, height) = reader
@@ -130,40 +138,25 @@ fn decode_sized(bytes: &[u8], max_width: u32, max_height: u32) -> Result<LoadedI
     if width == 0 || height == 0 || u64::from(width) * u64::from(height) > 8_000_000 {
         return Err(t("core.media.image_too_large_to_preview").into());
     }
-    let mut reader = image::ImageReader::new(std::io::Cursor::new(bytes))
-        .with_guessed_format()
-        .map_err(|_| t("core.media.unknown_image_format"))?;
-    let mut limits = image::Limits::default();
-    limits.max_alloc = Some(48 * 1024 * 1024);
-    reader.limits(limits);
-    let mut image = reader
-        .decode()
-        .map_err(|_| t("core.media.the_image_cannot_be_decoded"))?;
-    if image.width() > max_width || image.height() > max_height {
-        image = image.thumbnail(max_width, max_height);
-    }
-    let rgba = image.into_rgba8();
-    let (width, height) = rgba.dimensions();
-    let mut pixels = rgba.into_raw();
-    premultiply(&mut pixels);
-    let bytes = pixels.len();
+    let (width, height) = fit(width, height, max_width, max_height);
     Ok(LoadedImage {
         width,
         height,
-        rgba: Arc::new(pixels),
-        bytes,
+        data: Arc::new(bytes),
+        bytes: width as usize * height as usize * 4,
     })
 }
-/// Core Graphics would otherwise convert straight alpha on every draw.
-fn premultiply(pixels: &mut [u8]) {
-    for pixel in pixels.chunks_exact_mut(4) {
-        let alpha = u16::from(pixel[3]);
-        if alpha < 255 {
-            for channel in &mut pixel[..3] {
-                *channel = ((u16::from(*channel) * alpha + 127) / 255) as u8;
-            }
-        }
+/// Scales down, never up, keeping the aspect ratio.
+fn fit(width: u32, height: u32, max_width: u32, max_height: u32) -> (u32, u32) {
+    if width <= max_width && height <= max_height {
+        return (width, height);
     }
+    let ratio = f64::min(
+        f64::from(max_width) / f64::from(width),
+        f64::from(max_height) / f64::from(height),
+    );
+    let scaled = |side: u32| ((f64::from(side) * ratio).round() as u32).max(1);
+    (scaled(width), scaled(height))
 }
 #[cfg(test)]
 mod tests {
@@ -172,7 +165,7 @@ mod tests {
         LoadedImage {
             width: 1,
             height: 1,
-            rgba: Arc::default(),
+            data: Arc::default(),
             bytes,
         }
     }
@@ -193,18 +186,18 @@ mod tests {
         assert_eq!(retained.bytes(), 0);
     }
     #[test]
-    fn pixels_are_premultiplied() {
-        let mut pixels = [200, 100, 50, 255, 200, 100, 50, 128, 255, 255, 255, 0];
-        premultiply(&mut pixels);
-        assert_eq!(pixels, [200, 100, 50, 255, 100, 50, 25, 128, 0, 0, 0, 0]);
-    }
-    #[test]
     fn large_images_are_downscaled_to_preview_size() {
         let mut png = Vec::new();
         image::RgbImage::new(3000, 2000)
             .write_to(&mut std::io::Cursor::new(&mut png), image::ImageFormat::Png)
             .unwrap();
-        let loaded = decode(&png).unwrap();
-        assert!(loaded.bytes > 0 && loaded.bytes <= (PREVIEW_W * PREVIEW_H * 4) as usize);
+        let loaded = inspect(png, PREVIEW_W, PREVIEW_H).unwrap();
+        assert_eq!((loaded.width, loaded.height), (750, 500));
+        assert_eq!(loaded.bytes, 750 * 500 * 4);
+        assert_eq!(
+            fit(100, 50, PREVIEW_W, PREVIEW_H),
+            (100, 50),
+            "never scaled up"
+        );
     }
 }

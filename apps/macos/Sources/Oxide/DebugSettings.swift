@@ -50,6 +50,7 @@ struct MemoryReport {
     var rustAllocations: UInt64 = 0
     var avatars = Store.ImageMemory()
     var previews = Store.ImageMemory()
+    var cache = PictureCache(previewFiles: 0, previewBytes: 0, photoFiles: 0, photoBytes: 0)
 
     /// Reads the process counters and walks its regions; a few milliseconds, so off the main thread.
     nonisolated static func measure() -> MemoryReport {
@@ -93,6 +94,7 @@ struct MemoryReport {
         report.rustLive = rust.liveBytes
         report.rustPeak = rust.peakBytes
         report.rustAllocations = rust.allocations
+        report.cache = pictureCache()
         return report
     }
 
@@ -121,6 +123,7 @@ struct MemoryReport {
             "\(L("ui.debug.rust_core")): \(size(rustLive)) (\(L("ui.debug.peak")) \(size(rustPeak)), \(rustAllocations))",
             "\(L("ui.debug.avatars")): \(avatars.count), \(size(UInt64(avatars.bytes)))",
             "\(L("ui.debug.previews")): \(previews.count), \(size(UInt64(previews.bytes)))",
+            "\(L("ui.debug.disk_cache")): \(size(cache.previewBytes + cache.photoBytes)) (\(L("ui.debug.cache_previews")) \(cache.previewFiles), \(L("ui.debug.cache_photos")) \(cache.photoFiles))",
         ]
         return lines.joined(separator: "\n")
     }
@@ -141,6 +144,7 @@ struct DebugSettingsSection: View {
                 process(report)
                 kinds(report)
                 heap(report)
+                diskCache(report)
                 Button(L("ui.debug.copy_report")) { NSPasteboard.copy(report.text) }
                     .buttonStyle(OutlineButtonStyle())
             } else {
@@ -149,12 +153,16 @@ struct DebugSettingsSection: View {
         }
         .task {
             while !Task.isCancelled {
-                var next = await Task.detached(priority: .utility) { MemoryReport.measure() }.value
-                (next.avatars, next.previews) = store.imageMemory()
-                report = next
+                await refresh()
                 try? await Task.sleep(for: .seconds(2))
             }
         }
+    }
+
+    private func refresh() async {
+        var next = await Task.detached(priority: .utility) { MemoryReport.measure() }.value
+        (next.avatars, next.previews) = store.imageMemory()
+        report = next
     }
 
     private func process(_ report: MemoryReport) -> some View {
@@ -194,6 +202,34 @@ struct DebugSettingsSection: View {
             row(L("ui.debug.previews"), size(UInt64(report.previews.bytes)),
                 fraction: Double(report.previews.bytes) / Double(total),
                 detail: L("ui.debug.image_count", ["n": report.previews.count]))
+        }
+        .card(padding: 18)
+    }
+
+    private func diskCache(_ report: MemoryReport) -> some View {
+        let cache = report.cache
+        let total = max(cache.previewBytes + cache.photoBytes, 1)
+        return VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Text(L("ui.debug.disk_cache")).font(.figtree(14, .semibold))
+                Spacer()
+                Text(size(cache.previewBytes + cache.photoBytes)).font(.figtree(14, .semibold)).monospacedDigit()
+            }
+            Muted(L("ui.debug.disk_cache_detail"))
+            row(L("ui.debug.cache_previews"), size(cache.previewBytes),
+                fraction: Double(cache.previewBytes) / Double(total),
+                detail: L("ui.debug.file_count", ["n": cache.previewFiles]))
+            row(L("ui.debug.cache_photos"), size(cache.photoBytes),
+                fraction: Double(cache.photoBytes) / Double(total),
+                detail: L("ui.debug.file_count", ["n": cache.photoFiles]))
+            Button(L("ui.debug.clear_cache")) {
+                Task {
+                    await Task.detached(priority: .utility) { clearPictureCache() }.value
+                    await refresh()
+                }
+            }
+            .buttonStyle(OutlineButtonStyle())
+            .disabled(cache.previewFiles + cache.photoFiles == 0)
         }
         .card(padding: 18)
     }

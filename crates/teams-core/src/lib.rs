@@ -10,6 +10,7 @@ mod calendar_mock;
 mod calls_mock;
 mod cards;
 mod conversations;
+mod disk_cache;
 mod emoji;
 mod error;
 #[cfg(feature = "demo")]
@@ -397,8 +398,8 @@ fn message(app: &App, action: Action) -> Option<Msg> {
 pub struct ImageData {
     pub width: u32,
     pub height: u32,
-    /// Straight RGBA, 8 bits per channel, `width * 4` bytes per row.
-    pub rgba: Vec<u8>,
+    /// The picture file as downloaded (PNG, JPEG, GIF or WebP), to decode at `width` × `height`.
+    pub data: Vec<u8>,
 }
 
 struct State {
@@ -708,13 +709,13 @@ impl OxideCore {
             changed
         });
     }
-    /// Pixels of a ready preview, handed over once: Swift keeps the only copy.
+    /// File of a ready preview, handed over once: Swift keeps the only decoded copy.
     pub fn take_image(&self, src: String) -> Option<ImageData> {
-        let (width, height, rgba) = lock(&self.inner.handoff).take_image(&src)?;
+        let (width, height, data) = lock(&self.inner.handoff).take_image(&src)?;
         Some(ImageData {
             width,
             height,
-            rgba,
+            data,
         })
     }
     /// Audio of the voicemail named by `CallsView.audio_ready`, handed over once.
@@ -723,11 +724,11 @@ impl OxideCore {
         Some(VoicemailAudio { content_type, data })
     }
     pub fn take_avatar(&self, id: String) -> Option<ImageData> {
-        let (width, height, rgba) = lock(&self.inner.avatars).take(&id)?;
+        let (width, height, data) = lock(&self.inner.avatars).take(&id)?;
         Some(ImageData {
             width,
             height,
-            rgba,
+            data,
         })
     }
 }
@@ -781,11 +782,38 @@ pub fn composer_emojis() -> Vec<emoji::EmojiCategory> {
 pub fn sticker_categories() -> Vec<StickerCategory> {
     app::gifs::sticker_categories()
 }
-/// Where the core keeps its own downloads (emoticon and sticker catalogs); called before the core boots.
+/// Where the core keeps its own downloads (emoticon and sticker catalogs, pictures); called before the core boots.
 #[uniffi::export]
 pub fn set_cache_directory(path: String) {
+    disk_cache::set_dir(path.clone().into());
     emoji::set_cache_dir(path.clone().into());
     stickers::set_cache_dir(path.into());
+}
+
+/// Pictures kept on disk between launches, for Settings › Debug.
+#[derive(Debug, Clone, uniffi::Record)]
+pub struct PictureCache {
+    pub preview_files: u64,
+    pub preview_bytes: u64,
+    pub photo_files: u64,
+    pub photo_bytes: u64,
+}
+/// Walks the picture folders: call it off the main thread.
+#[uniffi::export]
+pub fn picture_cache() -> PictureCache {
+    let (preview_files, preview_bytes) = disk_cache::usage(disk_cache::Kind::Preview);
+    let (photo_files, photo_bytes) = disk_cache::usage(disk_cache::Kind::Photo);
+    PictureCache {
+        preview_files,
+        preview_bytes,
+        photo_files,
+        photo_bytes,
+    }
+}
+/// Deletes the pictures kept on disk; the next ones shown are downloaded again.
+#[uniffi::export]
+pub fn clear_picture_cache() {
+    disk_cache::clear_now();
 }
 
 #[cfg(test)]
