@@ -173,7 +173,9 @@ impl<A: Authenticator> FilesClient<A> {
         let mut response = net::exchange(&self.http, self.auth.as_ref(), request).await?;
         let status = response.status().as_u16();
         if !(200..300).contains(&status) {
+            let headers = response.headers().clone();
             let body = response.bytes().await.unwrap_or_default();
+            crate::record_refusal(&url.lock().unwrap(), status, &headers, &body);
             return Err(crate::error_of(status, &body));
         }
         let total = response.content_length();

@@ -3,6 +3,7 @@ use http::{HeaderMap, HeaderName, HeaderValue, Method};
 use serde_json::Value;
 use std::sync::Arc;
 use std::time::Duration;
+use teams_auth::diagnostics::Log;
 use teams_auth::net::{self, Payload, Signer};
 use teams_auth::{Authenticator, Service};
 use teams_i18n::{t, tf};
@@ -23,6 +24,9 @@ pub use share::Shared;
 pub use site::{PersonalSite, chat_folder_name};
 pub use substrate::{SharedFile, SharedLink};
 pub use upload::{CHUNK_SIZE, Destination, UploadedFile};
+
+/// Refused SharePoint requests: why a transfer failed, without tokens or file paths.
+static FILES_LOG: Log = Log::new("files.log");
 
 /// Client type sent in the `Application` header (`Teams_<ClientType>`).
 const APPLICATION: &str = "Teams_Web";
@@ -253,12 +257,14 @@ impl<A: Authenticator> FilesClient<A> {
             });
         let response = net::exchange(&self.http, self.auth.as_ref(), request).await?;
         let status = response.status().as_u16();
+        let refused = (!(200..300).contains(&status)).then(|| response.headers().clone());
         let body = response
             .bytes()
             .await
             .map_err(|e| Error::Transport(e.without_url().to_string()))?
             .to_vec();
-        if !(200..300).contains(&status) {
+        if let Some(headers) = refused {
+            record_refusal(&url, status, &headers, &body);
             return Err(error_of(status, &body));
         }
         Ok(Response { body })
@@ -276,10 +282,9 @@ impl<A: Authenticator> FilesClient<A> {
     }
 }
 
-/// SharePoint error code (`odata.error.code`, else `error.innerError.code` / `error.code`) and multi-geo redirect.
-pub(crate) fn error_of(status: u16, body: &[u8]) -> Error {
-    let value: Value = serde_json::from_slice(body).unwrap_or(Value::Null);
-    let code = [
+/// SharePoint error code: `odata.error.code`, else `error.innerError.code` / `error.code`.
+fn raw_code(value: &Value) -> Option<&str> {
+    [
         "/odata.error/code",
         "/error/innerError/code",
         "/error/innererror/code",
@@ -288,7 +293,50 @@ pub(crate) fn error_of(status: u16, body: &[u8]) -> Error {
     .iter()
     .filter_map(|p| value.pointer(p).and_then(Value::as_str))
     .find(|c| !c.is_empty())
-    .map(SpoError::from_code);
+}
+
+/// Logs a refused request to `files.log`.
+pub(crate) fn record_refusal(url: &Url, status: u16, headers: &HeaderMap, body: &[u8]) {
+    FILES_LOG.record(&refusal_line(url, status, headers, body));
+}
+
+/// Host and API route (no site, item or share id), SharePoint's code and message (which may name the file),
+/// and its authentication diagnostics: `WWW-Authenticate` says which tenant it expects, `x-ms-diagnostics`
+/// why a token was refused.
+fn refusal_line(url: &Url, status: u16, headers: &HeaderMap, body: &[u8]) -> String {
+    let value: Value = serde_json::from_slice(body).unwrap_or(Value::Null);
+    let message = ["/odata.error/message/value", "/error/message"]
+        .iter()
+        .find_map(|p| value.pointer(p).and_then(Value::as_str))
+        .map(|m| m.chars().take(300).collect::<String>());
+    let header = |name: &str| headers.get(name).and_then(|v| v.to_str().ok());
+    format!(
+        "refused host={} route={} status={status} code={:?} message={message:?} www-authenticate={:?} x-ms-diagnostics={:?}",
+        url.host_str().unwrap_or("-"),
+        api_route(url),
+        raw_code(&value),
+        header("www-authenticate"),
+        header("x-ms-diagnostics"),
+    )
+}
+
+/// The two segments after `_api`, without arguments (`v2.0/shares`, `web/GetFileById`), else `-`.
+fn api_route(url: &Url) -> String {
+    let mut segments = url.path_segments().into_iter().flatten();
+    if !segments.any(|s| s == "_api") {
+        return "-".into();
+    }
+    segments
+        .take(2)
+        .map(|s| s.split('(').next().unwrap_or(s))
+        .collect::<Vec<_>>()
+        .join("/")
+}
+
+/// SharePoint error code and multi-geo redirect.
+pub(crate) fn error_of(status: u16, body: &[u8]) -> Error {
+    let value: Value = serde_json::from_slice(body).unwrap_or(Value::Null);
+    let code = raw_code(&value).map(SpoError::from_code);
     let redirect = value
         .pointer("/error/@error.redirectLocation")
         .and_then(Value::as_str)
@@ -418,6 +466,42 @@ mod tests {
         assert_eq!(
             error_of(500, br#"{"error":{"code":"generalException","innerError":{"code":"quotaLimitReached"}}}"#).spo(),
             Some(&SpoError::QuotaReached)
+        );
+    }
+
+    #[test]
+    fn logs_refusals_without_the_path_or_ids() {
+        let url = Url::parse(
+            "https://contoso-my.sharepoint.com/personal/someone_contoso_com/_api/v2.0/shares/u!aHR0cHM6Ly9/driveItem/?select=id",
+        )
+        .unwrap();
+        let mut headers = HeaderMap::new();
+        headers.insert(
+            "www-authenticate",
+            HeaderValue::from_static(r#"Bearer realm="tenant-guid",error="invalid_token""#),
+        );
+        headers.insert(
+            "x-ms-diagnostics",
+            HeaderValue::from_static(r#"3000003;reason="Invalid audience Uri""#),
+        );
+        let line = refusal_line(
+            &url,
+            401,
+            &headers,
+            br#"{"error":{"code":"invalidAudienceUri","message":"Invalid audience Uri"}}"#,
+        );
+        assert_eq!(
+            line,
+            r#"refused host=contoso-my.sharepoint.com route=v2.0/shares status=401 code=Some("invalidAudienceUri") message=Some("Invalid audience Uri") www-authenticate=Some("Bearer realm=\"tenant-guid\",error=\"invalid_token\"") x-ms-diagnostics=Some("3000003;reason=\"Invalid audience Uri\"")"#
+        );
+        let by_id =
+            Url::parse("https://contoso.sharepoint.com/_api/web/GetFileById('0fb7e6b8')/$value")
+                .unwrap();
+        assert_eq!(api_route(&by_id), "web/GetFileById");
+        let download = Url::parse("https://contoso-my.sharepoint.com/personal/someone/_layouts/15/download.aspx?tempauth=x").unwrap();
+        assert!(
+            refusal_line(&download, 403, &HeaderMap::new(), b"")
+                .contains(" route=- status=403 code=None message=None ")
         );
     }
 
