@@ -4275,6 +4275,14 @@
     "fr": "Le partage d’écran s’est arrêté.",
     "en": "Screen sharing stopped."
   },
+  "ui.media_engine.the_service_refused_screen_sharing": {
+    "fr": "Teams a refusé le partage d’écran.",
+    "en": "Teams refused the screen sharing."
+  },
+  "ui.media_engine.the_service_refused_the_camera": {
+    "fr": "Teams a refusé la vidéo de votre caméra.",
+    "en": "Teams refused your camera's video."
+  },
   "ui.media_engine.the_audio_video_connection_failed_network": {
     "fr": "La connexion audio/vidéo a échoué (réseau ou relais).",
     "en": "The audio/video connection failed (network or relay)."

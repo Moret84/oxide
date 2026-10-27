@@ -125,6 +125,8 @@ final class Store {
                 self?.send(.call(action: .mediaFailed(callId: callId, reason: reason)))
             case .screenShareStopped(let callId, let reason):
                 self?.send(.call(action: .screenShareStopped(callId: callId, reason: reason)))
+            case .cameraStopped(let callId, let reason):
+                self?.send(.call(action: .cameraStopped(callId: callId, reason: reason)))
             }
         }
         send(.setRefreshMode(mode: RefreshPreference.stored.core))
@@ -384,6 +386,8 @@ final class Store {
             media.close(callId: callId)
         case .mediaRemoteOffer(let callId, let sdp):
             media.answerRemoteOffer(callId: callId, sdp: sdp)
+        case .mediaOfferRejected(let callId, let retry):
+            media.offerRejected(callId: callId, retry: retry)
         case .mediaRestartIce(let callId):
             media.restartIce(callId: callId)
         }

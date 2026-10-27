@@ -24,6 +24,8 @@ enum MediaEvent {
     case failed(callId: String, reason: String)
     /// Screen sharing ended without the user asking (permission refused, capture stopped).
     case screenShareStopped(callId: String, reason: String?)
+    /// The camera stopped without the user asking (the service rejected it).
+    case cameraStopped(callId: String, reason: String?)
 }
 
 /// The mixer's bounds for one of our sending lines (`controlVideoStreaming` `fmtParams`).
@@ -58,6 +60,8 @@ protocol MediaEngine: AnyObject {
     func setRemoteDescription(callId: String, sdp: String, provisional: Bool)
     /// The service renegotiates: answer `sdp` (an offer).
     func answerRemoteOffer(callId: String, sdp: String)
+    /// The service rejected our renegotiation: offer again, or go back to what was last negotiated.
+    func offerRejected(callId: String, retry: Bool)
     /// New ICE credentials after a network change; the new offer comes as `localDescription`.
     func restartIce(callId: String)
     func setMuted(callId: String, muted: Bool)
@@ -113,6 +117,7 @@ final class DemoMediaEngine: MediaEngine {
     func answerRemoteOffer(callId: String, sdp: String) {
         onEvent?(.renegotiationAnswer(callId: callId, sdp: "v=0\r\no=- 0 1 IN IP4 127.0.0.1\r\ns=-\r\nt=0 0\r\n"))
     }
+    func offerRejected(callId: String, retry: Bool) {}
     func restartIce(callId: String) {}
     func setMuted(callId: String, muted: Bool) {}
     func setCamera(callId: String, on: Bool) {}

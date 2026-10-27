@@ -9943,6 +9943,11 @@ public enum CallAction: Equatable, Hashable {
      */
     case screenShareStopped(callId: String, reason: String?
     )
+    /**
+     * The engine stopped the camera on its own (the service rejected it).
+     */
+    case cameraStopped(callId: String, reason: String?
+    )
     case setSpeaker(on: Bool
     )
     /**
@@ -10035,40 +10040,43 @@ public struct FfiConverterTypeCallAction: FfiConverterRustBuffer {
         case 10: return .screenShareStopped(callId: try FfiConverterString.read(from: &buf), reason: try FfiConverterOptionString.read(from: &buf)
         )
         
-        case 11: return .setSpeaker(on: try FfiConverterBool.read(from: &buf)
+        case 11: return .cameraStopped(callId: try FfiConverterString.read(from: &buf), reason: try FfiConverterOptionString.read(from: &buf)
         )
         
-        case 12: return .accept(video: try FfiConverterBool.read(from: &buf)
+        case 12: return .setSpeaker(on: try FfiConverterBool.read(from: &buf)
         )
         
-        case 13: return .decline
-        
-        case 14: return .testCall(botMri: try FfiConverterOptionString.read(from: &buf)
+        case 13: return .accept(video: try FfiConverterBool.read(from: &buf)
         )
         
-        case 15: return .simulateIncoming(video: try FfiConverterBool.read(from: &buf)
+        case 14: return .decline
+        
+        case 15: return .testCall(botMri: try FfiConverterOptionString.read(from: &buf)
         )
         
-        case 16: return .hangup
-        
-        case 17: return .setMuted(muted: try FfiConverterBool.read(from: &buf)
+        case 16: return .simulateIncoming(video: try FfiConverterBool.read(from: &buf)
         )
         
-        case 18: return .dismiss
+        case 17: return .hangup
         
-        case 19: return .localDescription(callId: try FfiConverterString.read(from: &buf), sdp: try FfiConverterString.read(from: &buf)
+        case 18: return .setMuted(muted: try FfiConverterBool.read(from: &buf)
         )
         
-        case 20: return .mediaConnected(callId: try FfiConverterString.read(from: &buf)
+        case 19: return .dismiss
+        
+        case 20: return .localDescription(callId: try FfiConverterString.read(from: &buf), sdp: try FfiConverterString.read(from: &buf)
         )
         
-        case 21: return .mediaFailed(callId: try FfiConverterString.read(from: &buf), reason: try FfiConverterString.read(from: &buf)
+        case 21: return .mediaConnected(callId: try FfiConverterString.read(from: &buf)
         )
         
-        case 22: return .renegotiationAnswer(callId: try FfiConverterString.read(from: &buf), sdp: try FfiConverterString.read(from: &buf)
+        case 22: return .mediaFailed(callId: try FfiConverterString.read(from: &buf), reason: try FfiConverterString.read(from: &buf)
         )
         
-        case 23: return .networkChanged
+        case 23: return .renegotiationAnswer(callId: try FfiConverterString.read(from: &buf), sdp: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 24: return .networkChanged
         
         default: throw UniffiInternalError.unexpectedEnumCase
         }
@@ -10134,68 +10142,74 @@ public struct FfiConverterTypeCallAction: FfiConverterRustBuffer {
             FfiConverterOptionString.write(reason, into: &buf)
             
         
-        case let .setSpeaker(on):
+        case let .cameraStopped(callId,reason):
             writeInt(&buf, Int32(11))
+            FfiConverterString.write(callId, into: &buf)
+            FfiConverterOptionString.write(reason, into: &buf)
+            
+        
+        case let .setSpeaker(on):
+            writeInt(&buf, Int32(12))
             FfiConverterBool.write(on, into: &buf)
             
         
         case let .accept(video):
-            writeInt(&buf, Int32(12))
+            writeInt(&buf, Int32(13))
             FfiConverterBool.write(video, into: &buf)
             
         
         case .decline:
-            writeInt(&buf, Int32(13))
+            writeInt(&buf, Int32(14))
         
         
         case let .testCall(botMri):
-            writeInt(&buf, Int32(14))
+            writeInt(&buf, Int32(15))
             FfiConverterOptionString.write(botMri, into: &buf)
             
         
         case let .simulateIncoming(video):
-            writeInt(&buf, Int32(15))
+            writeInt(&buf, Int32(16))
             FfiConverterBool.write(video, into: &buf)
             
         
         case .hangup:
-            writeInt(&buf, Int32(16))
+            writeInt(&buf, Int32(17))
         
         
         case let .setMuted(muted):
-            writeInt(&buf, Int32(17))
+            writeInt(&buf, Int32(18))
             FfiConverterBool.write(muted, into: &buf)
             
         
         case .dismiss:
-            writeInt(&buf, Int32(18))
+            writeInt(&buf, Int32(19))
         
         
         case let .localDescription(callId,sdp):
-            writeInt(&buf, Int32(19))
+            writeInt(&buf, Int32(20))
             FfiConverterString.write(callId, into: &buf)
             FfiConverterString.write(sdp, into: &buf)
             
         
         case let .mediaConnected(callId):
-            writeInt(&buf, Int32(20))
+            writeInt(&buf, Int32(21))
             FfiConverterString.write(callId, into: &buf)
             
         
         case let .mediaFailed(callId,reason):
-            writeInt(&buf, Int32(21))
+            writeInt(&buf, Int32(22))
             FfiConverterString.write(callId, into: &buf)
             FfiConverterString.write(reason, into: &buf)
             
         
         case let .renegotiationAnswer(callId,sdp):
-            writeInt(&buf, Int32(22))
+            writeInt(&buf, Int32(23))
             FfiConverterString.write(callId, into: &buf)
             FfiConverterString.write(sdp, into: &buf)
             
         
         case .networkChanged:
-            writeInt(&buf, Int32(23))
+            writeInt(&buf, Int32(24))
         
         }
     }
@@ -11609,6 +11623,12 @@ public enum Effect: Equatable, Hashable {
     case mediaRemoteOffer(callId: String, sdp: String
     )
     /**
+     * The service rejected our renegotiation: roll the local offer back, then offer again or restore
+     * the senders of the last negotiation (`CallAction::CameraStopped`, `ScreenShareStopped`).
+     */
+    case mediaOfferRejected(callId: String, retry: Bool
+    )
+    /**
      * The network changed: restart ICE, then send the new offer (`LocalDescription`).
      */
     case mediaRestartIce(callId: String
@@ -11695,10 +11715,13 @@ public struct FfiConverterTypeEffect: FfiConverterRustBuffer {
         case 20: return .mediaRemoteOffer(callId: try FfiConverterString.read(from: &buf), sdp: try FfiConverterString.read(from: &buf)
         )
         
-        case 21: return .mediaRestartIce(callId: try FfiConverterString.read(from: &buf)
+        case 21: return .mediaOfferRejected(callId: try FfiConverterString.read(from: &buf), retry: try FfiConverterBool.read(from: &buf)
         )
         
-        case 22: return .mediaClose(callId: try FfiConverterString.read(from: &buf)
+        case 22: return .mediaRestartIce(callId: try FfiConverterString.read(from: &buf)
+        )
+        
+        case 23: return .mediaClose(callId: try FfiConverterString.read(from: &buf)
         )
         
         default: throw UniffiInternalError.unexpectedEnumCase
@@ -11832,13 +11855,19 @@ public struct FfiConverterTypeEffect: FfiConverterRustBuffer {
             FfiConverterString.write(sdp, into: &buf)
             
         
-        case let .mediaRestartIce(callId):
+        case let .mediaOfferRejected(callId,retry):
             writeInt(&buf, Int32(21))
+            FfiConverterString.write(callId, into: &buf)
+            FfiConverterBool.write(retry, into: &buf)
+            
+        
+        case let .mediaRestartIce(callId):
+            writeInt(&buf, Int32(22))
             FfiConverterString.write(callId, into: &buf)
             
         
         case let .mediaClose(callId):
-            writeInt(&buf, Int32(22))
+            writeInt(&buf, Int32(23))
             FfiConverterString.write(callId, into: &buf)
             
         }

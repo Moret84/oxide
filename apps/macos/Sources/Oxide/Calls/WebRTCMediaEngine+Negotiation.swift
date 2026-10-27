@@ -163,8 +163,26 @@ extension WebRTCMediaEngine {
     /// a connection takes one offer at a time, so ours yields to the service's instead of failing the call.
     func answerRemoteOffer(callId: String, sdp: String) {
         guard self.callId == callId, let connection else { return }
+        rollBackLocalOffer(callId, on: connection) {
+            self.applyRemoteOffer(callId: callId, sdp: sdp, to: connection)
+        }
+    }
+
+    /// The service rejected our renegotiation: drop our offer, then offer again, or put the senders back
+    /// as last negotiated, like the web client's `rejectNegotiation`.
+    func offerRejected(callId: String, retry: Bool) {
+        guard self.callId == callId, let connection else { return }
+        callTrace("local offer rejected retry=\(retry)")
+        rollBackLocalOffer(callId, on: connection) {
+            if retry { self.renegotiate(callId, reason: "retry after rejection") }
+            else { self.restoreNegotiatedSenders(callId) }
+        }
+    }
+
+    private func rollBackLocalOffer(_ callId: String, on connection: LKRTCPeerConnection,
+                                    then next: @escaping @MainActor () -> Void) {
         guard connection.signalingState == .haveLocalOffer else {
-            applyRemoteOffer(callId: callId, sdp: sdp, to: connection)
+            next()
             return
         }
         callTrace("rolling back the pending local offer")
@@ -175,9 +193,38 @@ extension WebRTCMediaEngine {
                     self.fail(callId, L("ui.media_engine.renegotiation_rejected") + error.localizedDescription)
                     return
                 }
-                self.applyRemoteOffer(callId: callId, sdp: sdp, to: connection)
+                next()
             }
         }
+    }
+
+    /// Stops what the rejected offer meant to start sending, and tells the core.
+    private func restoreNegotiatedSenders(_ callId: String) {
+        if localVideo != nil, !Self.sends(cameraTransceiver) {
+            stopCamera()
+            if let line = cameraTransceiver, !line.isStopped {
+                line.sender.track = nil
+                line.setDirection(.recvOnly, error: nil)
+            }
+            localVideo = nil
+            onEvent?(.cameraStopped(callId: callId, reason: L("ui.media_engine.the_service_refused_the_camera")))
+        }
+        if screenTrack != nil, !Self.sends(sharingTransceiver) {
+            stopScreenCapture()
+            if let line = sharingTransceiver, !line.isStopped {
+                line.sender.track = nil
+                line.setDirection(.recvOnly, error: nil)
+            }
+            onEvent?(.screenShareStopped(callId: callId, reason: L("ui.media_engine.the_service_refused_screen_sharing")))
+        }
+    }
+
+    /// The last negotiation lets this line send.
+    private static func sends(_ line: LKRTCRtpTransceiver?) -> Bool {
+        guard let line, !line.isStopped else { return false }
+        var current = LKRTCRtpTransceiverDirection.inactive
+        guard line.currentDirection(&current) else { return false }
+        return current == .sendRecv || current == .sendOnly
     }
 
     private func applyRemoteOffer(callId: String, sdp: String, to connection: LKRTCPeerConnection) {

@@ -21,6 +21,8 @@ pub const MISSED: &str = "Missed";
 pub const ECHO_BOT_UNAVAILABLE: &str = "EchoBotUnavailable";
 /// `CALL_END_PHRASE.LOCAL_USER_INITIATED`, with code 487 (CANCEL) for an unanswered call.
 const LOCAL_USER_INITIATED: &str = "CallEndReasonLocalUserInitiated";
+/// New offers after the service rejects ours, like the web client's `renegotiationAttempts`.
+const RENEGOTIATION_RETRIES: u32 = 3;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum CallKind {
@@ -221,6 +223,11 @@ pub enum Command {
     RemoteOffer(String),
     /// What the mixer takes from one of our sending lines (`controlVideoStreaming`, as `setMaxCapabilities`).
     SendLimits(SendLimits),
+    /// The service rejected our renegotiation: drop the local offer, then offer again or go back to
+    /// what was last negotiated.
+    LocalOfferRejected {
+        retry: bool,
+    },
 }
 
 /// Encoder bounds for one of our video lines, from the mixer's `fmtParams`.
@@ -267,6 +274,9 @@ pub struct CallSession {
     /// Why we are leaving, reported once the leave request completes.
     leaving: Option<EndReason>,
     renegotiations: u32,
+    /// Media before our pending renegotiation, restored if the service rejects it.
+    offered_from: Option<Media>,
+    rejected_offers: u32,
     /// `selfParticipant` of the latest join answer: consent and captcha requirements.
     pub self_participant: Option<Value>,
     callbacks: Callbacks,
@@ -342,6 +352,8 @@ impl CallSession {
             pending_answer: None,
             leaving: None,
             renegotiations: 0,
+            offered_from: None,
+            rejected_offers: 0,
             self_participant: None,
             callbacks,
             media,
@@ -626,7 +638,7 @@ impl CallSession {
                     self.renegotiations += 1;
                     let tag = format!("r{}", self.renegotiations);
                     let body = payload::renegotiation(&self.local, &self.callbacks, &media, &tag);
-                    self.media = Some(media);
+                    self.offered_from = self.media.replace(media);
                     vec![Self::http(Op::Renegotiate, Method::POST, url, body)]
                 }
                 _ => Vec::new(),
@@ -860,6 +872,20 @@ impl CallSession {
     }
 
     /// Lines of the description the service just sent; earlier requests no longer hold.
+    /// Restores the media of the last negotiation, and offers again while retries remain.
+    fn offer_rejected(&mut self, retryable: bool) -> Vec<Command> {
+        let Some(media) = self.offered_from.take() else {
+            return Vec::new();
+        };
+        self.media = Some(media);
+        self.rejected_offers += 1;
+        let retry = retryable && self.rejected_offers <= RENEGOTIATION_RETRIES;
+        if !retry {
+            self.rejected_offers = 0;
+        }
+        vec![Command::LocalOfferRejected { retry }]
+    }
+
     fn negotiated(&mut self, ngc: &str) {
         self.video_slots = crate::sdp::video_slots(ngc);
         self.video_assigned.clear();
@@ -1090,8 +1116,9 @@ impl CallSession {
                 self.apply(&body);
                 Vec::new()
             }
-            // A refused renegotiation leaves the current media in place.
-            (Op::Renegotiate | Op::MediaAnswer, Err(_)) => Vec::new(),
+            // Like the web client, a 404 means the renegotiation link is gone: not worth retrying.
+            (Op::Renegotiate, Err(status)) => self.offer_rejected(status != 404),
+            (Op::MediaAnswer, Err(_)) => Vec::new(),
             (Op::RemoveEndpoints, _) => Vec::new(),
             (Op::SourceRequest, Ok(_)) => Vec::new(),
             // Asked again on the next roster or negotiation change.
@@ -1222,6 +1249,8 @@ impl CallSession {
                     if provisional {
                         Command::RemoteProvisionalMedia(blob)
                     } else {
+                        self.offered_from = None;
+                        self.rejected_offers = 0;
                         self.negotiated(&blob);
                         Command::RemoteMedia(blob)
                     }
@@ -1255,6 +1284,10 @@ impl CallSession {
                 Vec::new()
             }
             (Scope::Call, "acceptance") => self.accepted(&body),
+            (Scope::Call, "mediaRejection") => {
+                self.apply(&body);
+                self.offer_rejected(true)
+            }
             // A renegotiation is complete: its lines can carry video now.
             (Scope::Call, "controlVideoStreaming") => {
                 self.apply(&body);
@@ -2094,6 +2127,72 @@ mod tests {
         assert!(
             session.handle(Input::Timeout(Timer::Establish)).is_empty(),
             "answered: no longer missed"
+        );
+    }
+
+    #[test]
+    fn a_rejected_renegotiation_restores_the_media_and_is_retried_three_times() {
+        let media = |video, blob| Media {
+            video,
+            screen: false,
+            content: payload::media_content(blob),
+        };
+        let mut session = meeting(Some(media(false, "offer")));
+        joined(&mut session);
+        session.handle(Input::Response(
+            Op::Join,
+            Ok(json!({"links": {"mediaRenegotiation": "https://conv.example/reneg"}})),
+        ));
+        callback(&mut session, Scope::Call, "acceptance", json!({}));
+        let reject = |session: &mut CallSession| {
+            let body = json!({"mediaNegotiationFailure": {"code": 488}, "debugContent": {}});
+            callback(session, Scope::Call, "mediaRejection", body)
+        };
+        assert!(
+            reject(&mut session).is_empty(),
+            "nothing offered: nothing to roll back"
+        );
+
+        for _ in 0..RENEGOTIATION_RETRIES {
+            session.handle(Input::Renegotiate(media(true, "camera")));
+            assert_eq!(
+                reject(&mut session),
+                [Command::LocalOfferRejected { retry: true }]
+            );
+            assert_eq!(session.media, Some(media(false, "offer")));
+        }
+        session.handle(Input::Renegotiate(media(true, "camera")));
+        assert_eq!(
+            reject(&mut session),
+            [Command::LocalOfferRejected { retry: false }]
+        );
+        assert_eq!(session.media, Some(media(false, "offer")));
+
+        // The count starts over, and an answered renegotiation resets it too.
+        session.handle(Input::Renegotiate(media(true, "camera")));
+        reject(&mut session);
+        session.handle(Input::Renegotiate(media(true, "camera")));
+        callback(
+            &mut session,
+            Scope::Call,
+            "mediaAnswer",
+            json!({"mediaAnswer": {"mediaContent": {"blob": "answer"},
+                "links": {"mediaAcknowledgement": "https://conv.example/ack"}}}),
+        );
+        assert_eq!(session.media, Some(media(true, "camera")));
+        for _ in 0..RENEGOTIATION_RETRIES {
+            session.handle(Input::Renegotiate(media(true, "camera")));
+            assert_eq!(
+                reject(&mut session),
+                [Command::LocalOfferRejected { retry: true }]
+            );
+        }
+
+        // A 404 on the renegotiation link is not retried.
+        session.handle(Input::Renegotiate(media(true, "camera")));
+        assert_eq!(
+            session.handle(Input::Response(Op::Renegotiate, Err(404))),
+            [Command::LocalOfferRejected { retry: false }]
         );
     }
 

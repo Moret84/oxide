@@ -166,6 +166,11 @@ pub enum CallAction {
         call_id: String,
         reason: Option<String>,
     },
+    /// The engine stopped the camera on its own (the service rejected it).
+    CameraStopped {
+        call_id: String,
+        reason: Option<String>,
+    },
     SetSpeaker {
         on: bool,
     },
@@ -663,6 +668,12 @@ impl App {
                     }));
                     call.remote_ngc_offer = Some(blob);
                 }
+                Command::LocalOfferRejected { retry } => {
+                    tasks.push(Task::effect(Effect::MediaOfferRejected {
+                        call_id: id,
+                        retry,
+                    }));
+                }
                 Command::RemoteProvisionalMedia(blob) => {
                     tasks.push(Task::effect(Effect::MediaRemoteProvisionalDescription {
                         call_id: id,
@@ -1002,6 +1013,13 @@ impl App {
             CallAction::ScreenShareStopped { call_id, reason } => {
                 if let Some(call) = self.call.active.as_mut().filter(|c| c.id == call_id) {
                     call.screen = false;
+                    self.call.error = reason;
+                }
+                Task::none()
+            }
+            CallAction::CameraStopped { call_id, reason } => {
+                if let Some(call) = self.call.active.as_mut().filter(|c| c.id == call_id) {
+                    call.camera = false;
                     self.call.error = reason;
                 }
                 Task::none()

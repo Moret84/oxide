@@ -109,6 +109,12 @@ pub enum Effect {
         call_id: String,
         sdp: String,
     },
+    /// The service rejected our renegotiation: roll the local offer back, then offer again or restore
+    /// the senders of the last negotiation (`CallAction::CameraStopped`, `ScreenShareStopped`).
+    MediaOfferRejected {
+        call_id: String,
+        retry: bool,
+    },
     /// The network changed: restart ICE, then send the new offer (`LocalDescription`).
     MediaRestartIce {
         call_id: String,
