@@ -159,8 +159,28 @@ extension WebRTCMediaEngine {
         }
     }
 
+    /// Our own offer may still be pending, e.g. a camera renegotiation the service refused (`mediaRejection`):
+    /// a connection takes one offer at a time, so ours yields to the service's instead of failing the call.
     func answerRemoteOffer(callId: String, sdp: String) {
         guard self.callId == callId, let connection else { return }
+        guard connection.signalingState == .haveLocalOffer else {
+            applyRemoteOffer(callId: callId, sdp: sdp, to: connection)
+            return
+        }
+        callTrace("rolling back the pending local offer")
+        connection.setLocalDescription(LKRTCSessionDescription(type: .rollback, sdp: "")) { [weak self] error in
+            Task { @MainActor in
+                guard let self, self.callId == callId else { return }
+                if let error {
+                    self.fail(callId, L("ui.media_engine.renegotiation_rejected") + error.localizedDescription)
+                    return
+                }
+                self.applyRemoteOffer(callId: callId, sdp: sdp, to: connection)
+            }
+        }
+    }
+
+    private func applyRemoteOffer(callId: String, sdp: String, to connection: LKRTCPeerConnection) {
         connection.setRemoteDescription(LKRTCSessionDescription(type: .offer, sdp: sdp)) { [weak self] error in
             Task { @MainActor in
                 guard let self, self.callId == callId else { return }
