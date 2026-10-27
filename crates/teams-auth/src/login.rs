@@ -2,7 +2,7 @@
 use std::collections::HashMap;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, RwLock};
-use std::time::{Duration, Instant};
+use std::time::{Duration, Instant, SystemTime};
 
 use base64::{Engine, engine::general_purpose::URL_SAFE_NO_PAD};
 use http::{HeaderMap, HeaderValue};
@@ -296,9 +296,9 @@ fn login_hint(aad: &str) -> Option<String> {
         .find_map(|key| claims.get(*key)?.as_str().filter(|s| s.contains('@')))
         .map(str::to_owned)
 }
-fn refresh_expiry(token: &TokenResponse) -> Option<Instant> {
+fn refresh_expiry(token: &TokenResponse) -> Option<SystemTime> {
     token.refresh_token.as_ref()?;
-    Instant::now().checked_add(Duration::from_secs(token.refresh_token_expires_in?))
+    SystemTime::now().checked_add(Duration::from_secs(token.refresh_token_expires_in?))
 }
 fn identity(token: &str) -> Result<Identity, AuthError> {
     let claims = claims(token)
@@ -333,7 +333,7 @@ fn identity(token: &str) -> Result<Identity, AuthError> {
 
 struct AccessToken {
     value: String,
-    expires: Instant,
+    expires: SystemTime,
 }
 impl AccessToken {
     fn from_response(token: &TokenResponse) -> Result<Self, AuthError> {
@@ -346,7 +346,7 @@ impl AccessToken {
         })
     }
     fn valid(&self) -> bool {
-        self.expires > Instant::now() + Duration::from_secs(60)
+        self.expires > SystemTime::now() + Duration::from_secs(60)
     }
 }
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -369,9 +369,9 @@ struct Session {
     tokens: HashMap<String, AccessToken>,
     refresh_token: Option<String>,
     /// `refresh_token_expires_in`: a SPA refresh token dies 24 h after sign-in, however often it rotates.
-    refresh_expires: Option<Instant>,
+    refresh_expires: Option<SystemTime>,
     skype_token: String,
-    skype_expires: Instant,
+    skype_expires: SystemTime,
     services: HashMap<String, Url>,
     registration: Option<HeaderValue>,
     chat_mode: (ChatMode, Instant),
@@ -423,7 +423,7 @@ impl TeamsAuthenticator {
                 .read()
                 .unwrap()
                 .refresh_expires
-                .is_some_and(|expires| expires <= Instant::now() + margin)
+                .is_some_and(|expires| expires <= SystemTime::now() + margin)
     }
     /// Takes over a new sign-in of the same account, so clients built on `self` carry on, and saves its refresh token.
     pub async fn adopt(&self, renewed: TeamsAuthenticator) -> Result<(), AuthError> {
@@ -553,7 +553,7 @@ impl TeamsAuthenticator {
     }
 
     fn skype_fresh(&self) -> bool {
-        self.session.read().unwrap().skype_expires > Instant::now() + Duration::from_secs(60)
+        self.session.read().unwrap().skype_expires > SystemTime::now() + Duration::from_secs(60)
     }
     async fn ensure_skype(&self, force: bool) -> Result<(), AuthError> {
         if !force && self.skype_fresh() {
@@ -1020,11 +1020,12 @@ fn insert_secret(
     headers.insert(name, value);
     Ok(())
 }
-fn expiry(seconds: u64) -> Result<Instant, AuthError> {
+/// Wall clock, as the server means it: `Instant` stops while the Mac sleeps, so a token would still look fresh after a night.
+fn expiry(seconds: u64) -> Result<SystemTime, AuthError> {
     if seconds == 0 {
         return Err(failed(t("auth.login.token_already_expired")));
     }
-    Instant::now()
+    SystemTime::now()
         .checked_add(Duration::from_secs(seconds))
         .ok_or_else(|| {
             failed(t("auth.login.invalid_token_expiration"))
@@ -1588,7 +1589,7 @@ mod tests {
         // The mock gives no lifetime: nothing to anticipate.
         assert!(!auth.needs_renewal(Duration::from_secs(3600)));
         auth.session.write().unwrap().refresh_expires =
-            Some(Instant::now() + Duration::from_secs(1800));
+            Some(SystemTime::now() + Duration::from_secs(1800));
         assert!(auth.needs_renewal(Duration::from_secs(3600)));
         assert!(!auth.needs_renewal(Duration::from_secs(600)));
         auth.session.write().unwrap().refresh_expires = None;
@@ -1638,8 +1639,8 @@ mod tests {
         let auth = signed_in(&server).await;
         {
             let mut s = auth.session.write().unwrap();
-            s.skype_expires = Instant::now();
-            s.tokens.get_mut(SPACES).unwrap().expires = Instant::now();
+            s.skype_expires = SystemTime::now();
+            s.tokens.get_mut(SPACES).unwrap().expires = SystemTime::now();
         }
         mock_refresh(&server, SPACES, "new-aad").await;
         Mock::given(method("POST"))
@@ -1691,7 +1692,7 @@ mod tests {
     async fn duplicate_skype_token_triggers_force_renew() {
         let server = MockServer::start().await;
         let auth = signed_in(&server).await;
-        auth.session.write().unwrap().skype_expires = Instant::now();
+        auth.session.write().unwrap().skype_expires = SystemTime::now();
         Mock::given(method("POST"))
             .and(path("/authz"))
             .and(header("ms-teams-authz-type", "TokenRefresh"))
