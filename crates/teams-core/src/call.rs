@@ -609,11 +609,11 @@ impl App {
             }
             _ => "local event".into(),
         };
-        // End bodies explain failures (`debugContent`, phrase); `controlVideoStreaming` what it wants of our video.
+        // End and rejection bodies explain failures (`debugContent`, phrase); `controlVideoStreaming` what it wants of our video.
         if let Input::Callback { name, body, .. } = &input
             && matches!(
                 name.as_str(),
-                "end" | "conversationEnd" | "controlVideoStreaming"
+                "end" | "conversationEnd" | "mediaRejection" | "controlVideoStreaming"
             )
         {
             let text: String = body.to_string().chars().take(3000).collect();
