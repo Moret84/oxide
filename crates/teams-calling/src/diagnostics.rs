@@ -1,47 +1,11 @@
 //! Local call progress only: never log tokens, SDP, participant identities or URLs.
-use std::io::Write;
-use std::os::unix::fs::OpenOptionsExt;
-use std::sync::{OnceLock, mpsc};
+use teams_auth::diagnostics::Log;
+
+static CALLING: Log = Log::new("calling.log");
 
 /// Queues the line: the file is written by one background thread, never on the caller's (async or state) thread.
 pub fn record(message: &str) {
-    static WRITER: OnceLock<Option<mpsc::Sender<String>>> = OnceLock::new();
-    let Some(writer) = WRITER.get_or_init(spawn_writer) else {
-        return;
-    };
-    let time = std::time::SystemTime::now()
-        .duration_since(std::time::UNIX_EPOCH)
-        .unwrap_or_default()
-        .as_secs();
-    let _ = writer.send(format!("{time} {message}\n"));
-}
-
-fn spawn_writer() -> Option<mpsc::Sender<String>> {
-    let directory = std::path::PathBuf::from(std::env::var_os("HOME")?).join("Library/Logs/Oxide");
-    let path = directory.join("calling.log");
-    let (sender, lines) = mpsc::channel::<String>();
-    std::thread::Builder::new()
-        .name("calling-log".into())
-        .spawn(move || {
-            let mut file = None;
-            for line in lines {
-                // Reopen when the log was removed, as the per-line open did.
-                if file.is_none() || !path.exists() {
-                    let _ = std::fs::create_dir_all(&directory);
-                    file = std::fs::OpenOptions::new()
-                        .create(true)
-                        .append(true)
-                        .mode(0o600)
-                        .open(&path)
-                        .ok();
-                }
-                if let Some(file) = file.as_mut() {
-                    let _ = file.write_all(line.as_bytes());
-                }
-            }
-        })
-        .ok()?;
-    Some(sender)
+    CALLING.record(message);
 }
 
 /// Codec and stream structure only; no ICE credentials, addresses, fingerprints or msids.

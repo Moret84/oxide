@@ -1,6 +1,7 @@
 //! Authentication seam: regional base URLs come from the session, [`TeamsAuthenticator`] does PKCE, authz discovery and refresh.
 
 pub mod client_id;
+pub mod diagnostics;
 mod login;
 pub mod net;
 pub mod web_config;
