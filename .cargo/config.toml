@@ -1,0 +1,3 @@
+# Tests and probes log here, not into the user's ~/Library/Logs/Oxide.
+[env]
+OXIDE_LOG_DIR = { value = "target/logs", relative = true }
