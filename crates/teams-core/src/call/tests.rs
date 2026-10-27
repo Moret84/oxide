@@ -575,6 +575,35 @@ fn connected_calls_survive_renegotiation_network_changes_and_a_new_push_session(
         sdp: "v=0\ns=restart".into(),
     }));
     assert_eq!(task.0.len(), 1, "renegotiation sent");
+
+    // The camera's renegotiation is rejected: the engine rolls back and offers again.
+    let task = app.update_call(CallMsg::Action(CallAction::SetCamera { on: true }));
+    assert!(effects(&task).contains(&Effect::MediaSetCamera {
+        call_id: id.clone(),
+        on: true
+    }));
+    let _ = app.update_call(CallMsg::Action(CallAction::LocalDescription {
+        call_id: id.clone(),
+        sdp: "v=0\ns=camera".into(),
+    }));
+    let task = app.call_pushed(&pushed(
+        "call/mediaRejection/r2",
+        json!({"mediaNegotiationFailure": {}, "debugContent": {}}),
+    ));
+    assert_eq!(
+        effects(&task),
+        [Effect::MediaOfferRejected {
+            call_id: id.clone(),
+            retry: true
+        }]
+    );
+    // Out of retries, the engine stops the camera.
+    let _ = app.update_call(CallMsg::Action(CallAction::CameraStopped {
+        call_id: id.clone(),
+        reason: Some("refused".into()),
+    }));
+    assert!(!app.call.active.as_ref().unwrap().camera);
+    assert_eq!(app.call.error.as_deref(), Some("refused"));
     assert_eq!(
         app.call_part().active.unwrap().phase,
         CallPhaseView::Connected

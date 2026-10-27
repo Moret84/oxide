@@ -166,6 +166,11 @@ pub enum CallAction {
         call_id: String,
         reason: Option<String>,
     },
+    /// The engine stopped the camera on its own (the service rejected it).
+    CameraStopped {
+        call_id: String,
+        reason: Option<String>,
+    },
     SetSpeaker {
         on: bool,
     },
@@ -609,11 +614,11 @@ impl App {
             }
             _ => "local event".into(),
         };
-        // End bodies explain failures (`debugContent`, phrase); `controlVideoStreaming` what it wants of our video.
+        // End and rejection bodies explain failures (`debugContent`, phrase); `controlVideoStreaming` what it wants of our video.
         if let Input::Callback { name, body, .. } = &input
             && matches!(
                 name.as_str(),
-                "end" | "conversationEnd" | "controlVideoStreaming"
+                "end" | "conversationEnd" | "mediaRejection" | "controlVideoStreaming"
             )
         {
             let text: String = body.to_string().chars().take(3000).collect();
@@ -662,6 +667,12 @@ impl App {
                         sdp: sdp::from_ngc(&blob, sdp::Kind::Offer, call.local_sdp.as_deref()),
                     }));
                     call.remote_ngc_offer = Some(blob);
+                }
+                Command::LocalOfferRejected { retry } => {
+                    tasks.push(Task::effect(Effect::MediaOfferRejected {
+                        call_id: id,
+                        retry,
+                    }));
                 }
                 Command::RemoteProvisionalMedia(blob) => {
                     tasks.push(Task::effect(Effect::MediaRemoteProvisionalDescription {
@@ -1002,6 +1013,13 @@ impl App {
             CallAction::ScreenShareStopped { call_id, reason } => {
                 if let Some(call) = self.call.active.as_mut().filter(|c| c.id == call_id) {
                     call.screen = false;
+                    self.call.error = reason;
+                }
+                Task::none()
+            }
+            CallAction::CameraStopped { call_id, reason } => {
+                if let Some(call) = self.call.active.as_mut().filter(|c| c.id == call_id) {
+                    call.camera = false;
                     self.call.error = reason;
                 }
                 Task::none()

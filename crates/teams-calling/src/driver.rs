@@ -73,7 +73,7 @@ pub async fn drive<A: Authenticator + 'static>(
                 Command::RemoteProvisionalMedia(sdp) => report(Event::RemoteProvisionalMedia(sdp)),
                 Command::RemoteOffer(sdp) => report(Event::RemoteOffer(sdp)),
                 // This driver sends no media (probes, roster-only joins).
-                Command::SendLimits(_) => {}
+                Command::SendLimits(_) | Command::LocalOfferRejected { .. } => {}
             }
         }
         report(Event::Changed(&session));
