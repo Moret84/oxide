@@ -70,7 +70,7 @@ struct MessageRow: View {
     private var canEdit: Bool { message.editable && !message.editing }
     private var text: String { message.runs.map(\.text).joined() }
 
-    /// Everything the hover bar offers, and more, for the right click.
+    /// Everything the hover bar offers, and more, for its "more" button and the right click.
     @ViewBuilder private var menu: some View {
         if !message.deleted {
             if message.canReact {
@@ -197,6 +197,15 @@ struct MessageRow: View {
                     IconButton(symbol: "trash", help: L("ui.message_row.delete"), side: 24, glyph: 13) {
                         confirmDelete = true
                     }
+                }
+                // A right click on selectable text opens the text's menu, not the message's: this one always can.
+                if !message.editing {
+                    Menu { menu } label: {
+                        Image(systemName: "ellipsis").font(.system(size: 13)).frame(width: 24, height: 24)
+                    }
+                    .menuStyle(.borderlessButton).menuIndicator(.hidden).fixedSize().pointerCursor()
+                    .help(L("ui.message_row.more_actions"))
+                    .accessibilityLabel(L("ui.message_row.more_actions"))
                 }
             }
         }

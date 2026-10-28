@@ -4383,6 +4383,10 @@
     "fr": "Chargement de l’image",
     "en": "Loading image"
   },
+  "ui.message_row.more_actions": {
+    "fr": "Autres actions",
+    "en": "More actions"
+  },
   "ui.message_row.open_link": {
     "fr": "Ouvrir le lien {link}",
     "en": "Open link {link}"
