@@ -416,6 +416,8 @@ pub struct MessageView {
     pub sender: String,
     pub sender_id: String,
     pub sender_avatar_shape: AvatarShape,
+    /// The author's presence, once known.
+    pub sender_presence: Option<PresenceView>,
     pub mine: bool,
     pub time: String,
     pub day: String,
@@ -519,6 +521,8 @@ pub struct MemberView {
     pub id: String,
     pub name: String,
     pub role: String,
+    /// Known for the members of a group chat and the people who wrote in the open conversation.
+    pub presence: Option<PresenceView>,
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash, uniffi::Record)]
 pub struct MembersView {
@@ -1191,9 +1195,11 @@ impl App {
         }
     }
     fn peer_presence(&self, c: &Conversation) -> Option<PresenceView> {
-        let peer = chat_peer(c, &self.me)?;
+        self.presence_of(chat_peer(c, &self.me)?)
+    }
+    fn presence_of(&self, mri: &str) -> Option<PresenceView> {
         self.presence
-            .get(&peer.to_ascii_lowercase())
+            .get(&mri.to_ascii_lowercase())
             .map(PresenceView::from)
     }
     fn reacting_to(&self, id: &str) -> bool {
@@ -1337,6 +1343,7 @@ impl App {
             sender,
             sender_id: m.sender_mri().to_owned(),
             sender_avatar_shape: AvatarShape::of(m.sender_mri()),
+            sender_presence: self.presence_of(m.sender_mri()),
             mine,
             time: stamp.map(short_time).unwrap_or_default(),
             day: stamp.map(date_label).unwrap_or_default(),
@@ -1756,7 +1763,7 @@ impl App {
             }),
         }
     }
-    fn members_view(&self) -> MembersView {
+    pub(crate) fn members_view(&self) -> MembersView {
         let key = self
             .selected
             .as_ref()
@@ -1800,6 +1807,7 @@ impl App {
                             _ => t("core.view.member"),
                         }
                         .into(),
+                        presence: self.presence_of(&member.id),
                     })
                     .collect()
             }),

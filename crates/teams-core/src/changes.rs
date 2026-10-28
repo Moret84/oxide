@@ -84,8 +84,9 @@ pub(crate) mod feeds {
     /// Transfers and pending attachments show in the composer, file lists and messages.
     pub(crate) const FILES: u32 =
         Parts::COMPOSER.0 | Parts::FILES.0 | Parts::BROWSER.0 | Parts::MESSAGES.0;
-    /// Presence of the people in direct chats: their row and the open chat's header.
-    pub(crate) const PRESENCE: u32 = Parts::SIDEBAR.0 | Parts::CONVERSATION.0;
+    /// Presence: direct chat rows, the open chat's header, its message avatars and its members.
+    pub(crate) const PRESENCE: u32 =
+        Parts::SIDEBAR.0 | Parts::CONVERSATION.0 | Parts::MESSAGES.0 | Parts::MEMBERS.0;
     /// Settings, and the mute and follow marks of chats, channels and posts.
     pub(crate) const ME: u32 = Parts::ME.0;
     pub(crate) const MANAGE: u32 = Parts::MANAGE.0;

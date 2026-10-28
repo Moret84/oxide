@@ -102,7 +102,7 @@ struct MembersScreen: View {
                               : L("ui.screens.of_participants", ["shownCount": shown.count, "membersCount": members.count]))
                         ForEach(shown, id: \.id) { member in
                             HStack(spacing: 12) {
-                                Avatar(name: member.name, id: member.id, size: 36)
+                                Avatar(name: member.name, id: member.id, size: 36, presence: member.presence)
                                 VStack(alignment: .leading, spacing: 3) {
                                     Text(member.name).font(.figtree(14))
                                     Muted(member.role)

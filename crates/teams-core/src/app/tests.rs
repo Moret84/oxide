@@ -1517,6 +1517,52 @@ fn direct_chats_show_their_peer_presence_and_unchanged_polls_redraw_nothing() {
     let _ = app.update(presence("AvailableIdle"));
     assert!(!app.take_changes().has(Parts::SIDEBAR));
 }
+/// An open group chat asks for the presence of its authors and members, and shows it on their avatars.
+#[test]
+fn an_open_group_chat_shows_the_presence_of_its_authors_and_members() {
+    let mut app = App::empty();
+    *app.me = "8:orgid:me".into();
+    *app.chats = vec![
+        serde_json::from_value(serde_json::json!({
+            "id":"a", "isOneOnOne":false,
+            "members":[{"id":"8:orgid:me"},{"id":"8:orgid:other"},{"id":"28:app"}]
+        }))
+        .unwrap(),
+    ];
+    let _ = app.update(Msg::Select(Selection::Chat("a".into())));
+    feed_loaded(&mut app, false, feed_page(0..2, ""));
+    assert_eq!(
+        app.presence_targets(),
+        ["8:orgid:me", "8:orgid:other", "8:orgid:peer"]
+    );
+    let _ = app.update(Msg::PresenceLoaded(
+        0,
+        Ok(vec![Presence {
+            mri: "8:orgid:peer".into(),
+            availability: "Busy".into(),
+            ..Default::default()
+        }]),
+    ));
+    let busy = Some(view::PresenceView {
+        status: view::PresenceStatus::Busy,
+        out_of_office: false,
+    });
+    assert_eq!(
+        app.message_view(&app.conv.messages()[0]).sender_presence,
+        busy
+    );
+    let _ = app.update(Msg::PresenceLoaded(
+        0,
+        Ok(vec![Presence {
+            mri: "8:orgid:other".into(),
+            availability: "Busy".into(),
+            ..Default::default()
+        }]),
+    ));
+    let members = app.members_view().members.unwrap();
+    assert_eq!(members[1].presence, busy);
+    assert_eq!(members[2].presence, None);
+}
 #[test]
 fn avatars_show_people_bots_and_direct_chat_peers() {
     let mut app = App::empty();

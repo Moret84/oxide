@@ -314,10 +314,12 @@ pub(crate) struct App {
     reactions_scanned: HashSet<u64>,
     /// Wall-clock minute the time-dependent parts were last rebuilt for.
     clock_minute: i64,
-    /// Presence of the other person of each direct chat, by lowercase MRI.
+    /// Presence of the people [`App::presence_targets`] names, by lowercase MRI.
     presence: Tracked<HashMap<String, Presence>, { feeds::PRESENCE }>,
     /// When presence was last asked for, while a request is out or after it.
     presence_asked: Option<std::time::Instant>,
+    /// Whom that request asked for: anyone else is asked for at once.
+    presence_asked_for: HashSet<String>,
     expanded: Tracked<HashSet<String>, { feeds::SIDEBAR }>,
     selected: Tracked<Option<Selection>, { feeds::ALL }>,
     last_chat: Option<String>,
@@ -528,6 +530,7 @@ impl App {
             clock_minute: 0,
             presence: Tracked::new(HashMap::new()),
             presence_asked: None,
+            presence_asked_for: HashSet::new(),
             expanded: Tracked::new(HashSet::new()),
             selected: Tracked::new(None),
             last_chat: None,
@@ -784,6 +787,7 @@ impl App {
             clock_minute: _,
             presence,
             presence_asked: _,
+            presence_asked_for: _,
             expanded,
             selected,
             last_chat: _,
@@ -996,34 +1000,51 @@ impl App {
             self.refresh_views(foreground),
         ])
     }
-    /// Polls `getpresence` for direct chats even with push, as the web client polls what Trouter cannot subscribe.
+    /// Polls `getpresence` even with push, as the web client polls what Trouter cannot subscribe.
+    /// People not asked for last time, such as the authors of a chat just opened, are asked for at once.
     fn load_presence(&mut self) -> Task<Msg> {
         const EVERY: Duration = Duration::from_secs(120);
         let Some(client) = self.client.clone() else {
             return Task::none();
         };
-        if self.presence_asked.is_some_and(|at| at.elapsed() < EVERY) {
-            return Task::none();
-        }
-        // The user's own presence comes with the others: the status menu shows it.
-        let mut mris: Vec<String> = self
-            .chats
-            .iter()
-            .filter_map(|c| chat_peer(c, &self.me))
-            .chain(std::iter::once(self.me.as_str()).filter(|me| me.starts_with("8:")))
-            .map(str::to_ascii_lowercase)
-            .collect();
-        mris.sort();
-        mris.dedup();
-        if mris.is_empty() {
+        let mris = self.presence_targets();
+        let recent = self.presence_asked.is_some_and(|at| at.elapsed() < EVERY);
+        if mris.is_empty() || recent && mris.iter().all(|m| self.presence_asked_for.contains(m)) {
             return Task::none();
         }
         self.presence_asked = Some(std::time::Instant::now());
+        self.presence_asked_for = mris.iter().cloned().collect();
         let generation = self.generation;
         Task::perform(
             async move { client.presences(&mris).await.map_err(|e| e.to_string()) },
             move |result| Msg::PresenceLoaded(generation, result),
         )
+    }
+    /// The other person of each direct chat, the user (the status menu shows them), and in the open
+    /// conversation the authors of its messages and the members of a group chat. Channel rosters
+    /// can hold a whole organisation: their members are left out.
+    pub(crate) fn presence_targets(&self) -> Vec<String> {
+        let open_chat = match &*self.selected {
+            Some(Selection::Chat(id)) => self.chats.iter().find(|c| &c.id == id && c.is_group()),
+            _ => None,
+        };
+        let mut mris: Vec<String> = self
+            .chats
+            .iter()
+            .filter_map(|c| chat_peer(c, &self.me))
+            .chain(std::iter::once(self.me.as_str()))
+            .chain(self.conv.all_messages().map(|m| m.sender_mri()))
+            .chain(
+                open_chat
+                    .into_iter()
+                    .flat_map(|c| c.members.iter().map(|m| m.id.as_str())),
+            )
+            .filter(|mri| mri.starts_with("8:"))
+            .map(str::to_ascii_lowercase)
+            .collect();
+        mris.sort();
+        mris.dedup();
+        mris
     }
     fn refresh_views(&mut self, foreground: bool) -> Task<Msg> {
         // What moves with time: a pause may have ended, a typer timed out, the calendar, calls and loading flags.
@@ -1742,6 +1763,7 @@ impl App {
                         self.chats[i] = chat;
                     }
                 }
+                let presence = self.load_presence();
                 let last = if selection.is_channel() {
                     // Posts and their loaded replies; ids are arrival times.
                     self.conv
@@ -1755,9 +1777,12 @@ impl App {
                 if let Some(last) = last
                     && !self.kept_unread.contains(selection.id())
                 {
-                    return Task::done(Msg::MarkRead(selection, last.id.clone()));
+                    return Task::batch([
+                        presence,
+                        Task::done(Msg::MarkRead(selection, last.id.clone())),
+                    ]);
                 }
-                Task::none()
+                presence
             }
             Msg::MoreChats => {
                 if *self.loading_workspace {

@@ -221,7 +221,7 @@ struct Avatar: View {
     let id: String
     var size: CGFloat = 32
     var shape: AvatarShape = .round
-    /// Direct chats: the other person's availability, drawn on the bottom-right corner.
+    /// The person's availability, when known, drawn on the bottom-right corner.
     var presence: PresenceView? = nil
     var body: some View {
         let photo = store.avatarBox(id).image
