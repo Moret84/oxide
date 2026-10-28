@@ -2543,6 +2543,7 @@ mod tests {
         assert!(app.notifications_view().realtime_live);
         // Presence has no push channel here and keeps its own slow poll.
         app.presence_asked = Some(std::time::Instant::now());
+        app.presence_asked_for = app.presence_targets().into_iter().collect();
         app
     }
 

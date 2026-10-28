@@ -5,7 +5,7 @@ import XCTest
 final class FeedTests: XCTestCase {
     private func message(_ id: String, day: String = "15/10/2026", text: String = "") -> MessageView {
         MessageView(
-            id: id, sender: "Alice", senderId: "8:orgid:alice", senderAvatarShape: .round, mine: false, time: "10:00", day: day,
+            id: id, sender: "Alice", senderId: "8:orgid:alice", senderAvatarShape: .round, senderPresence: nil, mine: false, time: "10:00", day: day,
             subject: nil, importance: .standard, deleted: false, editing: false,
             runs: [RunView(text: text, link: nil, bold: false, italic: false, code: false, underline: false,
                            strike: false, color: nil, highlight: nil, size: 0, mention: false)],

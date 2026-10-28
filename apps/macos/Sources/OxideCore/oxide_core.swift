@@ -5295,13 +5295,21 @@ public struct MemberView: Equatable, Hashable {
     public var id: String
     public var name: String
     public var role: String
+    /**
+     * Known for the members of a group chat and the people who wrote in the open conversation.
+     */
+    public var presence: PresenceView?
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(id: String, name: String, role: String) {
+    public init(id: String, name: String, role: String, 
+        /**
+         * Known for the members of a group chat and the people who wrote in the open conversation.
+         */presence: PresenceView?) {
         self.id = id
         self.name = name
         self.role = role
+        self.presence = presence
     }
 
     
@@ -5322,7 +5330,8 @@ public struct FfiConverterTypeMemberView: FfiConverterRustBuffer {
             try MemberView(
                 id: FfiConverterString.read(from: &buf), 
                 name: FfiConverterString.read(from: &buf), 
-                role: FfiConverterString.read(from: &buf)
+                role: FfiConverterString.read(from: &buf), 
+                presence: FfiConverterOptionTypePresenceView.read(from: &buf)
         )
     }
 
@@ -5330,6 +5339,7 @@ public struct FfiConverterTypeMemberView: FfiConverterRustBuffer {
         FfiConverterString.write(value.id, into: &buf)
         FfiConverterString.write(value.name, into: &buf)
         FfiConverterString.write(value.role, into: &buf)
+        FfiConverterOptionTypePresenceView.write(value.presence, into: &buf)
     }
 }
 
@@ -5547,6 +5557,10 @@ public struct MessageView: Equatable, Hashable {
     public var sender: String
     public var senderId: String
     public var senderAvatarShape: AvatarShape
+    /**
+     * The author's presence, once known.
+     */
+    public var senderPresence: PresenceView?
     public var mine: Bool
     public var time: String
     public var day: String
@@ -5579,7 +5593,10 @@ public struct MessageView: Equatable, Hashable {
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(id: String, sender: String, senderId: String, senderAvatarShape: AvatarShape, mine: Bool, time: String, day: String, subject: String?, 
+    public init(id: String, sender: String, senderId: String, senderAvatarShape: AvatarShape, 
+        /**
+         * The author's presence, once known.
+         */senderPresence: PresenceView?, mine: Bool, time: String, day: String, subject: String?, 
         /**
          * Marked Important or Urgent by its sender.
          */importance: Importance, deleted: Bool, editing: Bool, 
@@ -5596,6 +5613,7 @@ public struct MessageView: Equatable, Hashable {
         self.sender = sender
         self.senderId = senderId
         self.senderAvatarShape = senderAvatarShape
+        self.senderPresence = senderPresence
         self.mine = mine
         self.time = time
         self.day = day
@@ -5635,6 +5653,7 @@ public struct FfiConverterTypeMessageView: FfiConverterRustBuffer {
                 sender: FfiConverterString.read(from: &buf), 
                 senderId: FfiConverterString.read(from: &buf), 
                 senderAvatarShape: FfiConverterTypeAvatarShape.read(from: &buf), 
+                senderPresence: FfiConverterOptionTypePresenceView.read(from: &buf), 
                 mine: FfiConverterBool.read(from: &buf), 
                 time: FfiConverterString.read(from: &buf), 
                 day: FfiConverterString.read(from: &buf), 
@@ -5660,6 +5679,7 @@ public struct FfiConverterTypeMessageView: FfiConverterRustBuffer {
         FfiConverterString.write(value.sender, into: &buf)
         FfiConverterString.write(value.senderId, into: &buf)
         FfiConverterTypeAvatarShape.write(value.senderAvatarShape, into: &buf)
+        FfiConverterOptionTypePresenceView.write(value.senderPresence, into: &buf)
         FfiConverterBool.write(value.mine, into: &buf)
         FfiConverterString.write(value.time, into: &buf)
         FfiConverterString.write(value.day, into: &buf)
