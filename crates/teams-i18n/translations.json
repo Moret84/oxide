@@ -5487,17 +5487,17 @@
     "fr": "Connexion rétablie",
     "en": "Back online"
   },
-  "ui.store.earlier_posts": {
-    "fr": "Publications précédentes",
-    "en": "Earlier posts"
-  },
-  "ui.store.load_earlier_messages": {
-    "fr": "Charger les messages précédents",
-    "en": "Load earlier messages"
-  },
   "ui.store.offline": {
     "fr": "Hors ligne",
     "en": "Offline"
+  },
+  "ui.store.scroll_for_earlier_messages": {
+    "fr": "Faites défiler vers le haut pour charger les messages précédents",
+    "en": "Scroll up to load earlier messages"
+  },
+  "ui.store.scroll_for_earlier_posts": {
+    "fr": "Faites défiler vers le haut pour charger les publications précédentes",
+    "en": "Scroll up to load earlier posts"
   },
   "ui.store.text": {
     "fr": "{author} : {excerpt}",

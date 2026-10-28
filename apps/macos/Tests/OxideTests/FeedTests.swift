@@ -66,4 +66,34 @@ final class FeedTests: XCTestCase {
         XCTAssertNil(Store.lastEditable(in: rows([mine("a"), mine("b", editable: false)])))
         XCTAssertNil(Store.lastEditable(in: rows([message("a")])))
     }
+
+    func testScrollingUpToTheEarlierRowLoadsItUnlessALoadIsRunning() {
+        let more = FeedItem.more(label: "", action: .moreFeed, loading: false)
+        let feed = [more, .note("x"), .note("y")]
+        XCTAssertEqual(FeedItem.earlierAction(feed, visible: NSRange(location: 0, length: 2)), .moreFeed)
+        XCTAssertNil(FeedItem.earlierAction(feed, visible: NSRange(location: 1, length: 2)), "not on screen")
+        XCTAssertNil(FeedItem.earlierAction(feed, visible: NSRange(location: NSNotFound, length: 0)), "nothing laid out")
+        let loading = FeedItem.more(label: "", action: .moreFeed, loading: true)
+        XCTAssertNil(FeedItem.earlierAction([loading, .note("x")], visible: NSRange(location: 0, length: 2)))
+        XCTAssertNil(FeedItem.earlierAction([.note("x")], visible: NSRange(location: 0, length: 1)), "no history left")
+    }
+    func testOnlyAGestureStartingAtTheTopLoadsOneEarlierPage() {
+        var gate = EarlierLoadGate()
+        gate.gestureBegan(rowOnScreen: false)
+        XCTAssertNil(gate.pass(.moreFeed), "the gesture that reaches the row only shows it")
+        gate.gestureBegan(rowOnScreen: true)
+        XCTAssertNil(gate.pass(nil), "row gone off screen")
+        XCTAssertEqual(gate.pass(.moreFeed), .moreFeed)
+        XCTAssertNil(gate.pass(.moreFeed), "one page per gesture")
+    }
+    func testAMouseWheelLoadsOneEarlierPagePerSpinStartingAtTheTop() {
+        var gate = EarlierLoadGate()
+        gate.wheelTick(at: 10, rowOnScreen: false)
+        for tick in 1...100 { gate.wheelTick(at: 10 + Double(tick) * 0.01, rowOnScreen: true) }
+        XCTAssertNil(gate.pass(.moreFeed), "a free-spinning wheel reaching the row is one gesture")
+        gate.wheelTick(at: 11 + EarlierLoadGate.wheelPause, rowOnScreen: true)
+        XCTAssertEqual(gate.pass(.moreFeed), .moreFeed)
+        gate.wheelTick(at: 11.01 + EarlierLoadGate.wheelPause, rowOnScreen: true)
+        XCTAssertNil(gate.pass(.moreFeed), "one page per spin")
+    }
 }
