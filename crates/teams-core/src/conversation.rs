@@ -488,7 +488,7 @@ impl ConversationState {
                 *self.loading = false;
                 match result {
                     Ok(page) => {
-                        let cursor = page.metadata.sync_state;
+                        let cursor = page.metadata.older_page_cursor();
                         if append || self.messages.is_empty() {
                             *self.feed_cursor = cursor.clone();
                         }

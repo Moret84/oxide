@@ -420,15 +420,6 @@ fn unread(message: &Message) -> bool {
         v.as_bool() == Some(true) || v.as_str().is_some_and(|s| s.eq_ignore_ascii_case("true"))
     })
 }
-fn history_cursor(page: &MessagesPage) -> Option<String> {
-    // Only backwardLink pages back (syncState is a delta link); keep its syncState still encoded, as Teams does.
-    let (_, query) = page.metadata.backward_link.as_deref()?.split_once('?')?;
-    query
-        .split('&')
-        .find_map(|part| part.strip_prefix("syncState="))
-        .filter(|token| !token.is_empty())
-        .map(str::to_owned)
-}
 pub(crate) fn label(kind: &str) -> &'static str {
     match kind {
         "mention" | "mentionInChat" | "mentionInCommunity" | "mentions" => {
@@ -688,7 +679,7 @@ impl App {
                 self.activity.loading = false;
                 match result {
                     Ok(mut page) => {
-                        let next_cursor = history_cursor(&page);
+                        let next_cursor = page.metadata.older_page_cursor();
                         if append || self.activity.messages.is_empty() {
                             self.activity.cursor = if page.messages.is_empty()
                                 || (append && next_cursor == self.activity.cursor)
@@ -825,16 +816,6 @@ impl App {
 #[cfg(test)]
 mod tests {
     use super::*;
-    #[test]
-    fn pagination_uses_only_the_backward_link_and_preserves_encoded_tokens() {
-        let mut page = MessagesPage::default();
-        page.metadata.sync_state = Some("https://chat.example/messages?syncState=delta".into());
-        assert!(history_cursor(&page).is_none());
-        page.metadata.backward_link = Some(
-            "https://chat.example/messages?startTime=0&syncState=older%2Btoken&pageSize=50".into(),
-        );
-        assert_eq!(history_cursor(&page).as_deref(), Some("older%2Btoken"));
-    }
     #[test]
     fn meeting_invitations_read_like_teams_and_point_to_their_event() {
         let data = json!({
