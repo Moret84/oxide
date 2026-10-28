@@ -223,7 +223,7 @@ struct MessageRow: View {
                 Muted(L("ui.message_row.this_message_has_been_deleted"), size: 14)
                     .accessibilityLabel(spokenLabel)
             } else {
-                // One selection overlay per paragraph, but only for the rows the table has on screen.
+                // One selection overlay per run of paragraphs or other block, but only for the rows the table has on screen.
                 MessageBlocks(blocks: message.blocks, size: MessageBlocks.emojiOnly(message.blocks) ? 30 : 14)
                     .environment(\.cardMessageId, message.id)
                     .font(.figtree(14))
