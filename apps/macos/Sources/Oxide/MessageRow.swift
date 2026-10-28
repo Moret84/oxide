@@ -212,10 +212,11 @@ struct MessageRow: View {
                 Muted(L("ui.message_row.this_message_has_been_deleted"), size: 14)
                     .accessibilityLabel(spokenLabel)
             } else {
-                // A selection overlay per message is costly in long feeds: copy from the menu.
+                // One selection overlay per paragraph, but only for the rows the table has on screen.
                 MessageBlocks(blocks: message.blocks, size: MessageBlocks.emojiOnly(message.blocks) ? 30 : 14)
                     .environment(\.cardMessageId, message.id)
                     .font(.figtree(14))
+                    .textSelection(.enabled)
                     .environment(\.openURL, OpenURLAction { url in
                         store.send(.openUrl(url: url.absoluteString))
                         return .handled
