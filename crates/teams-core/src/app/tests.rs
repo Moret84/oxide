@@ -33,7 +33,9 @@ fn feed_page(ids: std::ops::Range<u32>, cursor: &str) -> MessagesPage {
             })
             .collect(),
         metadata: teams_chat::PageMetadata {
-            sync_state: Some(cursor.into()),
+            sync_state: Some("https://x/messages?syncState=delta".into()),
+            backward_link: (!cursor.is_empty())
+                .then(|| format!("https://x/messages?startTime=1&syncState={cursor}&pageSize=50")),
             ..Default::default()
         },
         ..Default::default()
@@ -85,6 +87,17 @@ fn the_open_feed_keeps_its_latest_messages_until_the_reader_goes_up() {
         conversation::MAX_MESSAGES,
         "reopened"
     );
+}
+/// The delta link in `syncState` does not page back: without a `backwardLink` there is nothing older to load.
+#[test]
+fn older_messages_page_from_the_backward_link_only() {
+    for (cursor, more) in [("", false), ("older", true)] {
+        let mut app = App::empty();
+        *app.chats = vec![serde_json::from_value(serde_json::json!({"id": "a"})).unwrap()];
+        let _ = app.update(Msg::Select(Selection::Chat("a".into())));
+        feed_loaded(&mut app, false, feed_page(0..50, cursor));
+        assert_eq!(app.conv.has_more(), more, "backward cursor {cursor:?}");
+    }
 }
 #[test]
 fn the_activity_feed_keeps_its_newest_items_until_the_reader_asks_for_more() {
