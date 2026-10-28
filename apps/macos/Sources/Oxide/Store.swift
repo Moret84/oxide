@@ -300,14 +300,14 @@ final class Store {
         var thread: [FeedItem] = []
         if let view, !view.isChannel {
             if view.hasMore {
-                chat.append(.more(label: L("ui.store.load_earlier_messages"), action: .moreFeed, disabled: view.loading, outlined: false))
+                chat.append(.more(label: L("ui.store.scroll_for_earlier_messages"), action: .moreFeed, loading: view.loading))
             }
             chat += FeedItem.messages(messages.ordered, bubbles: true, firstUnread: view.firstUnread)
             if let empty = view.emptyText { chat.append(.note(empty)) }
         }
         if let view, view.isChannel {
             if view.hasMore {
-                channel.append(.more(label: L("ui.store.earlier_posts"), action: .moreFeed, disabled: view.loading, outlined: true))
+                channel.append(.more(label: L("ui.store.scroll_for_earlier_posts"), action: .moreFeed, loading: view.loading))
             }
             channel += posts.ordered.map { FeedItem.post($0.view, stamp: $0.stamp) }
             if let empty = view.emptyText { channel.append(.note(empty)) }
@@ -315,7 +315,7 @@ final class Store {
         }
         if let thread0 = view?.thread {
             if thread0.hasMore {
-                thread.append(.more(label: L("ui.store.load_earlier_messages"), action: .moreReplies, disabled: thread0.loading, outlined: false))
+                thread.append(.more(label: L("ui.store.scroll_for_earlier_messages"), action: .moreReplies, loading: thread0.loading))
             }
             thread += FeedItem.messages(replies.ordered, bubbles: false)
             if let empty = thread0.emptyText { thread.append(.note(empty)) }

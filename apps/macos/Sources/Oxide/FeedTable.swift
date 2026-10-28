@@ -4,7 +4,7 @@ import OxideCore
 
 /// One row of a message feed.
 enum FeedItem: Identifiable, Equatable {
-    case more(label: String, action: Action, disabled: Bool, outlined: Bool)
+    case more(label: String, action: Action, loading: Bool)
     case day(label: String)
     /// `stamp` changes whenever the core sends the message again, so rows compare cheaply.
     case message(MessageView, bubble: Bool, stamp: Int)
@@ -29,7 +29,7 @@ enum FeedItem: Identifiable, Equatable {
 
     static func == (a: FeedItem, b: FeedItem) -> Bool {
         switch (a, b) {
-        case let (.more(l1, a1, d1, o1), .more(l2, a2, d2, o2)): l1 == l2 && a1 == a2 && d1 == d2 && o1 == o2
+        case let (.more(l1, a1, d1), .more(l2, a2, d2)): l1 == l2 && a1 == a2 && d1 == d2
         case let (.day(l1), .day(l2)): l1 == l2
         case let (.message(m1, b1, s1), .message(m2, b2, s2)): s1 == s2 && b1 == b2 && m1.id == m2.id
         case let (.post(p1, s1), .post(p2, s2)): s1 == s2 && p1.id == p2.id
@@ -192,6 +192,7 @@ struct FeedTable: NSViewRepresentable {
         private var wheelMonitor: Any?
         /// Whether the current scroll gesture goes to the feed rather than a scroll view inside a row.
         private var wheelToFeed = false
+        private var earlierGate = EarlierLoadGate()
         private weak var controller: FeedController?
 
         func attach(_ controller: FeedController?) {
@@ -228,9 +229,26 @@ struct FeedTable: NSViewRepresentable {
             wheelMonitor = NSEvent.addLocalMonitorForEvents(matching: .scrollWheel) { [weak self, weak scroll] event in
                 let routed = MainActor.assumeIsolated {
                     guard let self, let scroll else { return false }
+                    self.noteGesture(event, on: scroll)
                     return self.routeWheel(event, to: scroll)
                 }
                 return routed ? nil : event
+            }
+        }
+
+        /// Loads earlier history on a deliberate scroll past the top, as Teams does: see `EarlierLoadGate`.
+        private func noteGesture(_ event: NSEvent, on scroll: NSScrollView) {
+            guard event.window === scroll.window,
+                  scroll.bounds.contains(scroll.convert(event.locationInWindow, from: nil)),
+                  let table else { return }
+            let action = FeedItem.earlierAction(items, visible: table.rows(in: scroll.contentView.bounds))
+            if event.phase.contains(.began) {
+                earlierGate.gestureBegan(rowOnScreen: action != nil)
+            } else if event.phase.isEmpty && event.momentumPhase.isEmpty {
+                earlierGate.wheelTick(at: event.timestamp, rowOnScreen: action != nil)
+            }
+            if event.momentumPhase.isEmpty, event.scrollingDeltaY > 0, let action = earlierGate.pass(action) {
+                store?.send(action)
             }
         }
 
@@ -458,7 +476,7 @@ struct FeedTable: NSViewRepresentable {
                     + (m.importance == .standard ? 0 : 22)
             }
             switch item {
-            case .more: return 46
+            case .more: return 36
             case .day, .unread: return 32
             case .note: return 64
             case .postsError: return 90
@@ -553,6 +571,35 @@ struct FeedTable: NSViewRepresentable {
     }
 }
 
+/// Lets "load earlier" through only for a scroll gesture that starts with its row on screen: reaching the row,
+/// momentum included, only shows it, and going on loads one page per gesture.
+struct EarlierLoadGate {
+    /// A mouse wheel has no gestures: a pause this long between its ticks ends one, so a free-spinning wheel counts once.
+    static let wheelPause: TimeInterval = 0.3
+    private var armed = false
+    private var lastTick = -TimeInterval.infinity
+    mutating func gestureBegan(rowOnScreen: Bool) { armed = rowOnScreen }
+    mutating func wheelTick(at time: TimeInterval, rowOnScreen: Bool) {
+        if time - lastTick >= Self.wheelPause { armed = rowOnScreen }
+        lastTick = time
+    }
+    /// `action` if the gesture may still load a page, which it then may not until the next gesture.
+    mutating func pass(_ action: Action?) -> Action? {
+        guard armed, let action else { return nil }
+        armed = false
+        return action
+    }
+}
+
+extension FeedItem {
+    /// The action of the idle "load earlier" row heading `items`, when `visible` rows include it.
+    static func earlierAction(_ items: [FeedItem], visible: NSRange) -> Action? {
+        guard case .more(_, let action, false) = items.first,
+              visible.location == 0, visible.length > 0 else { return nil }
+        return action
+    }
+}
+
 /// A row with its store, as one concrete type: cells swap rows without type erasure.
 struct FeedRow: View {
     let store: Store?
@@ -596,18 +643,20 @@ struct FeedItemView: View {
     }
     @ViewBuilder private var content: some View {
         switch item {
-        case .more(let label, let action, let disabled, let outlined):
-            if outlined {
-                Button(label) { store.send(action) }
-                    .buttonStyle(OutlineButtonStyle())
-                    .disabled(disabled)
-            } else {
-                Button(label) { store.send(action) }
-                    .buttonStyle(GhostButtonStyle())
-                    .font(.figtree(12))
-                    .disabled(disabled)
-                    .frame(maxWidth: .infinity)
+        case .more(let label, let action, let loading):
+            // Scrolling up to the row loads it, as in Teams; the same height either way keeps the feed still.
+            ZStack {
+                if loading {
+                    ProgressView().controlSize(.small)
+                } else {
+                    Text(label).font(.figtree(12)).foregroundStyle(Theme.subtle)
+                }
             }
+            .frame(maxWidth: .infinity, minHeight: 20)
+            .accessibilityElement()
+            .accessibilityLabel(label)
+            .accessibilityAddTraits(.isButton)
+            .accessibilityAction { store.send(action) }
         case .day(let label):
             HStack(spacing: 12) {
                 Rectangle().fill(Theme.border).frame(height: 1)
