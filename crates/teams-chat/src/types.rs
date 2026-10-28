@@ -151,6 +151,19 @@ pub struct PageMetadata {
     pub extra: Map<String, Value>,
 }
 
+impl PageMetadata {
+    /// Cursor of the older page: only `backwardLink` pages back (`syncState` is a delta link).
+    /// Its `syncState` stays encoded, as Teams sends it.
+    pub fn older_page_cursor(&self) -> Option<String> {
+        let (_, query) = self.backward_link.as_deref()?.split_once('?')?;
+        query
+            .split('&')
+            .find_map(|part| part.strip_prefix("syncState="))
+            .filter(|token| !token.is_empty())
+            .map(str::to_owned)
+    }
+}
+
 /// Conversation or thread as returned with `view=msnp24Equivalent`.
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub struct Conversation {
@@ -467,6 +480,21 @@ fn wire_time<'de, D: serde::Deserializer<'de>>(
 #[cfg(test)]
 mod identity_tests {
     use super::*;
+    #[test]
+    fn pagination_uses_only_the_backward_link_and_preserves_encoded_tokens() {
+        let mut metadata = PageMetadata {
+            sync_state: Some("https://chat.example/messages?syncState=delta".into()),
+            ..Default::default()
+        };
+        assert!(metadata.older_page_cursor().is_none());
+        metadata.backward_link = Some(
+            "https://chat.example/messages?startTime=0&syncState=older%2Btoken&pageSize=50".into(),
+        );
+        assert_eq!(
+            metadata.older_page_cursor().as_deref(),
+            Some("older%2Btoken")
+        );
+    }
     #[test]
     fn message_sender_uses_the_same_mri_as_participants_and_signed_in_user() {
         for from in [

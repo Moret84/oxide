@@ -33,7 +33,7 @@ pub struct MessagesQuery {
     pub page_size: Option<u32>,
     /// Epoch milliseconds.
     pub start_time: Option<u64>,
-    /// Cursor returned in the previous page's `_metadata.syncState`.
+    /// Cursor of the older page, from [`crate::PageMetadata::older_page_cursor`].
     pub sync_state: Option<String>,
 }
 
