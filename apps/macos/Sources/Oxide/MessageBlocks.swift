@@ -8,11 +8,28 @@ struct MessageBlocks: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            ForEach(Array(blocks.enumerated()), id: \.offset) { _, block in
+            ForEach(Array(Self.joiningParagraphs(blocks).enumerated()), id: \.offset) { _, block in
                 BlockContent(block: block, size: size)
             }
         }
         .frame(alignment: .leading)
+    }
+
+    /// Consecutive paragraphs drawn as one text, since a selection cannot run from one text view to the next.
+    /// A tiny blank line stands for the gap the stack would put between them.
+    static func joiningParagraphs(_ blocks: [BlockView]) -> [BlockView] {
+        blocks.reduce(into: []) { joined, block in
+            guard case .text(let runs) = block, case .text(let previous)? = joined.last else {
+                joined.append(block)
+                return
+            }
+            joined[joined.count - 1] = .text(runs: previous + [gap("\n", size: 0), gap("\n", size: 4)] + runs)
+        }
+    }
+
+    private static func gap(_ text: String, size: UInt32) -> RunView {
+        RunView(text: text, link: nil, bold: false, italic: false, code: false, underline: false,
+                strike: false, color: nil, highlight: nil, size: size, mention: false)
     }
 
     /// Images drawn in the body, where the HTML puts them.
