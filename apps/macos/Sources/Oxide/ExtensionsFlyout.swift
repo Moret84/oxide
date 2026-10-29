@@ -237,7 +237,7 @@ struct ComposerCards: View {
                             store.send(.extensions(action: .removeCard(index: item.index)))
                         }
                     }
-                    MessageBlocks(blocks: [.card(card: item.card)], size: 13)
+                    MessageBody(blocks: [.card(card: item.card)], size: 13)
                 }
             }
         }

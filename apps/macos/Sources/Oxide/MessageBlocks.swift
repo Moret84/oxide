@@ -1,197 +1,6 @@
 import SwiftUI
 import OxideCore
 
-/// A message body drawn block by block, as Teams does: each paragraph, quote, code, list, table or card has its own view.
-struct MessageBlocks: View {
-    let blocks: [BlockView]
-    var size: Double = 14
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            ForEach(Array(Self.joiningParagraphs(blocks).enumerated()), id: \.offset) { _, block in
-                BlockContent(block: block, size: size)
-            }
-        }
-        .frame(alignment: .leading)
-    }
-
-    /// Consecutive paragraphs drawn as one text, since a selection cannot run from one text view to the next.
-    /// A tiny blank line stands for the gap the stack would put between them.
-    static func joiningParagraphs(_ blocks: [BlockView]) -> [BlockView] {
-        blocks.reduce(into: []) { joined, block in
-            guard case .text(let runs) = block, case .text(let previous)? = joined.last else {
-                joined.append(block)
-                return
-            }
-            joined[joined.count - 1] = .text(runs: previous + [gap("\n", size: 0), gap("\n", size: 4)] + runs)
-        }
-    }
-
-    private static func gap(_ text: String, size: UInt32) -> RunView {
-        RunView(text: text, link: nil, bold: false, italic: false, code: false, underline: false,
-                strike: false, color: nil, highlight: nil, size: size, mention: false)
-    }
-
-    /// Images drawn in the body, where the HTML puts them.
-    static func images(_ blocks: [BlockView]) -> [ImageView] {
-        blocks.flatMap { block -> [ImageView] in
-            switch block {
-            case .image(let image): [image]
-            case .list(_, _, let items): items.flatMap { images($0.blocks) }
-            case .quote(_, _, _, let body): images(body)
-            default: []
-            }
-        }
-    }
-
-    /// One to three emoji alone are drawn large, like Teams.
-    static func emojiOnly(_ blocks: [BlockView]) -> Bool {
-        guard blocks.count == 1, case .text(let runs) = blocks[0] else { return false }
-        let glyphs = runs.map(\.text).joined().filter { !$0.isWhitespace }
-        return (1...3).contains(glyphs.count) && glyphs.allSatisfy(\.isEmojiGlyph)
-    }
-}
-
-private struct BlockContent: View {
-    let block: BlockView
-    let size: Double
-
-    var body: some View {
-        switch block {
-        case .text(let runs):
-            MessageEmojiText(runs: runs, size: size)
-                .lineSpacing(size > 20 ? 0 : 4)
-                .fixedSize(horizontal: false, vertical: true)
-        case .list(let ordered, let start, let items):
-            VStack(alignment: .leading, spacing: 4) {
-                ForEach(Array(items.enumerated()), id: \.offset) { index, item in
-                    HStack(alignment: .firstTextBaseline, spacing: 6) {
-                        Text(ordered ? "\(Int(start) + index)." : "•")
-                            .font(.figtree(size))
-                            .foregroundStyle(Theme.textSoft)
-                            .frame(minWidth: 14, alignment: .trailing)
-                        MessageBlocks(blocks: item.blocks, size: size)
-                    }
-                }
-            }
-            .padding(.leading, 2)
-        case .quote(let author, let time, let messageId, let body):
-            QuoteBlock(author: author, time: time, reply: messageId != nil || author != nil, content: body)
-        case .code(let language, let text):
-            CodeBlock(language: language, text: text)
-        case .table(let header, let rows):
-            TableBlock(header: header, rows: rows, size: size - 1)
-        case .rule:
-            Rectangle().fill(Theme.border).frame(height: 1).padding(.vertical, 2)
-        case .image(let image):
-            PreviewImage(image: image)
-        case .card(let card):
-            CardBlock(card: card)
-        }
-    }
-}
-
-/// A reply to another message: its author, time and the start of its text, set off by a bar.
-private struct QuoteBlock: View {
-    let author: String?
-    let time: String?
-    let reply: Bool
-    let content: [BlockView]
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 3) {
-            if author != nil || time != nil {
-                HStack(spacing: 6) {
-                    if let author { Text(author).font(.figtree(12, .semibold)) }
-                    if let time { Text(time).font(.figtree(11)).foregroundStyle(Theme.muted) }
-                }
-            }
-            MessageBlocks(blocks: content, size: 13)
-                .foregroundStyle(Theme.textSoft)
-                .lineLimit(reply ? 4 : nil)
-        }
-        .padding(.vertical, 6)
-        .padding(.leading, 12)
-        .padding(.trailing, 10)
-        .frame(alignment: .leading)
-        .background(Theme.input, in: RoundedRectangle(cornerRadius: 6))
-        .overlay(alignment: .leading) {
-            UnevenRoundedRectangle(topLeadingRadius: 6, bottomLeadingRadius: 6)
-                .fill(Theme.accent)
-                .frame(width: 3)
-        }
-        .fixedSize(horizontal: false, vertical: true)
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel(reply ? (author.map { L("ui.message_blocks.reply_to", ["author": $0]) } ?? L("ui.message_blocks.reply_to_message")) : L("ui.message_blocks.quote"))
-    }
-}
-
-/// Code as written: monospaced, never wrapped (scrolls sideways), with its language and a copy button.
-private struct CodeBlock: View {
-    let language: String?
-    let text: String
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            HStack {
-                Text(language ?? "Code").font(.figtree(11, .semibold)).foregroundStyle(Theme.muted)
-                Spacer()
-                Button {
-                    NSPasteboard.copy(text)
-                } label: {
-                    Label(L("ui.message_blocks.copy"), systemImage: "doc.on.doc").font(.figtree(11))
-                }
-                .buttonStyle(GhostButtonStyle())
-                .help(L("ui.message_blocks.copy_code"))
-            }
-            .padding(.leading, 10)
-            .padding(.trailing, 4)
-            .frame(height: 26)
-            Rectangle().fill(Theme.border).frame(height: 1)
-            ScrollView(.horizontal) {
-                Text(text)
-                    .font(.system(size: 12.5, design: .monospaced))
-                    .lineSpacing(2)
-                    .textSelection(.enabled)
-                    .fixedSize()
-                    .padding(10)
-            }
-            .fixedSize(horizontal: false, vertical: true)
-        }
-        .background(Theme.input, in: RoundedRectangle(cornerRadius: 8))
-        .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(Theme.border))
-    }
-}
-
-private struct TableBlock: View {
-    let header: Bool
-    let rows: [TableRowView]
-    let size: Double
-
-    var body: some View {
-        Grid(alignment: .topLeading, horizontalSpacing: 0, verticalSpacing: 0) {
-            ForEach(Array(rows.enumerated()), id: \.offset) { index, row in
-                if index > 0 {
-                    Rectangle().fill(Theme.border).frame(height: 1).gridCellUnsizedAxes(.horizontal)
-                }
-                GridRow {
-                    ForEach(Array(row.cells.enumerated()), id: \.offset) { _, cell in
-                        MessageEmojiText(runs: cell.runs, size: size)
-                            .fixedSize(horizontal: false, vertical: true)
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 6)
-                            .frame(minWidth: 48, maxWidth: .infinity, alignment: .leading)
-                    }
-                }
-                .background(header && index == 0 ? Theme.input : .clear)
-            }
-        }
-        .clipShape(RoundedRectangle(cornerRadius: 8))
-        .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(Theme.border))
-        .fixedSize(horizontal: false, vertical: true)
-    }
-}
-
 /// The message a card belongs to, for its buttons.
 private struct CardMessageKey: EnvironmentKey { static let defaultValue: String? = nil }
 extension EnvironmentValues {
@@ -202,7 +11,7 @@ extension EnvironmentValues {
 }
 
 /// A bot or connector card; typed input values stay here until a button sends them to the bot.
-private struct CardBlock: View {
+struct CardBlock: View {
     @Environment(Store.self) private var store
     @Environment(\.cardMessageId) private var messageId
     let card: CardView
@@ -276,7 +85,7 @@ struct CardItems: View {
                     .lineSpacing(3)
                     .fixedSize(horizontal: false, vertical: true)
             case .blocks(let blocks):
-                MessageBlocks(blocks: blocks, size: 14)
+                MessageBody(blocks: blocks, size: 14)
             case .gap(let points, let separator):
                 if separator {
                     Divider().overlay(Theme.border).padding(.vertical, CGFloat(points) / 2)
@@ -427,7 +236,7 @@ enum MessageText {
     }
 }
 
-private extension Character {
+extension Character {
     var isEmojiGlyph: Bool {
         guard let first = unicodeScalars.first else { return false }
         return first.properties.isEmojiPresentation || (first.properties.isEmoji && unicodeScalars.count > 1)

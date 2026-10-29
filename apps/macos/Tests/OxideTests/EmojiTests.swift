@@ -24,15 +24,6 @@ final class EmojiTests: XCTestCase {
                 underline: false, strike: false, color: nil, highlight: nil, size: 0, mention: false)
     }
 
-    func testConsecutiveParagraphsAreJoinedSoASelectionSpansThem() {
-        let code = BlockView.code(language: nil, text: "x")
-        let joined = MessageBlocks.joiningParagraphs([.text(runs: [run("a")]), .text(runs: [run("b")]), code, .text(runs: [run("c")])])
-        XCTAssertEqual(joined.count, 3)
-        guard case .text(let runs) = joined[0] else { return XCTFail("paragraphs") }
-        XCTAssertEqual(runs.map(\.text).joined(), "a\n\nb")
-        XCTAssertEqual(joined[1], code)
-    }
-
     func testInlineArtworkKeepsSurroundingTextAndNativeFallback() {
         let source = run("Bravo 👍 ! ❤️\nEncore")
         let fragments = MessageEmojiFragment.make([source], size: 14)

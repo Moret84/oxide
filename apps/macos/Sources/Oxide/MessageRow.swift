@@ -223,8 +223,7 @@ struct MessageRow: View {
                 Muted(L("ui.message_row.this_message_has_been_deleted"), size: 14)
                     .accessibilityLabel(spokenLabel)
             } else {
-                // One selection overlay per run of paragraphs or other block, but only for the rows the table has on screen.
-                MessageBlocks(blocks: message.blocks, size: MessageBlocks.emojiOnly(message.blocks) ? 30 : 14)
+                MessageBody(blocks: message.blocks, size: MessageBody.emojiOnly(message.blocks) ? 30 : 14)
                     .environment(\.cardMessageId, message.id)
                     .font(.figtree(14))
                     .textSelection(.enabled)
@@ -237,7 +236,7 @@ struct MessageRow: View {
                     .accessibilityActions { accessibilityCommands }
             }
             // Images the body does not place itself (file previews, images in tables).
-            let inline = Set(MessageBlocks.images(message.blocks).map(\.src))
+            let inline = Set(MessageBody.images(message.blocks).map(\.src))
             ForEach(message.images.filter { !inline.contains($0.src) }, id: \.src) { PreviewImage(image: $0) }
             ForEach(message.files, id: \.key) { FileCard(file: $0).frame(width: 340) }
             if let link = message.linkPreview { LinkPreviewCard(preview: link).frame(width: 340) }
