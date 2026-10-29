@@ -4,23 +4,33 @@ import OxideCore
 
 /// A message body as one AppKit text wherever its blocks are text-like, so a selection runs across paragraphs, lists,
 /// quotes and tables as it does in Teams' web view. Images, cards and code stay views of their own, cutting the text
-/// where they sit, even inside a list or a quote.
+/// where they sit, even inside a list or a quote; the feed's selection runs across them.
 struct MessageBody: View {
     @Environment(\.openURL) private var openURL
+    @Environment(\.cardMessageId) private var messageId
     let blocks: [BlockView]
     var size: Double = 14
+    /// Whether the texts belong to the message's selection across the feed; a card's texts select on their own.
+    var inFeedSelection = true
 
     var body: some View {
         // Read while building, so SwiftUI rebuilds the texts once the emoji images arrive.
         let _ = TeamsEmojiCatalog.shared.revision
         VStack(alignment: .leading, spacing: 0) {
-            ForEach(Array(MessageRichText.pieces(blocks, size: size).enumerated()), id: \.offset) { _, piece in
+            ForEach(Array(MessageRichText.pieces(blocks, size: size).enumerated()), id: \.offset) { index, piece in
                 switch piece {
                 case .text(let text, let spacing):
-                    MessageRichTextView(text: text, open: { openURL($0) })
-                        .padding(.top, spacing)
+                    MessageRichTextView(
+                        text: text,
+                        unit: inFeedSelection ? messageId.map { FeedSelection.Unit(message: $0, segment: index) } : nil,
+                        open: { openURL($0) }
+                    )
+                    .padding(.top, spacing)
                 case .other(let block, let placement):
-                    MessageEmbed(block: block, placement: placement)
+                    MessageEmbed(
+                        block: block, placement: placement,
+                        unit: inFeedSelection ? messageId.map { FeedSelection.Unit(message: $0, segment: index) } : nil
+                    )
                 }
             }
         }
@@ -51,6 +61,8 @@ private struct MessageEmbed: View {
     @Environment(\.openURL) private var openURL
     let block: BlockView
     let placement: MessageRichText.Placement
+    /// Code's text, for the feed's selection.
+    let unit: FeedSelection.Unit?
 
     var body: some View {
         content
@@ -81,7 +93,7 @@ private struct MessageEmbed: View {
         case .image(let image): PreviewImage(image: image)
         case .card(let card): CardBlock(card: card)
         case .code(let language, let code):
-            MessageCode(language: language, code: code, open: { openURL($0) })
+            MessageCode(language: language, code: code, unit: unit, open: { openURL($0) })
         default: EmptyView()
         }
     }
@@ -91,6 +103,7 @@ private struct MessageEmbed: View {
 private struct MessageCode: View {
     let language: String?
     let code: String
+    let unit: FeedSelection.Unit?
     let open: (URL) -> Void
 
     var body: some View {
@@ -111,7 +124,7 @@ private struct MessageCode: View {
             .frame(height: 26)
             Rectangle().fill(Theme.border).frame(height: 1)
             ScrollView(.horizontal) {
-                MessageRichTextView(text: MessageRichText.code(code), open: open)
+                MessageRichTextView(text: MessageRichText.code(code), unit: unit, open: open)
                     .padding(10)
             }
             .fixedSize(horizontal: false, vertical: true)
@@ -121,9 +134,24 @@ private struct MessageCode: View {
     }
 }
 
+/// A message's author line, selectable along with its text.
+struct MessageAuthorLine: View {
+    let text: NSAttributedString
+    let messageId: String
+
+    var body: some View {
+        MessageRichTextView(
+            text: text, unit: FeedSelection.Unit(message: messageId, segment: FeedSelection.Unit.authorLine),
+            open: { _ in }, singleLine: true
+        )
+    }
+}
+
 private struct MessageRichTextView: NSViewRepresentable {
     let text: NSAttributedString
+    let unit: FeedSelection.Unit?
     let open: (URL) -> Void
+    var singleLine = false
 
     func makeNSView(context: Context) -> MessageTextView {
         let view = MessageTextView()
@@ -137,6 +165,10 @@ private struct MessageRichTextView: NSViewRepresentable {
         view.isHorizontallyResizable = false
         view.delegate = context.coordinator
         view.setContentHuggingPriority(.required, for: .vertical)
+        if singleLine {
+            view.textContainer?.maximumNumberOfLines = 1
+            view.textContainer?.lineBreakMode = .byTruncatingTail
+        }
         return view
     }
 
@@ -147,8 +179,11 @@ private struct MessageRichTextView: NSViewRepresentable {
             .underlineStyle: NSUnderlineStyle.single.rawValue,
             .cursor: NSCursor.pointingHand,
         ]
-        guard view.textStorage?.isEqual(to: text) != true else { return }
+        let changed = view.unit != unit || view.textStorage?.isEqual(to: text) != true
+        view.unit = unit
+        guard changed else { return }
         view.textStorage?.setAttributedString(text)
+        view.selection?.register(view)
     }
 
     func sizeThatFits(_ proposal: ProposedViewSize, nsView view: MessageTextView, context: Context) -> CGSize? {
@@ -170,6 +205,9 @@ private struct MessageRichTextView: NSViewRepresentable {
 
 /// TextKit 1, the only layout that draws text blocks and tables.
 final class MessageTextView: NSTextView {
+    /// Which message text this is, for a selection running across messages.
+    var unit: FeedSelection.Unit?
+
     convenience init() {
         let storage = NSTextStorage()
         let layout = NSLayoutManager()
@@ -205,11 +243,51 @@ final class MessageTextView: NSTextView {
         }
     }
 
+    /// The selection across the feed this text takes part in, if any.
+    var selection: FeedSelection? {
+        guard unit != nil else { return nil }
+        return enclosingFeed?.selection
+    }
+
+    /// The feed follows a drag from here itself, so it can run across messages.
+    override func mouseDown(with event: NSEvent) {
+        if unit != nil, let feed = enclosingFeed, feed.press?(event, self) == true { return }
+        super.mouseDown(with: event)
+    }
+
+    override func viewDidMoveToWindow() {
+        super.viewDidMoveToWindow()
+        selection?.register(self)
+    }
+
+    private var enclosingFeed: FeedTableView? {
+        var view = superview
+        while let current = view, !(current is FeedTableView) { view = current.superview }
+        return view as? FeedTableView
+    }
+
+    /// Shows `range` as selected without being the selection, for the texts a selection across messages covers.
+    func highlight(_ range: NSRange?) {
+        guard let layout = layoutManager, let length = textStorage?.length else { return }
+        layout.removeTemporaryAttribute(.backgroundColor, forCharacterRange: NSRange(location: 0, length: length))
+        guard let range, range.length > 0 else { return }
+        layout.addTemporaryAttribute(.backgroundColor, value: NSColor.selectedTextBackgroundColor, forCharacterRange: range)
+    }
+
     /// Emoji drawn as images copy as the emoji they stand for.
     override func copy(_ sender: Any?) {
-        let text = textStorage.map { MessageRichText.plain($0, range: selectedRange()) } ?? ""
+        let text = if let selection, selection.spansUnits {
+            selection.text()
+        } else {
+            textStorage.map { MessageRichText.plain($0, range: selectedRange()) } ?? ""
+        }
         guard !text.isEmpty else { return }
         NSPasteboard.copy(text)
+    }
+
+    override func validateUserInterfaceItem(_ item: any NSValidatedUserInterfaceItem) -> Bool {
+        if item.action == #selector(copy(_:)), selection?.spansUnits == true { return true }
+        return super.validateUserInterfaceItem(item)
     }
 
     override func layout() {
@@ -305,6 +383,15 @@ enum MessageRichText {
     enum Piece {
         case text(NSAttributedString, spacing: CGFloat)
         case other(BlockView, Placement)
+
+        /// What the piece gives a selection: its text, or code's.
+        @MainActor var selectable: NSAttributedString? {
+            switch self {
+            case .text(let text, _): text
+            case .other(.code(_, let code), _): MessageRichText.code(code)
+            case .other: nil
+            }
+        }
     }
 
     /// Code's text: monospaced, unwrapped.

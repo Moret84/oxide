@@ -85,7 +85,7 @@ struct CardItems: View {
                     .lineSpacing(3)
                     .fixedSize(horizontal: false, vertical: true)
             case .blocks(let blocks):
-                MessageBody(blocks: blocks, size: 14)
+                MessageBody(blocks: blocks, size: 14, inFeedSelection: false)
             case .gap(let points, let separator):
                 if separator {
                     Divider().overlay(Theme.border).padding(.vertical, CGFloat(points) / 2)
