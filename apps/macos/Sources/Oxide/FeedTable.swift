@@ -128,7 +128,7 @@ struct FeedTable: NSViewRepresentable {
     func makeCoordinator() -> Coordinator { Coordinator() }
 
     func makeNSView(context: Context) -> NSScrollView {
-        let table = NSTableView()
+        let table = FeedTableView()
         table.addTableColumn(NSTableColumn(identifier: .init("feed")))
         table.headerView = nil
         table.style = .plain
@@ -167,7 +167,7 @@ struct FeedTable: NSViewRepresentable {
     /// Rows keep an estimated height until they near the viewport, so opening or resizing measures a screenful, not the history.
     @MainActor
     final class Coordinator: NSObject, NSTableViewDataSource, NSTableViewDelegate {
-        weak var table: NSTableView?
+        weak var table: FeedTableView?
         var store: Store?
         private var items: [FeedItem] = []
         private var ids: [String] = []
@@ -234,6 +234,113 @@ struct FeedTable: NSViewRepresentable {
                 }
                 return routed ? nil : event
             }
+            guard let table else { return }
+            table.press = { [weak self] event, text in
+                self?.press(event, on: text) ?? false
+            }
+            table.selection.rows = { [weak self] in
+                guard let self else { return [:] }
+                return Dictionary(self.items.enumerated().compactMap { row, item in
+                    Self.message(of: item).map { ($0.message.id, row) }
+                }, uniquingKeysWith: { first, _ in first })
+            }
+            table.selection.units = { [weak self] row in
+                guard let self, row < self.items.count, let (message, bubble) = Self.message(of: self.items[row]) else {
+                    return []
+                }
+                let size = MessageBody.emojiOnly(message.blocks) ? 30.0 : 14.0
+                let author = (FeedSelection.Unit(message: message.id, segment: FeedSelection.Unit.authorLine),
+                              MessageRow.authorLine(message, bubble: bubble))
+                return [author] + MessageRichText.pieces(message.blocks, size: size).enumerated().compactMap { index, piece in
+                    piece.selectable.map { (FeedSelection.Unit(message: message.id, segment: index), $0) }
+                }
+            }
+        }
+
+        private static func message(of item: FeedItem) -> (message: MessageView, bubble: Bool)? {
+            switch item {
+            case .message(let message, let bubble, _): (message, bubble)
+            case .post(let post, _): (post.root, false)
+            default: nil
+            }
+        }
+
+        /// A plain press on a message's text or anywhere around it, as above it or beside its author, starts a selection
+        /// at the nearest text, as in Teams. Returns whether it took the press; double clicks and links are left alone.
+        private func press(_ event: NSEvent, on text: MessageTextView?) -> Bool {
+            guard let table else { return false }
+            table.selection.clear()
+            guard event.clickCount == 1, event.modifierFlags.intersection([.command, .control, .shift]).isEmpty else {
+                return false
+            }
+            if let text, Self.onLink(event, in: text) { return false }
+            let target: (MessageTextView, FeedSelection.Point)?
+            if let text, let unit = text.unit {
+                target = (text, FeedSelection.Point(unit: unit, index: Self.index(of: event, in: text)))
+            } else {
+                target = Self.point(of: event, in: table)
+            }
+            guard let (text, start) = target else { return false }
+            trackSelection(from: event, in: text, at: start, table: table)
+            return true
+        }
+
+        /// Follows a drag across the feed, scrolling it at its edges, as a web page does.
+        private func trackSelection(from event: NSEvent, in text: MessageTextView, at start: FeedSelection.Point,
+                                    table: FeedTableView) {
+            guard let window = table.window else { return }
+            window.makeFirstResponder(text)
+            text.setSelectedRange(NSRange(location: start.index, length: 0))
+            table.selection.begin(at: start)
+            NSEvent.startPeriodicEvents(afterDelay: 0.1, withPeriod: 0.05)
+            defer { NSEvent.stopPeriodicEvents() }
+            var last = event
+            while let next = window.nextEvent(matching: [.leftMouseDragged, .leftMouseUp, .periodic]) {
+                if next.type == .leftMouseUp { break }
+                if next.type == .leftMouseDragged { last = next }
+                table.autoscroll(with: last)
+                if let (_, point) = Self.point(of: last, in: table) { table.selection.extend(to: point) }
+            }
+        }
+
+        /// The text position under a drag: the nearest message text of the row under it, clamped to its ends.
+        private static func point(of event: NSEvent, in table: NSTableView) -> (MessageTextView, FeedSelection.Point)? {
+            let location = table.convert(event.locationInWindow, from: nil)
+            let visible = table.rows(in: table.visibleRect)
+            guard visible.location != NSNotFound, visible.length > 0 else { return nil }
+            var row = table.row(at: location)
+            if row < 0 {
+                row = location.y < table.visibleRect.midY ? visible.location : visible.location + visible.length - 1
+            }
+            guard let rowView = table.rowView(atRow: row, makeIfNecessary: false) else { return nil }
+            let texts = rowView.descendants(of: MessageTextView.self).filter { $0.unit != nil }
+            // Texts are stacked in order; the drag takes the last one starting above it, or the first.
+            guard let text = texts.last(where: { $0.convert($0.bounds, to: nil).maxY >= event.locationInWindow.y })
+                    ?? texts.first, let unit = text.unit else { return nil }
+            return (text, FeedSelection.Point(unit: unit, index: index(of: event, in: text)))
+        }
+
+        /// The character position under `event` in `text`; above its first line it is the start, below its last the end.
+        private static func index(of event: NSEvent, in text: MessageTextView) -> Int {
+            let point = text.convert(event.locationInWindow, from: nil)
+            let length = text.textStorage?.length ?? 0
+            if point.y < text.bounds.minY { return 0 }
+            if point.y > text.bounds.maxY { return length }
+            let clamped = NSPoint(x: min(max(point.x, text.bounds.minX), text.bounds.maxX), y: point.y)
+            return min(text.characterIndexForInsertion(at: clamped), length)
+        }
+
+        /// A press on a link opens it, as the text view does on release.
+        private static func onLink(_ event: NSEvent, in text: MessageTextView) -> Bool {
+            guard let storage = text.textStorage, let layout = text.layoutManager, let container = text.textContainer,
+                  storage.length > 0 else { return false }
+            let point = text.convert(event.locationInWindow, from: nil)
+            let glyph = layout.glyphIndex(for: point, in: container)
+            guard layout.boundingRect(forGlyphRange: NSRange(location: glyph, length: 1), in: container).contains(point) else {
+                return false
+            }
+            let character = layout.characterIndexForGlyph(at: glyph)
+            return character < storage.length && storage.attribute(.link, at: character, effectiveRange: nil) != nil
         }
 
         /// Loads earlier history on a deliberate scroll past the top, as Teams does: see `EarlierLoadGate`.
@@ -746,5 +853,22 @@ struct FeedItemView: View {
                     .buttonStyle(OutlineButtonStyle())
             }
         }
+    }
+}
+
+/// The feed's table, which lets the coordinator take presses on its rows' empty areas and texts to select across messages.
+final class FeedTableView: NSTableView {
+    let selection = FeedSelection()
+    var press: ((NSEvent, MessageTextView?) -> Bool)?
+
+    override func mouseDown(with event: NSEvent) {
+        if press?(event, nil) == true { return }
+        super.mouseDown(with: event)
+    }
+}
+
+private extension NSView {
+    func descendants<View: NSView>(of type: View.Type) -> [View] {
+        subviews.flatMap { ($0 as? View).map { [$0] } ?? $0.descendants(of: type) }
     }
 }

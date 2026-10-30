@@ -47,13 +47,14 @@ final class MessageRichTextTests: XCTestCase {
         XCTAssertEqual(placement.quote?.bottom, true)
     }
 
-    func testCodeStandsApart() {
+    func testCodeStandsApartAndSelectsAsItsText() {
         let pieces = MessageRichText.pieces([paragraph("a"), .code(language: "swift", text: "let x = 1")], size: 14)
 
         XCTAssertEqual(pieces.count, 2)
         guard case .other(.code, let placement) = pieces[1] else { return XCTFail("code") }
         XCTAssertEqual(placement.spacing, MessageRichText.blockSpacing)
         XCTAssertNil(placement.quote)
+        XCTAssertEqual(pieces[1].selectable?.string, "let x = 1")
     }
 
     func testPlainTextWritesEmojiImagesBackAsEmoji() {

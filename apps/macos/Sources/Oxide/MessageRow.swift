@@ -140,17 +140,34 @@ struct MessageRow: View {
             if message.mine && bubble {
                 actions
                 // Spoken with the message itself.
-                Muted(message.time).accessibilityHidden(true)
+                MessageAuthorLine(text: authorLine, messageId: message.id).accessibilityHidden(true)
                 if let receipt = message.receipt { ReceiptIcon(receipt: receipt) }
             } else {
-                (Text(message.mine ? L("ui.message_row.you") : message.sender).font(.figtree(bubble ? 12 : 13, .semibold))
-                    + Text(" · \(message.time)").font(.figtree(12)).foregroundColor(Theme.muted))
-                    .lineLimit(1)
-                    .accessibilityHidden(true)
+                MessageAuthorLine(text: authorLine, messageId: message.id).accessibilityHidden(true)
                 actions
             }
         }
         .frame(height: 24)
+    }
+
+    /// « **Nom** · 20:12 », or only the time on my bubbles: text, so a selection takes it along.
+    private var authorLine: NSAttributedString {
+        Self.authorLine(message, bubble: bubble)
+    }
+
+    static func authorLine(_ message: MessageView, bubble: Bool) -> NSAttributedString {
+        let time = NSAttributedString(string: message.time, attributes: [
+            .font: MessageRichText.font(size: 12), .foregroundColor: NSColor(Theme.muted),
+        ])
+        guard !(message.mine && bubble) else { return time }
+        let line = NSMutableAttributedString(string: message.mine ? L("ui.message_row.you") : message.sender, attributes: [
+            .font: MessageRichText.font(size: bubble ? 12 : 13, bold: true), .foregroundColor: NSColor(Theme.text),
+        ])
+        line.append(NSAttributedString(string: " · ", attributes: [
+            .font: MessageRichText.font(size: 12), .foregroundColor: NSColor(Theme.muted),
+        ]))
+        line.append(time)
+        return line
     }
 
     @ViewBuilder private var actions: some View {
