@@ -4303,18 +4303,6 @@
     "fr": "Cette action ne peut s’effectuer que dans Teams.",
     "en": "This action is only available in Teams."
   },
-  "ui.message_blocks.quote": {
-    "fr": "Citation",
-    "en": "Quote"
-  },
-  "ui.message_blocks.reply_to": {
-    "fr": "Réponse à {author}",
-    "en": "Reply to {author}"
-  },
-  "ui.message_blocks.reply_to_message": {
-    "fr": "Réponse à un message",
-    "en": "Reply to a message"
-  },
   "ui.message_blocks.select": {
     "fr": "Choisir…",
     "en": "Choose…"
